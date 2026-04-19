@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<!-- Replace `pila.example.com` with the production host when signing
+		     for TestFlight. The AASA file is served by the Next.js app under
+		     `/.well-known/apple-app-site-association`. -->
+		<string>applinks:pila.example.com</string>
+	</array>
+</dict>
+</plist>
