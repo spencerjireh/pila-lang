@@ -53,7 +53,7 @@ services:
     environment:
       DATABASE_URL: postgres://queue:queue@postgres:5432/queue
     command: >
-      sh -c "corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm drizzle-kit migrate"
+      sh -c "corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm db:migrate"
     depends_on:
       postgres:
         condition: service_healthy
