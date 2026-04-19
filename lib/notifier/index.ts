@@ -1,4 +1,5 @@
 import type { Party } from "@/lib/db/schema";
+import { PushNotifier } from "@/lib/push/push-notifier";
 
 export interface Notifier {
   onPartyJoined(party: Party): Promise<void>;
@@ -12,6 +13,10 @@ export class NoopNotifier implements Notifier {
   async onPartyReady(_party: Party): Promise<void> {
     /* v1: no-op */
   }
+}
+
+function firebaseConfigured(): boolean {
+  return (process.env.FIREBASE_SERVICE_ACCOUNT_JSON ?? "").trim().length > 0;
 }
 
 export type NotifierCall =
@@ -53,6 +58,12 @@ function shouldUseSpy(): boolean {
   );
 }
 
+function defaultImpl(): Notifier {
+  if (shouldUseSpy()) return new TestSpyNotifier();
+  if (firebaseConfigured()) return new PushNotifier();
+  return new NoopNotifier();
+}
+
 function bootstrap(): Notifier {
   const useSpy = shouldUseSpy();
   if (globalThis.__notifier) {
@@ -61,7 +72,7 @@ function bootstrap(): Notifier {
     }
     return globalThis.__notifier;
   }
-  globalThis.__notifier = useSpy ? new TestSpyNotifier() : new NoopNotifier();
+  globalThis.__notifier = defaultImpl();
   return globalThis.__notifier;
 }
 

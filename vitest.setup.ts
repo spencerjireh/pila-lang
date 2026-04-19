@@ -6,6 +6,7 @@ process.env.S3_ACCESS_KEY ??= "test";
 process.env.S3_SECRET_KEY ??= "test";
 process.env.QR_TOKEN_SECRET ??= "x".repeat(40);
 process.env.HOST_JWT_SECRET ??= "y".repeat(40);
+process.env.GUEST_JWT_SECRET ??= "z".repeat(40);
 process.env.ADMIN_EMAILS ??= "admin@example.com";
 process.env.NEXTAUTH_SECRET ??= "n".repeat(32);
 process.env.NEXTAUTH_URL ??= "http://localhost:3000";

@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 
-import { guardHostRequest, unauthorizedJson } from "@/lib/auth/host-guard";
+import {
+  applyHostRefresh,
+  guardHostRequest,
+  unauthorizedJson,
+} from "@/lib/auth/host-guard";
 import { swapLogo } from "@/lib/host/settings-actions";
 import { log } from "@/lib/log/logger";
 import {
@@ -40,9 +44,9 @@ export async function POST(
     if (!swap) return Response.json({ error: "not_found" }, { status: 404 });
     await safeDelete(swap.oldLogoUrl);
     log.info("host.settings.logo.cleared", { slug: params.slug });
-    return withRefresh(
+    return applyHostRefresh(
       Response.json({ logoUrl: null }, { status: 200 }),
-      guard.refreshedCookie,
+      guard,
     );
   }
 
@@ -97,9 +101,9 @@ export async function POST(
 
   await safeDelete(swap.oldLogoUrl);
   log.info("host.settings.logo.updated", { slug: params.slug });
-  return withRefresh(
+  return applyHostRefresh(
     Response.json({ logoUrl: newUrl }, { status: 200 }),
-    guard.refreshedCookie,
+    guard,
   );
 }
 
@@ -130,10 +134,4 @@ function guardError(status: 401 | 403 | 404): string {
   if (status === 401) return "unauthorized";
   if (status === 403) return "forbidden";
   return "not_found";
-}
-
-function withRefresh(res: Response, cookie: string | null): Response {
-  if (!cookie) return res;
-  res.headers.append("Set-Cookie", cookie);
-  return res;
 }

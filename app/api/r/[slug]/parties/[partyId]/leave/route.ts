@@ -1,10 +1,12 @@
 import { NextRequest } from "next/server";
 
-import { GUEST_COOKIE_NAME } from "@/lib/auth/guest-session";
+import {
+  applyGuestRefresh,
+  guardGuestRequest,
+  statusForGuestFailure,
+} from "@/lib/auth/guest-guard";
 import { log } from "@/lib/log/logger";
 import { leaveQueue } from "@/lib/parties/leave";
-import { findPartyById } from "@/lib/parties/lookup";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
 
 export const dynamic = "force-dynamic";
 
@@ -12,18 +14,13 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { slug: string; partyId: string } },
 ) {
-  const cookie = req.cookies.get(GUEST_COOKIE_NAME)?.value;
-  if (!cookie) return Response.json({ error: "unauthorized" }, { status: 401 });
-
-  const lookup = await loadTenantBySlug(params.slug);
-  if (!lookup.ok) return Response.json({ error: "not_found" }, { status: 404 });
-  const tenant = lookup.tenant;
-
-  const party = await findPartyById(tenant.id, params.partyId);
-  if (!party) return Response.json({ error: "not_found" }, { status: 404 });
-  if (party.tenantId !== tenant.id || party.sessionToken !== cookie) {
-    return Response.json({ error: "forbidden" }, { status: 403 });
+  const guard = await guardGuestRequest(req, params.slug, params.partyId);
+  if (!guard.ok) {
+    const status = statusForGuestFailure(guard.reason, "action");
+    return Response.json({ error: guard.reason }, { status });
   }
+
+  const { tenant, party } = guard;
   if (party.status !== "waiting") {
     return Response.json({ error: "conflict" }, { status: 409 });
   }
@@ -46,5 +43,8 @@ export async function POST(
   }
 
   log.info("party.left", { slug: params.slug, partyId: params.partyId });
-  return Response.json({ ok: true, resolvedAt: result.resolvedAt });
+  return applyGuestRefresh(
+    Response.json({ ok: true, resolvedAt: result.resolvedAt }),
+    guard,
+  );
 }

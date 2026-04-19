@@ -1,7 +1,11 @@
 import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-import { guardHostRequest, unauthorizedJson } from "@/lib/auth/host-guard";
+import {
+  applyHostRefresh,
+  guardHostRequest,
+  unauthorizedJson,
+} from "@/lib/auth/host-guard";
 import { parties, type Party } from "@/lib/db/schema";
 import { tenantDb } from "@/lib/db/tenant-scoped";
 import { log } from "@/lib/log/logger";
@@ -28,15 +32,15 @@ export async function POST(
 
   const frame = await popUndoFrame(tenant.id);
   if (!frame) {
-    return withRefresh(
+    return applyHostRefresh(
       Response.json({ error: "no_action" }, { status: 409 }),
-      guard.refreshedCookie,
+      guard,
     );
   }
   if (!isWithinUndoWindow(frame)) {
-    return withRefresh(
+    return applyHostRefresh(
       Response.json({ error: "too_old" }, { status: 409 }),
-      guard.refreshedCookie,
+      guard,
     );
   }
 
@@ -53,9 +57,9 @@ export async function POST(
       slug: params.slug,
       partyId: frame.partyId,
     });
-    return withRefresh(
+    return applyHostRefresh(
       Response.json({ error: "party_missing" }, { status: 409 }),
-      guard.refreshedCookie,
+      guard,
     );
   }
 
@@ -80,12 +84,12 @@ export async function POST(
     partyId: frame.partyId,
     action: frame.action,
   });
-  return withRefresh(
+  return applyHostRefresh(
     Response.json(
       { ok: true, partyId: frame.partyId, action: frame.action },
       { status: 200 },
     ),
-    guard.refreshedCookie,
+    guard,
   );
 }
 
@@ -93,10 +97,4 @@ function guardError(status: 401 | 403 | 404): string {
   if (status === 401) return "unauthorized";
   if (status === 403) return "forbidden";
   return "not_found";
-}
-
-function withRefresh(res: Response, cookie: string | null): Response {
-  if (!cookie) return res;
-  res.headers.append("Set-Cookie", cookie);
-  return res;
 }

@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.pila.pila"],
+        "components": [
+          { "/": "/r/*", "comment": "Guest join + wait" },
+          { "/": "/host/*", "comment": "Host stand" },
+          { "/": "/display/*", "comment": "Kiosk display" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAMID.com.pila.pila"]
+  }
+}

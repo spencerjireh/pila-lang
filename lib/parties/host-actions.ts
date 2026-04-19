@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 
 import { parties, type Party, type PartyStatus } from "@/lib/db/schema";
 import { tenantDb } from "@/lib/db/tenant-scoped";
+import { log } from "@/lib/log/logger";
 import { notifier } from "@/lib/notifier";
 import {
   channelForParty,
@@ -109,7 +110,14 @@ export async function performHostAction(
   await publishPositionUpdates(tenantId, slug);
 
   if (action === "seat") {
-    await notifier().onPartyReady(updatedParty);
+    try {
+      await notifier().onPartyReady(updatedParty);
+    } catch (err) {
+      log.error("notifier.onPartyReady.failed", {
+        partyId: updatedParty.id,
+        err: String(err),
+      });
+    }
   }
 
   return { ok: true, party: updatedParty, resolvedAt };

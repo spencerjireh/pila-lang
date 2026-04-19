@@ -3,8 +3,10 @@ import { getDb } from "./client";
 import {
   notifications,
   parties,
+  pushTokens,
   type NewNotification,
   type NewParty,
+  type NewPushToken,
 } from "./schema";
 
 export class TenantScopeError extends Error {
@@ -25,6 +27,7 @@ export function tenantDb(tenantId: string) {
   const db = getDb();
 
   const scopeParty = () => eq(parties.tenantId, tenantId);
+  const scopePushToken = () => eq(pushTokens.tenantId, tenantId);
   const partyIdsSubquery = () =>
     db.select({ id: parties.id }).from(parties).where(scopeParty());
 
@@ -64,6 +67,26 @@ export function tenantDb(tenantId: string) {
         const scope = inArray(notifications.partyId, partyIdsSubquery());
         const where = extra ? and(scope, extra) : scope;
         return db.delete(notifications).where(where);
+      },
+    },
+
+    pushTokens: {
+      select(extra?: SQL) {
+        const where = extra ? and(scopePushToken(), extra) : scopePushToken();
+        return db.select().from(pushTokens).where(where);
+      },
+      insert(values: Omit<NewPushToken, "tenantId">) {
+        return db.insert(pushTokens).values({ ...values, tenantId });
+      },
+      update(set: Partial<NewPushToken>, extra?: SQL) {
+        const sanitized = { ...set };
+        delete (sanitized as { tenantId?: unknown }).tenantId;
+        const where = extra ? and(scopePushToken(), extra) : scopePushToken();
+        return db.update(pushTokens).set(sanitized).where(where);
+      },
+      delete(extra?: SQL) {
+        const where = extra ? and(scopePushToken(), extra) : scopePushToken();
+        return db.delete(pushTokens).where(where);
       },
     },
   };

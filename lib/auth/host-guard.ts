@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import type { Tenant } from "@/lib/db/schema";
 import { loadTenantBySlug } from "@/lib/tenants/display-token";
 
+import { parseBearer } from "./bearer";
 import {
   HOST_COOKIE_NAME,
   clearHostCookieHeader,
@@ -10,13 +11,19 @@ import {
 } from "./host-session";
 import { maybeRefresh, verifyHostToken, type HostClaims } from "./host-token";
 
+export const HOST_REFRESH_HEADER = "X-Refreshed-Token";
+
+export type HostGuardOk = {
+  ok: true;
+  tenant: Tenant;
+  claims: HostClaims;
+  source: "cookie" | "bearer";
+  refreshedCookie: string | null;
+  refreshedBearer: string | null;
+};
+
 export type HostGuardDecision =
-  | {
-      ok: true;
-      tenant: Tenant;
-      claims: HostClaims;
-      refreshedCookie: string | null;
-    }
+  | HostGuardOk
   | { ok: false; status: 401 | 403 | 404; clearCookie: boolean };
 
 export interface HostGuardInput {
@@ -53,16 +60,23 @@ export function decideHostGuard(
 }
 
 export async function guardHostRequest(
-  req: Pick<NextRequest, "cookies">,
+  req: Pick<NextRequest, "cookies" | "headers">,
   slug: string,
   now: number = Date.now(),
 ): Promise<HostGuardDecision> {
   const cookie = req.cookies.get(HOST_COOKIE_NAME)?.value ?? null;
+  const bearer = parseBearer(req.headers.get("authorization"));
+  const source: "cookie" | "bearer" | null = cookie
+    ? "cookie"
+    : bearer
+      ? "bearer"
+      : null;
+  const rawToken = cookie ?? bearer;
 
   let claims: HostClaims | null = null;
   let reason: HostGuardInput["reason"] = "missing";
-  if (cookie) {
-    const verified = await verifyHostToken(cookie);
+  if (rawToken) {
+    const verified = await verifyHostToken(rawToken);
     if (verified.ok) {
       claims = verified.claims;
       reason = "ok";
@@ -76,7 +90,7 @@ export async function guardHostRequest(
 
   const decision = decideHostGuard({
     slug,
-    cookie,
+    cookie: rawToken,
     tenant: tenant
       ? { slug: tenant.slug, hostPasswordVersion: tenant.hostPasswordVersion }
       : null,
@@ -84,13 +98,23 @@ export async function guardHostRequest(
     reason,
   });
 
-  if (!decision.ok) return decision;
+  if (!decision.ok) {
+    return {
+      ...decision,
+      clearCookie: decision.clearCookie && source === "cookie",
+    };
+  }
 
   let refreshedCookie: string | null = null;
-  if (cookie) {
-    const refresh = await maybeRefresh(cookie, now);
+  let refreshedBearer: string | null = null;
+  if (rawToken && source) {
+    const refresh = await maybeRefresh(rawToken, now);
     if (refresh && refresh.refreshed) {
-      refreshedCookie = serializeHostCookie(refresh.token);
+      if (source === "cookie") {
+        refreshedCookie = serializeHostCookie(refresh.token);
+      } else {
+        refreshedBearer = refresh.token;
+      }
     }
   }
 
@@ -98,7 +122,9 @@ export async function guardHostRequest(
     ok: true,
     tenant: tenant!,
     claims: decision.claims,
+    source: source!,
     refreshedCookie,
+    refreshedBearer,
   };
 }
 
@@ -117,4 +143,14 @@ export function unauthorizedJson(
   const headers: Record<string, string> = {};
   if (clearCookie) headers["Set-Cookie"] = clearHostCookieHeader();
   return Response.json({ error }, { status, headers });
+}
+
+export function applyHostRefresh(res: Response, guard: HostGuardOk): Response {
+  if (guard.refreshedCookie) {
+    res.headers.append("Set-Cookie", guard.refreshedCookie);
+  }
+  if (guard.refreshedBearer) {
+    res.headers.set(HOST_REFRESH_HEADER, guard.refreshedBearer);
+  }
+  return res;
 }

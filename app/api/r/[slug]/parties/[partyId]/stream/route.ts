@@ -1,14 +1,18 @@
 import { NextRequest } from "next/server";
 
 import {
+  GUEST_REFRESH_HEADER,
+  guardGuestRequest,
+  statusForGuestFailure,
+} from "@/lib/auth/guest-guard";
+import {
   GUEST_COOKIE_MAX_AGE,
   GUEST_COOKIE_NAME,
 } from "@/lib/auth/guest-session";
 import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
 import { log } from "@/lib/log/logger";
-import { findPartyById } from "@/lib/parties/lookup";
 import { computePosition } from "@/lib/parties/position";
-import { guestStreamAuth } from "@/lib/parties/stream-auth";
+import type { PartyStatus } from "@/lib/db/schema";
 import {
   buildGuestSnapshot,
   isTerminalStatus,
@@ -21,7 +25,6 @@ import {
   subscribe,
 } from "@/lib/redis/pubsub";
 import { resolvedPartyShortCircuit, sseStream } from "@/lib/sse/stream";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
 
 export const dynamic = "force-dynamic";
 
@@ -49,26 +52,29 @@ export async function GET(
     throw err;
   }
 
-  const lookup = await loadTenantBySlug(params.slug);
-  if (!lookup.ok) return new Response(null, { status: 404 });
-  const tenant = lookup.tenant;
-
-  const cookie = req.cookies.get(GUEST_COOKIE_NAME)?.value ?? null;
-  const party = await findPartyById(tenant.id, params.partyId);
-
-  const decision = guestStreamAuth({ tenant, party, cookie });
-  if (!decision.ok) {
-    if (decision.status === 204) return resolvedPartyShortCircuit();
-    return new Response(null, { status: decision.status });
+  const guard = await guardGuestRequest(req, params.slug, params.partyId);
+  if (!guard.ok) {
+    const status = statusForGuestFailure(guard.reason, "stream");
+    if (status === 204) return resolvedPartyShortCircuit();
+    return new Response(null, { status });
   }
-  const activeParty = decision.party;
+  const { tenant, party: activeParty, source, refreshedBearer } = guard;
+  if (isTerminalStatus(activeParty.status as PartyStatus)) {
+    return resolvedPartyShortCircuit();
+  }
+
+  const extraHeaders: Record<string, string> = {};
+  if (source === "cookie") {
+    extraHeaders["Set-Cookie"] = refreshedGuestCookie(activeParty.sessionToken);
+  }
+  if (refreshedBearer) {
+    extraHeaders[GUEST_REFRESH_HEADER] = refreshedBearer;
+  }
 
   let unsubscribe: (() => Promise<void>) | null = null;
 
   return sseStream({
-    extraHeaders: {
-      "Set-Cookie": refreshedGuestCookie(activeParty.sessionToken),
-    },
+    extraHeaders,
     onSubscribe: async (handle) => {
       unsubscribe = await subscribe(
         [channelForParty(activeParty.id), channelForTenantQueue(tenant.slug)],

@@ -16,6 +16,7 @@ const Schema = z.object({
 
   QR_TOKEN_SECRET: z.string().min(32),
   HOST_JWT_SECRET: z.string().min(32),
+  GUEST_JWT_SECRET: z.string().min(32),
 
   ADMIN_EMAILS: z
     .string()
@@ -31,6 +32,11 @@ const Schema = z.object({
   NEXTAUTH_URL: z.string().url(),
 
   RESEND_API_KEY: z.string().min(1),
+
+  FIREBASE_SERVICE_ACCOUNT_JSON: z.string().min(1).optional(),
+  APP_IOS_BUNDLE_ID: z.string().min(1).optional(),
+  APP_ANDROID_PACKAGE_NAME: z.string().min(1).optional(),
+  APP_ANDROID_SHA256_FINGERPRINTS: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof Schema>;

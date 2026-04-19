@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
-import { guardHostRequest, unauthorizedJson } from "@/lib/auth/host-guard";
+import {
+  applyHostRefresh,
+  guardHostRequest,
+  unauthorizedJson,
+} from "@/lib/auth/host-guard";
 import { updateTenantBranding } from "@/lib/host/settings-actions";
 import { log } from "@/lib/log/logger";
 import { validateAccentColor } from "@/lib/validators/contrast";
@@ -68,9 +72,9 @@ export async function PATCH(
     slug: params.slug,
     fields: Object.keys(patch),
   });
-  return withRefresh(
+  return applyHostRefresh(
     Response.json({ tenant: row }, { status: 200 }),
-    guard.refreshedCookie,
+    guard,
   );
 }
 
@@ -78,10 +82,4 @@ function guardError(status: 401 | 403 | 404): string {
   if (status === 401) return "unauthorized";
   if (status === 403) return "forbidden";
   return "not_found";
-}
-
-function withRefresh(res: Response, cookie: string | null): Response {
-  if (!cookie) return res;
-  res.headers.append("Set-Cookie", cookie);
-  return res;
 }
