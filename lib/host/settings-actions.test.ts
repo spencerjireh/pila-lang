@@ -104,9 +104,8 @@ describe("rotateHostPassword", () => {
 describe("setTenantOpen", () => {
   it("publishes tenant:opened when flag flips to true", async () => {
     const { setTenantOpen } = await import("./settings-actions");
-    const { publishTenantOpenClose } = await import(
-      "@/lib/parties/tenant-updates"
-    );
+    const { publishTenantOpenClose } =
+      await import("@/lib/parties/tenant-updates");
     mocks.nextSelectRows = [[{ isOpen: false }]];
     mocks.nextUpdateRows = [[{ isOpen: true }]];
     const result = await setTenantOpen("t1", "demo", true);
@@ -116,9 +115,8 @@ describe("setTenantOpen", () => {
 
   it("is a no-op when the flag already matches", async () => {
     const { setTenantOpen } = await import("./settings-actions");
-    const { publishTenantOpenClose } = await import(
-      "@/lib/parties/tenant-updates"
-    );
+    const { publishTenantOpenClose } =
+      await import("@/lib/parties/tenant-updates");
     mocks.nextSelectRows = [[{ isOpen: true }]];
     const result = await setTenantOpen("t1", "demo", true);
     expect(result).toEqual({ isOpen: true, changed: false });
@@ -129,9 +127,8 @@ describe("setTenantOpen", () => {
 describe("updateTenantBranding", () => {
   it("publishes tenant:updated with the patch", async () => {
     const { updateTenantBranding } = await import("./settings-actions");
-    const { publishTenantUpdated } = await import(
-      "@/lib/parties/tenant-updates"
-    );
+    const { publishTenantUpdated } =
+      await import("@/lib/parties/tenant-updates");
     mocks.nextUpdateRows = [
       [{ name: "New", accentColor: "#112233", logoUrl: null }],
     ];
@@ -152,9 +149,8 @@ describe("updateTenantBranding", () => {
 
   it("returns null for an empty patch and does not publish", async () => {
     const { updateTenantBranding } = await import("./settings-actions");
-    const { publishTenantUpdated } = await import(
-      "@/lib/parties/tenant-updates"
-    );
+    const { publishTenantUpdated } =
+      await import("@/lib/parties/tenant-updates");
     const row = await updateTenantBranding("t1", "demo", {});
     expect(row).toBeNull();
     expect(publishTenantUpdated).not.toHaveBeenCalled();
@@ -164,9 +160,8 @@ describe("updateTenantBranding", () => {
 describe("swapLogo", () => {
   it("returns prior logo url and publishes tenant:updated", async () => {
     const { swapLogo } = await import("./settings-actions");
-    const { publishTenantUpdated } = await import(
-      "@/lib/parties/tenant-updates"
-    );
+    const { publishTenantUpdated } =
+      await import("@/lib/parties/tenant-updates");
     mocks.nextSelectRows = [[{ logoUrl: "https://old.example/logo-a.png" }]];
     mocks.nextUpdateRows = [[{ logoUrl: "https://new.example/logo-b.png" }]];
     const result = await swapLogo(

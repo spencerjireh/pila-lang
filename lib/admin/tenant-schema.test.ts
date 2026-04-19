@@ -13,7 +13,9 @@ describe("createTenantSchema", () => {
 
   it("rejects missing fields", () => {
     expect(createTenantSchema.safeParse({ name: "x" }).success).toBe(false);
-    expect(createTenantSchema.safeParse({ slug: "x", timezone: "UTC" }).success).toBe(false);
+    expect(
+      createTenantSchema.safeParse({ slug: "x", timezone: "UTC" }).success,
+    ).toBe(false);
   });
 
   it("trims whitespace around strings", () => {
@@ -39,12 +41,21 @@ describe("updateTenantSchema", () => {
   });
 
   it("rejects password-hash updates", () => {
-    expect(updateTenantSchema.safeParse({ hostPasswordHash: "x" }).success).toBe(false);
-    expect(updateTenantSchema.safeParse({ hostPasswordVersion: 2 }).success).toBe(false);
+    expect(
+      updateTenantSchema.safeParse({ hostPasswordHash: "x" }).success,
+    ).toBe(false);
+    expect(
+      updateTenantSchema.safeParse({ hostPasswordVersion: 2 }).success,
+    ).toBe(false);
   });
 
   it("requires logoUrl to be a valid URL when provided", () => {
-    expect(updateTenantSchema.safeParse({ logoUrl: "not a url" }).success).toBe(false);
-    expect(updateTenantSchema.safeParse({ logoUrl: "https://example.com/x.png" }).success).toBe(true);
+    expect(updateTenantSchema.safeParse({ logoUrl: "not a url" }).success).toBe(
+      false,
+    );
+    expect(
+      updateTenantSchema.safeParse({ logoUrl: "https://example.com/x.png" })
+        .success,
+    ).toBe(true);
   });
 });

@@ -15,7 +15,11 @@
 import { eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
-import { DEMO_WAITING, DEMO_HISTORICAL, resetDemoFixture } from "@/lib/admin/demo-fixture";
+import {
+  DEMO_WAITING,
+  DEMO_HISTORICAL,
+  resetDemoFixture,
+} from "@/lib/admin/demo-fixture";
 import { generateInitialPassword, hashPassword } from "@/lib/auth/password";
 import { getDb } from "@/lib/db/client";
 import {
@@ -38,14 +42,21 @@ interface Args {
 }
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { reset: false, tenant: null, withWaiters: null, json: false };
+  const args: Args = {
+    reset: false,
+    tenant: null,
+    withWaiters: null,
+    json: false,
+  };
   for (const raw of argv) {
     if (raw === "--reset") args.reset = true;
     else if (raw === "--json") args.json = true;
-    else if (raw.startsWith("--tenant=")) args.tenant = raw.slice("--tenant=".length);
+    else if (raw.startsWith("--tenant="))
+      args.tenant = raw.slice("--tenant=".length);
     else if (raw.startsWith("--with-waiters=")) {
       const n = Number(raw.slice("--with-waiters=".length));
-      if (!Number.isFinite(n) || n < 0) throw new Error(`invalid --with-waiters: ${raw}`);
+      if (!Number.isFinite(n) || n < 0)
+        throw new Error(`invalid --with-waiters: ${raw}`);
       args.withWaiters = Math.floor(n);
     } else {
       throw new Error(`unknown arg: ${raw}`);
@@ -86,7 +97,8 @@ async function upsertTenant(slug: string): Promise<{
   }
 
   const slugCheck = validateSlug(slug);
-  if (!slugCheck.ok) throw new Error(`invalid slug "${slug}": ${slugCheck.reason}`);
+  if (!slugCheck.ok)
+    throw new Error(`invalid slug "${slug}": ${slugCheck.reason}`);
 
   const isDemo = slug === "demo";
   const name = isDemo ? "Demo Diner" : titleCase(slug);
@@ -120,7 +132,9 @@ async function seedWaiters(tenantId: string, count: number) {
   // Fresh: clear any waiting rows first so the waiter count is exact.
   await db
     .delete(parties)
-    .where(sql`${parties.tenantId} = ${tenantId} AND ${parties.status} = 'waiting'`);
+    .where(
+      sql`${parties.tenantId} = ${tenantId} AND ${parties.status} = 'waiting'`,
+    );
 
   if (count === 0) return;
   const now = Date.now();
@@ -149,7 +163,12 @@ async function main() {
 
   if (args.tenant) {
     const t = await upsertTenant(args.tenant);
-    result.tenant = { id: t.id, slug: t.slug, name: t.name, created: t.created };
+    result.tenant = {
+      id: t.id,
+      slug: t.slug,
+      name: t.name,
+      created: t.created,
+    };
     if (t.initialPassword) result.initialPassword = t.initialPassword;
 
     if (t.slug === "demo") {
@@ -175,19 +194,34 @@ async function main() {
   } else {
     if (result.reset) console.log("Truncated all app tables.");
     if (result.tenant) {
-      const t = result.tenant as { slug: string; id: string; created: boolean; name: string };
-      console.log(`${t.created ? "Created" : "Found"} tenant "${t.slug}" (${t.id})`);
+      const t = result.tenant as {
+        slug: string;
+        id: string;
+        created: boolean;
+        name: string;
+      };
+      console.log(
+        `${t.created ? "Created" : "Found"} tenant "${t.slug}" (${t.id})`,
+      );
       if (result.initialPassword) {
         console.log(`  Initial host password: ${result.initialPassword}`);
-        console.log("  (shown once; use admin reset-password to issue a new one)");
+        console.log(
+          "  (shown once; use admin reset-password to issue a new one)",
+        );
       } else if (!t.created) {
-        console.log("  (existing tenant — password preserved; use admin reset-password if lost)");
+        console.log(
+          "  (existing tenant — password preserved; use admin reset-password if lost)",
+        );
       }
       if (result.demoWaiting) {
-        console.log(`  Demo fixture: ${result.demoWaiting} waiting, ${result.demoHistorical} historical`);
+        console.log(
+          `  Demo fixture: ${result.demoWaiting} waiting, ${result.demoHistorical} historical`,
+        );
       }
       if (typeof result.waiters === "number") {
-        console.log(`  Seeded ${result.waiters} waiter${result.waiters === 1 ? "" : "s"}.`);
+        console.log(
+          `  Seeded ${result.waiters} waiter${result.waiters === 1 ? "" : "s"}.`,
+        );
       }
     }
     if (result.noop) {

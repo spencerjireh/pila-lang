@@ -85,6 +85,8 @@ export function buildGuestSnapshot(input: {
     position: input.position,
     name: input.name,
     joinedAt:
-      typeof input.joinedAt === "string" ? input.joinedAt : input.joinedAt.toISOString(),
+      typeof input.joinedAt === "string"
+        ? input.joinedAt
+        : input.joinedAt.toISOString(),
   };
 }

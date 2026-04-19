@@ -15,18 +15,26 @@ import { sseStream } from "@/lib/sse/stream";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
   const ip = clientIp(req.headers);
   try {
     await consume("hostStreamPerIpSlug", `${ip}:${params.slug}`);
   } catch (err) {
-    if (err instanceof RateLimitError) return rateLimitResponse(err.retryAfterSec);
+    if (err instanceof RateLimitError)
+      return rateLimitResponse(err.retryAfterSec);
     throw err;
   }
 
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) {
-    return unauthorizedJson(guard.status, guard.clearCookie, guardErrorFor(guard.status));
+    return unauthorizedJson(
+      guard.status,
+      guard.clearCookie,
+      guardErrorFor(guard.status),
+    );
   }
   const { tenant } = guard;
 
@@ -38,9 +46,12 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
   return sseStream({
     extraHeaders,
     onSubscribe: async (handle) => {
-      unsubscribe = await subscribe([channelForTenantQueue(tenant.slug)], (event) => {
-        handle.send({ data: event as HostStreamDiff });
-      });
+      unsubscribe = await subscribe(
+        [channelForTenantQueue(tenant.slug)],
+        (event) => {
+          handle.send({ data: event as HostStreamDiff });
+        },
+      );
     },
     snapshot: async () => {
       const [waiting, recentlyResolved] = await Promise.all([

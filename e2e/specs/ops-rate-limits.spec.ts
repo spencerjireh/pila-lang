@@ -20,9 +20,12 @@ test.describe("rate limits", () => {
     for (let i = 0; i < 11; i++) {
       const token = await mintQrToken(request, slug).catch(() => null);
       if (!token) break;
-      const res = await request.post(`/api/r/${slug}/join?t=${encodeURIComponent(token)}`, {
-        data: { name: `Guest ${i}`, partySize: 2, phone },
-      });
+      const res = await request.post(
+        `/api/r/${slug}/join?t=${encodeURIComponent(token)}`,
+        {
+          data: { name: `Guest ${i}`, partySize: 2, phone },
+        },
+      );
       if (res.status() === 429) {
         blocked = true;
         break;
@@ -31,7 +34,10 @@ test.describe("rate limits", () => {
     expect(blocked).toBeTruthy();
   });
 
-  test("31st display token request per IP is blocked with 429", async ({ request, tenantFactory }) => {
+  test("31st display token request per IP is blocked with 429", async ({
+    request,
+    tenantFactory,
+  }) => {
     const { slug } = await tenantFactory({ name: "RL Display" });
 
     let lastStatus = 0;

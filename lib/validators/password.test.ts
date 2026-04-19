@@ -29,9 +29,9 @@ describe("passwordSchema", () => {
 
 describe("passwordChangeSchema", () => {
   it("requires newPassword for rotate", () => {
-    expect(
-      passwordChangeSchema.safeParse({ action: "rotate" }).success,
-    ).toBe(false);
+    expect(passwordChangeSchema.safeParse({ action: "rotate" }).success).toBe(
+      false,
+    );
     expect(
       passwordChangeSchema.safeParse({
         action: "rotate",
@@ -54,8 +54,8 @@ describe("passwordChangeSchema", () => {
   });
 
   it("rejects unknown actions", () => {
-    expect(
-      passwordChangeSchema.safeParse({ action: "delete" }).success,
-    ).toBe(false);
+    expect(passwordChangeSchema.safeParse({ action: "delete" }).success).toBe(
+      false,
+    );
   });
 });

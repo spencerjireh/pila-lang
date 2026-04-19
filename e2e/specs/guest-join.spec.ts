@@ -2,23 +2,42 @@ import { test, expect } from "../fixtures/test-env";
 import { mintQrToken } from "../fixtures/tenant-factory";
 
 test.describe("guest join", () => {
-  test("shows missing-token banner without ?t", async ({ page, tenantFactory }) => {
+  test("shows missing-token banner without ?t", async ({
+    page,
+    tenantFactory,
+  }) => {
     const { slug } = await tenantFactory({ name: "No Token Diner" });
     await page.goto(`/r/${slug}`);
-    await expect(page.getByRole("heading", { name: /scan the QR code to join/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /scan the QR code to join/i }),
+    ).toBeVisible();
   });
 
-  test("rejects invalid token with invalid banner", async ({ page, tenantFactory }) => {
+  test("rejects invalid token with invalid banner", async ({
+    page,
+    tenantFactory,
+  }) => {
     const { slug } = await tenantFactory({ name: "Invalid Token Diner" });
     await page.goto(`/r/${slug}?t=not-a-real-token`);
-    await expect(page.getByRole("heading", { name: /isn't valid/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /isn't valid/i }),
+    ).toBeVisible();
   });
 
-  test("shows closed banner when tenant is closed", async ({ page, tenantFactory, request }) => {
-    const { slug } = await tenantFactory({ name: "Closed Diner", isOpen: false });
+  test("shows closed banner when tenant is closed", async ({
+    page,
+    tenantFactory,
+    request,
+  }) => {
+    const { slug } = await tenantFactory({
+      name: "Closed Diner",
+      isOpen: false,
+    });
     const token = await mintQrToken(request, slug).catch(() => "");
     await page.goto(`/r/${slug}${token ? `?t=${token}` : ""}`);
-    await expect(page.getByRole("heading", { name: /not accepting guests/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /not accepting guests/i }),
+    ).toBeVisible();
   });
 
   test("successful join lands on wait page with position 1", async ({

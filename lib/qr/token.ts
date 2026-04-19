@@ -5,7 +5,11 @@ export const QR_TOKEN_TTL_MS = 65 * 60 * 1000;
 export const QR_TOKEN_ROTATE_AFTER_MS = 60 * 60 * 1000;
 
 function b64url(buf: Buffer): string {
-  return buf.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return buf
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 function b64urlDecode(s: string): Buffer {
@@ -14,10 +18,15 @@ function b64urlDecode(s: string): Buffer {
 }
 
 function sign(payloadB64: string): string {
-  return b64url(createHmac("sha256", env().QR_TOKEN_SECRET).update(payloadB64).digest());
+  return b64url(
+    createHmac("sha256", env().QR_TOKEN_SECRET).update(payloadB64).digest(),
+  );
 }
 
-export function signQrToken(slug: string, issuedAtMs: number = Date.now()): string {
+export function signQrToken(
+  slug: string,
+  issuedAtMs: number = Date.now(),
+): string {
   const payload = `${slug}:${issuedAtMs}`;
   const payloadB64 = b64url(Buffer.from(payload, "utf8"));
   return `${payloadB64}.${sign(payloadB64)}`;
@@ -25,11 +34,19 @@ export function signQrToken(slug: string, issuedAtMs: number = Date.now()): stri
 
 export type QrVerification =
   | { ok: true; slug: string; issuedAtMs: number }
-  | { ok: false; reason: "malformed" | "slug_mismatch" | "signature" | "expired" };
+  | {
+      ok: false;
+      reason: "malformed" | "slug_mismatch" | "signature" | "expired";
+    };
 
-export function verifyQrToken(expectedSlug: string, token: string, now: number = Date.now()): QrVerification {
+export function verifyQrToken(
+  expectedSlug: string,
+  token: string,
+  now: number = Date.now(),
+): QrVerification {
   const idx = token.indexOf(".");
-  if (idx <= 0 || idx === token.length - 1) return { ok: false, reason: "malformed" };
+  if (idx <= 0 || idx === token.length - 1)
+    return { ok: false, reason: "malformed" };
   const payloadB64 = token.slice(0, idx);
   const sigB64 = token.slice(idx + 1);
   const expectedSigB64 = sign(payloadB64);
@@ -52,6 +69,7 @@ export function verifyQrToken(expectedSlug: string, token: string, now: number =
   const issuedAtMs = Number(payload.slice(sep + 1));
   if (!Number.isFinite(issuedAtMs)) return { ok: false, reason: "malformed" };
   if (slug !== expectedSlug) return { ok: false, reason: "slug_mismatch" };
-  if (now - issuedAtMs > QR_TOKEN_TTL_MS) return { ok: false, reason: "expired" };
+  if (now - issuedAtMs > QR_TOKEN_TTL_MS)
+    return { ok: false, reason: "expired" };
   return { ok: true, slug, issuedAtMs };
 }

@@ -6,7 +6,11 @@ export async function GET() {
   if (guard) return guard;
 
   const spy = testSpyNotifier();
-  if (!spy) return Response.json({ calls: [], note: "notifier is not a TestSpyNotifier" });
+  if (!spy)
+    return Response.json({
+      calls: [],
+      note: "notifier is not a TestSpyNotifier",
+    });
   const calls = spy.drain();
   return Response.json({ calls });
 }

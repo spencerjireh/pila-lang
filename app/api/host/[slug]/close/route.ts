@@ -6,16 +6,26 @@ import { log } from "@/lib/log/logger";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) {
-    return unauthorizedJson(guard.status, guard.clearCookie, guardError(guard.status));
+    return unauthorizedJson(
+      guard.status,
+      guard.clearCookie,
+      guardError(guard.status),
+    );
   }
 
   const result = await setTenantOpen(guard.tenant.id, guard.tenant.slug, false);
   if (!result) return Response.json({ error: "not_found" }, { status: 404 });
 
-  log.info("host.tenant.closed", { slug: params.slug, changed: result.changed });
+  log.info("host.tenant.closed", {
+    slug: params.slug,
+    changed: result.changed,
+  });
   return withRefresh(
     Response.json({ isOpen: result.isOpen }, { status: 200 }),
     guard.refreshedCookie,

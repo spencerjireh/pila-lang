@@ -10,13 +10,15 @@ import {
   OUTPUT_SIZE,
 } from "./logo-limits";
 
-export { ALLOWED_MIME, MAX_DIMENSION, MAX_UPLOAD_BYTES, MIN_DIMENSION, OUTPUT_SIZE };
+export {
+  ALLOWED_MIME,
+  MAX_DIMENSION,
+  MAX_UPLOAD_BYTES,
+  MIN_DIMENSION,
+  OUTPUT_SIZE,
+};
 
-export type LogoProcessFailure =
-  | "mime"
-  | "size"
-  | "decode"
-  | "dims";
+export type LogoProcessFailure = "mime" | "size" | "decode" | "dims";
 
 export type LogoProcessResult =
   | { ok: true; pngBuffer: Buffer; key: string }
@@ -27,7 +29,8 @@ export async function processLogoUpload(
   mime: string,
   tenantId: string,
 ): Promise<LogoProcessResult> {
-  if (!ALLOWED_MIME.has(mime.toLowerCase())) return { ok: false, reason: "mime" };
+  if (!ALLOWED_MIME.has(mime.toLowerCase()))
+    return { ok: false, reason: "mime" };
   if (buffer.length > MAX_UPLOAD_BYTES) return { ok: false, reason: "size" };
 
   let meta: sharp.Metadata;

@@ -40,9 +40,13 @@ export function LoginForm({ slug }: LoginFormProps) {
         return;
       }
       if (res.status === 429) {
-        const data = (await res.json().catch(() => ({}))) as { retryAfterSec?: number };
+        const data = (await res.json().catch(() => ({}))) as {
+          retryAfterSec?: number;
+        };
         setStatus("error");
-        setError(`Too many attempts. Try again in ${data.retryAfterSec ?? 60}s.`);
+        setError(
+          `Too many attempts. Try again in ${data.retryAfterSec ?? 60}s.`,
+        );
         return;
       }
       if (res.status === 401) {
@@ -76,7 +80,11 @@ export function LoginForm({ slug }: LoginFormProps) {
           {error}
         </p>
       ) : null}
-      <Button type="submit" className="w-full" disabled={status === "submitting"}>
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={status === "submitting"}
+      >
         {status === "submitting" ? "Signing in…" : "Sign in"}
       </Button>
     </form>

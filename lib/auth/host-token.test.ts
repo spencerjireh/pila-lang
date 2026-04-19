@@ -43,7 +43,9 @@ describe("host-token", () => {
   });
 
   it("maybeRefresh DOES refresh when less than 1h remains", async () => {
-    const issuedAt = Date.now() - (HOST_TOKEN_TTL_SECONDS - HOST_TOKEN_REFRESH_WINDOW_SECONDS + 60) * 1000;
+    const issuedAt =
+      Date.now() -
+      (HOST_TOKEN_TTL_SECONDS - HOST_TOKEN_REFRESH_WINDOW_SECONDS + 60) * 1000;
     const token = await signHostToken({ slug: "demo", pwv: 1, now: issuedAt });
     const r = await maybeRefresh(token);
     expect(r).not.toBeNull();
@@ -56,8 +58,15 @@ describe("host-token", () => {
   });
 
   it("maybeRefresh preserves jti across refresh", async () => {
-    const issuedAt = Date.now() - (HOST_TOKEN_TTL_SECONDS - HOST_TOKEN_REFRESH_WINDOW_SECONDS + 60) * 1000;
-    const token = await signHostToken({ slug: "demo", pwv: 2, jti: "stable-jti", now: issuedAt });
+    const issuedAt =
+      Date.now() -
+      (HOST_TOKEN_TTL_SECONDS - HOST_TOKEN_REFRESH_WINDOW_SECONDS + 60) * 1000;
+    const token = await signHostToken({
+      slug: "demo",
+      pwv: 2,
+      jti: "stable-jti",
+      now: issuedAt,
+    });
     const r = await maybeRefresh(token);
     expect(r && r.refreshed).toBe(true);
     if (r && r.refreshed) expect(r.claims.jti).toBe("stable-jti");

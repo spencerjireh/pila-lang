@@ -1,4 +1,7 @@
-const supported = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
+const supported =
+  typeof Intl.supportedValuesOf === "function"
+    ? Intl.supportedValuesOf("timeZone")
+    : [];
 
 const MODERN_ALIASES = [
   "Asia/Kolkata",

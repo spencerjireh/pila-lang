@@ -138,7 +138,8 @@ export function PasswordSection({ slug, onUnauthorized }: Props) {
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium">Sign out other devices</p>
         <p className="text-sm text-slate-600">
-          Keeps the current password, signs out everyone else on their next action.
+          Keeps the current password, signs out everyone else on their next
+          action.
         </p>
         {confirmKickOpen ? (
           <div className="mt-2 flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">

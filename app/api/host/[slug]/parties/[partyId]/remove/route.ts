@@ -12,7 +12,11 @@ export async function POST(
 ) {
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) {
-    return unauthorizedJson(guard.status, guard.clearCookie, guardError(guard.status));
+    return unauthorizedJson(
+      guard.status,
+      guard.clearCookie,
+      guardError(guard.status),
+    );
   }
 
   let result;
@@ -37,7 +41,10 @@ export async function POST(
     return Response.json({ error: result.reason }, { status });
   }
 
-  log.info("host.party.removed", { slug: params.slug, partyId: params.partyId });
+  log.info("host.party.removed", {
+    slug: params.slug,
+    partyId: params.partyId,
+  });
   return withRefresh(
     Response.json({ ok: true, resolvedAt: result.resolvedAt }, { status: 200 }),
     guard.refreshedCookie,

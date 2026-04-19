@@ -18,9 +18,12 @@ function secret(): Uint8Array {
   return new TextEncoder().encode(env().HOST_JWT_SECRET);
 }
 
-export async function signHostToken(
-  params: { slug: string; pwv: number; jti?: string; now?: number },
-): Promise<string> {
+export async function signHostToken(params: {
+  slug: string;
+  pwv: number;
+  jti?: string;
+  now?: number;
+}): Promise<string> {
   const now = Math.floor((params.now ?? Date.now()) / 1000);
   const jti = params.jti ?? randomUUID();
   return new SignJWT({ slug: params.slug, pwv: params.pwv, jti })
@@ -58,13 +61,22 @@ export async function verifyHostToken(token: string): Promise<HostTokenResult> {
 export async function maybeRefresh(
   token: string,
   now: number = Date.now(),
-): Promise<{ refreshed: false; claims: HostClaims } | { refreshed: true; token: string; claims: HostClaims } | null> {
+): Promise<
+  | { refreshed: false; claims: HostClaims }
+  | { refreshed: true; token: string; claims: HostClaims }
+  | null
+> {
   const result = await verifyHostToken(token);
   if (!result.ok) return null;
   const { claims } = result;
   const secondsLeft = claims.exp - Math.floor(now / 1000);
   if (secondsLeft > REFRESH_WINDOW_SECONDS) return { refreshed: false, claims };
-  const fresh = await signHostToken({ slug: claims.slug, pwv: claims.pwv, jti: claims.jti, now });
+  const fresh = await signHostToken({
+    slug: claims.slug,
+    pwv: claims.pwv,
+    jti: claims.jti,
+    now,
+  });
   const verified = await verifyHostToken(fresh);
   if (!verified.ok) return null;
   return { refreshed: true, token: fresh, claims: verified.claims };

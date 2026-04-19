@@ -1,6 +1,10 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
-export async function hostLogin(page: Page, slug: string, password: string): Promise<void> {
+export async function hostLogin(
+  page: Page,
+  slug: string,
+  password: string,
+): Promise<void> {
   await page.goto(`/host/${slug}`);
   await page.getByLabel(/password/i).fill(password);
   await page.getByRole("button", { name: /sign in|log in/i }).click();
@@ -12,7 +16,9 @@ export async function hostLoginViaApi(
   slug: string,
   password: string,
 ): Promise<string> {
-  const res = await request.post(`/api/host/${slug}/login`, { data: { password } });
+  const res = await request.post(`/api/host/${slug}/login`, {
+    data: { password },
+  });
   if (!res.ok()) {
     throw new Error(`host login failed (${res.status()}): ${await res.text()}`);
   }

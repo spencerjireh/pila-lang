@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { RateLimitError, _resetForTests, consume, getLimiter, policy } from "./index";
+import {
+  RateLimitError,
+  _resetForTests,
+  consume,
+  getLimiter,
+  policy,
+} from "./index";
 
 describe("ratelimit", () => {
   beforeEach(() => {
@@ -42,11 +48,20 @@ describe("ratelimit", () => {
   });
 
   it("exposes spec-mandated policies", () => {
-    expect(policy("displayRequestsPerIp")).toEqual({ points: 30, durationSec: 60 });
+    expect(policy("displayRequestsPerIp")).toEqual({
+      points: 30,
+      durationSec: 60,
+    });
     expect(policy("joinPerPhone")).toEqual({ points: 10, durationSec: 3600 });
-    expect(policy("joinGlobalPerTenant")).toEqual({ points: 200, durationSec: 3600 });
+    expect(policy("joinGlobalPerTenant")).toEqual({
+      points: 200,
+      durationSec: 3600,
+    });
     expect(policy("guestStreamPerIp")).toEqual({ points: 10, durationSec: 60 });
-    expect(policy("hostStreamPerIpSlug")).toEqual({ points: 30, durationSec: 60 });
+    expect(policy("hostStreamPerIpSlug")).toEqual({
+      points: 30,
+      durationSec: 60,
+    });
     expect(policy("loginPerIp")).toEqual({ points: 10, durationSec: 3600 });
   });
 });

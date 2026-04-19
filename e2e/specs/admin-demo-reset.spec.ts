@@ -1,8 +1,15 @@
 import { test } from "../fixtures/test-env";
 
 test.describe("admin demo reset", () => {
-  test("reset-demo wipes and reseeds the demo tenant", async ({ adminContext, tenantFactory }) => {
-    const { id } = await tenantFactory({ slug: "demo", name: "Demo Diner", isDemo: true });
+  test("reset-demo wipes and reseeds the demo tenant", async ({
+    adminContext,
+    tenantFactory,
+  }) => {
+    const { id } = await tenantFactory({
+      slug: "demo",
+      name: "Demo Diner",
+      isDemo: true,
+    });
 
     const page = await adminContext.newPage();
     await page.goto(`/admin/tenants/${id}`);

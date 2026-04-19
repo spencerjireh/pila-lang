@@ -15,7 +15,10 @@ const loginSchema = z.object({
   password: z.string().min(1).max(200),
 });
 
-export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
   const contentType = req.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().startsWith("application/json")) {
     return Response.json({ error: "bad_content_type" }, { status: 415 });
@@ -26,7 +29,8 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     await consume("loginPerIp", ip);
     await consume("loginPerSlug", params.slug);
   } catch (err) {
-    if (err instanceof RateLimitError) return rateLimitResponse(err.retryAfterSec);
+    if (err instanceof RateLimitError)
+      return rateLimitResponse(err.retryAfterSec);
     throw err;
   }
 
@@ -37,16 +41,23 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
   }
 
   const lookup = await loadTenantBySlug(params.slug);
-  if (!lookup.ok) return Response.json({ error: "invalid_credentials" }, { status: 401 });
+  if (!lookup.ok)
+    return Response.json({ error: "invalid_credentials" }, { status: 401 });
   const tenant = lookup.tenant;
 
-  const match = await verifyPassword(parsed.data.password, tenant.hostPasswordHash);
+  const match = await verifyPassword(
+    parsed.data.password,
+    tenant.hostPasswordHash,
+  );
   if (!match) {
     log.info("host.login.rejected", { slug: tenant.slug });
     return Response.json({ error: "invalid_credentials" }, { status: 401 });
   }
 
-  const token = await signHostToken({ slug: tenant.slug, pwv: tenant.hostPasswordVersion });
+  const token = await signHostToken({
+    slug: tenant.slug,
+    pwv: tenant.hostPasswordVersion,
+  });
   const res = NextResponse.json({ ok: true }, { status: 200 });
   res.cookies.set({
     name: HOST_COOKIE_NAME,

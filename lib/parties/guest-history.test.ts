@@ -21,7 +21,9 @@ describe("guest history cursor", () => {
 
   it("returns null for malformed cursor input", () => {
     expect(decodeCursor("not-base64url!!!!")).toBeNull();
-    expect(decodeCursor(Buffer.from("not json").toString("base64url"))).toBeNull();
+    expect(
+      decodeCursor(Buffer.from("not json").toString("base64url")),
+    ).toBeNull();
   });
 
   it("rejects cursors missing required fields", () => {

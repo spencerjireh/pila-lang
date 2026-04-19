@@ -17,10 +17,15 @@ test.describe("host settings", () => {
     await settingsPage.getByLabel(/restaurant name/i).fill("After");
     await settingsPage.getByRole("button", { name: /^save$/i }).click();
 
-    await expect(page.getByText(/^After$/).first()).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(/^After$/).first()).toBeVisible({
+      timeout: 5_000,
+    });
   });
 
-  test("invalid accent hex is rejected with inline error", async ({ page, tenantFactory }) => {
+  test("invalid accent hex is rejected with inline error", async ({
+    page,
+    tenantFactory,
+  }) => {
     const { slug, password } = await tenantFactory({ name: "Bad Color" });
 
     await hostLogin(page, slug, password);

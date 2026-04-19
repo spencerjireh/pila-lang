@@ -41,11 +41,15 @@ describe("hostActionPublishPlan", () => {
       action: "remove",
       resolvedAt: RESOLVED_AT,
     });
-    expect((plan[0] as { event: { type: string; status: string } }).event.type).toBe(
-      "party:removed",
+    expect(
+      (plan[0] as { event: { type: string; status: string } }).event.type,
+    ).toBe("party:removed");
+    expect((plan[0] as { event: { status: string } }).event.status).toBe(
+      "no_show",
     );
-    expect((plan[0] as { event: { status: string } }).event.status).toBe("no_show");
-    expect((plan[1] as { event: { status: string } }).event.status).toBe("no_show");
+    expect((plan[1] as { event: { status: string } }).event.status).toBe(
+      "no_show",
+    );
   });
 
   it("order is load-bearing: tenant channel publishes before party channel", () => {

@@ -9,7 +9,10 @@ interface Ctx {
 
 const als = new AsyncLocalStorage<Ctx>();
 
-export function withRequestId<T>(fn: () => T, requestId: string = randomUUID()): T {
+export function withRequestId<T>(
+  fn: () => T,
+  requestId: string = randomUUID(),
+): T {
   return als.run({ requestId }, fn);
 }
 
@@ -34,10 +37,14 @@ function write(level: LogLevel, msg: string, fields?: Record<string, unknown>) {
 }
 
 export const log = {
-  debug: (msg: string, fields?: Record<string, unknown>) => write("debug", msg, fields),
-  info: (msg: string, fields?: Record<string, unknown>) => write("info", msg, fields),
-  warn: (msg: string, fields?: Record<string, unknown>) => write("warn", msg, fields),
-  error: (msg: string, fields?: Record<string, unknown>) => write("error", msg, fields),
+  debug: (msg: string, fields?: Record<string, unknown>) =>
+    write("debug", msg, fields),
+  info: (msg: string, fields?: Record<string, unknown>) =>
+    write("info", msg, fields),
+  warn: (msg: string, fields?: Record<string, unknown>) =>
+    write("warn", msg, fields),
+  error: (msg: string, fields?: Record<string, unknown>) =>
+    write("error", msg, fields),
 };
 
 export function formatError(err: unknown): string {
@@ -46,7 +53,9 @@ export function formatError(err: unknown): string {
   let depth = 0;
   while (cur && depth < 5) {
     if (cur instanceof Error) {
-      lines.push(`${depth === 0 ? "" : "caused by: "}${cur.name}: ${cur.message}`);
+      lines.push(
+        `${depth === 0 ? "" : "caused by: "}${cur.name}: ${cur.message}`,
+      );
       if (cur.stack) lines.push(cur.stack.split("\n").slice(1).join("\n"));
       cur = (cur as { cause?: unknown }).cause;
     } else {

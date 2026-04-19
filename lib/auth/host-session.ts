@@ -10,7 +10,9 @@ export interface HostCookieAttrs {
   maxAge: number;
 }
 
-export function hostCookieAttrs(maxAgeSeconds: number = HOST_TOKEN_TTL_SECONDS): HostCookieAttrs {
+export function hostCookieAttrs(
+  maxAgeSeconds: number = HOST_TOKEN_TTL_SECONDS,
+): HostCookieAttrs {
   return {
     httpOnly: true,
     secure: true,
@@ -20,7 +22,10 @@ export function hostCookieAttrs(maxAgeSeconds: number = HOST_TOKEN_TTL_SECONDS):
   };
 }
 
-export function serializeHostCookie(value: string, maxAgeSeconds: number = HOST_TOKEN_TTL_SECONDS): string {
+export function serializeHostCookie(
+  value: string,
+  maxAgeSeconds: number = HOST_TOKEN_TTL_SECONDS,
+): string {
   return [
     `${HOST_COOKIE_NAME}=${value}`,
     `Max-Age=${maxAgeSeconds}`,

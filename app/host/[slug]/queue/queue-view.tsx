@@ -27,7 +27,9 @@ const UNDO_TOAST_DURATION_MS = 5_000;
 export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
   const router = useRouter();
   const [tenantInfo, setTenantInfo] = useState(initialSnapshot.tenant);
-  const [waiting, setWaiting] = useState<HostWaitingRow[]>(initialSnapshot.waiting);
+  const [waiting, setWaiting] = useState<HostWaitingRow[]>(
+    initialSnapshot.waiting,
+  );
   const [resolved, setResolved] = useState<HostRecentlyResolvedRow[]>(
     initialSnapshot.recentlyResolved,
   );
@@ -143,7 +145,9 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
             ...t,
             ...(ev.name !== undefined ? { name: ev.name } : {}),
             ...(ev.logoUrl !== undefined ? { logoUrl: ev.logoUrl } : {}),
-            ...(ev.accentColor !== undefined ? { accentColor: ev.accentColor } : {}),
+            ...(ev.accentColor !== undefined
+              ? { accentColor: ev.accentColor }
+              : {}),
           }));
           return;
       }
@@ -156,7 +160,11 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
   }, [slug, router]);
 
   const visibleResolved = useMemo(
-    () => resolved.filter((r) => now - new Date(r.resolvedAt).getTime() < RECENTLY_RESOLVED_WINDOW_MS),
+    () =>
+      resolved.filter(
+        (r) =>
+          now - new Date(r.resolvedAt).getTime() < RECENTLY_RESOLVED_WINDOW_MS,
+      ),
     [resolved, now],
   );
 
@@ -201,7 +209,9 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
 
   const handleLogout = useCallback(async () => {
     try {
-      await fetch(`/api/host/${encodeURIComponent(slug)}/logout`, { method: "POST" });
+      await fetch(`/api/host/${encodeURIComponent(slug)}/logout`, {
+        method: "POST",
+      });
     } catch {
       // fall through
     }
@@ -263,7 +273,10 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
   );
 
   return (
-    <main lang="en" className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-6 p-6">
+    <main
+      lang="en"
+      className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-6 p-6"
+    >
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-3">
           <TenantHeader
@@ -287,10 +300,14 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
-            <Link href={`/host/${encodeURIComponent(slug)}/guests`}>Guests</Link>
+            <Link href={`/host/${encodeURIComponent(slug)}/guests`}>
+              Guests
+            </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href={`/host/${encodeURIComponent(slug)}/settings`}>Settings</Link>
+            <Link href={`/host/${encodeURIComponent(slug)}/settings`}>
+              Settings
+            </Link>
           </Button>
           <Button variant="outline" onClick={handleLogout}>
             Sign out
@@ -307,7 +324,8 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
           <div>
             <p className="text-sm font-medium">Close the queue?</p>
             <p className="text-xs text-slate-600">
-              New guests will see a closed banner. Waiting parties are not affected.
+              New guests will see a closed banner. Waiting parties are not
+              affected.
             </p>
           </div>
           <div className="flex gap-2">
@@ -331,7 +349,10 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
         </div>
       ) : null}
 
-      <div aria-live="polite" className="min-h-[1.25rem] text-sm text-slate-500">
+      <div
+        aria-live="polite"
+        className="min-h-[1.25rem] text-sm text-slate-500"
+      >
         {reconnecting ? "Reconnecting…" : ""}
       </div>
 
@@ -350,7 +371,9 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
               >
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-400 tabular-nums">{i + 1}</span>
+                    <span className="text-sm text-slate-400 tabular-nums">
+                      {i + 1}
+                    </span>
                     <span className="font-medium">{party.name}</span>
                     <span className="text-sm text-slate-500">
                       &middot; party of {party.partySize}
@@ -365,7 +388,8 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
                     ) : null}
                   </div>
                   <p className="text-xs text-slate-500">
-                    waited {formatElapsed(now - new Date(party.joinedAt).getTime())}
+                    waited{" "}
+                    {formatElapsed(now - new Date(party.joinedAt).getTime())}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -462,7 +486,9 @@ async function undoLatest(slug: string) {
   }
 }
 
-function dedupeResolved(rows: HostRecentlyResolvedRow[]): HostRecentlyResolvedRow[] {
+function dedupeResolved(
+  rows: HostRecentlyResolvedRow[],
+): HostRecentlyResolvedRow[] {
   const seen = new Set<string>();
   const out: HostRecentlyResolvedRow[] = [];
   for (const row of rows) {

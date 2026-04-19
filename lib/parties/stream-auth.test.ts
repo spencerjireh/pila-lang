@@ -13,7 +13,11 @@ const waitingParty = {
 describe("guestStreamAuth", () => {
   it("returns 404 when the tenant is missing", () => {
     expect(
-      guestStreamAuth({ tenant: null, party: waitingParty, cookie: "cookie-value" }),
+      guestStreamAuth({
+        tenant: null,
+        party: waitingParty,
+        cookie: "cookie-value",
+      }),
     ).toEqual({ ok: false, status: 404 });
   });
 

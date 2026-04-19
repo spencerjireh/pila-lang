@@ -69,7 +69,12 @@ export function EditTenantForm({ tenant }: { tenant: EditableTenant }) {
     <form className="space-y-4" onSubmit={onSubmit}>
       <div className="space-y-1.5">
         <Label htmlFor="name">Name</Label>
-        <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
+        <Input
+          id="name"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
       </div>
 
       <div className="space-y-1.5">
@@ -99,14 +104,25 @@ export function EditTenantForm({ tenant }: { tenant: EditableTenant }) {
           />
           <div
             className="h-9 w-9 rounded-md border border-slate-300"
-            style={{ backgroundColor: /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(accentColor) ? accentColor : "transparent" }}
+            style={{
+              backgroundColor: /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(
+                accentColor,
+              )
+                ? accentColor
+                : "transparent",
+            }}
           />
         </div>
       </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="timezone">Timezone</Label>
-        <TimezoneInput id="timezone" required value={timezone} onChange={setTimezone} />
+        <TimezoneInput
+          id="timezone"
+          required
+          value={timezone}
+          onChange={setTimezone}
+        />
       </div>
 
       <fieldset className="space-y-2">

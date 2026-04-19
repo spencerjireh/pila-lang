@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 const Schema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
 
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().url(),
@@ -18,7 +20,12 @@ const Schema = z.object({
   ADMIN_EMAILS: z
     .string()
     .min(1)
-    .transform((s) => s.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean)),
+    .transform((s) =>
+      s
+        .split(",")
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean),
+    ),
 
   NEXTAUTH_SECRET: z.string().min(16),
   NEXTAUTH_URL: z.string().url(),

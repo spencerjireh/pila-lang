@@ -3,11 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { parties } from "@/lib/db/schema";
 import { tenantDb } from "@/lib/db/tenant-scoped";
-import {
-  isPartyPhoneConflict,
-  shouldSetWelcomeBack,
-  waitUrlFor,
-} from "./join";
+import { isPartyPhoneConflict, shouldSetWelcomeBack, waitUrlFor } from "./join";
 
 const TENANT = "00000000-0000-0000-0000-000000000001";
 
@@ -17,12 +13,18 @@ describe("shouldSetWelcomeBack", () => {
   });
 
   it("returns false when phone provided but no priors exist", () => {
-    expect(shouldSetWelcomeBack({ phone: "+14155550100", priorCount: 0 })).toBe(false);
+    expect(shouldSetWelcomeBack({ phone: "+14155550100", priorCount: 0 })).toBe(
+      false,
+    );
   });
 
   it("returns true when phone provided and at least one prior exists", () => {
-    expect(shouldSetWelcomeBack({ phone: "+14155550100", priorCount: 1 })).toBe(true);
-    expect(shouldSetWelcomeBack({ phone: "+14155550100", priorCount: 3 })).toBe(true);
+    expect(shouldSetWelcomeBack({ phone: "+14155550100", priorCount: 1 })).toBe(
+      true,
+    );
+    expect(shouldSetWelcomeBack({ phone: "+14155550100", priorCount: 3 })).toBe(
+      true,
+    );
   });
 });
 

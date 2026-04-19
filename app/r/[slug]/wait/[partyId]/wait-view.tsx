@@ -101,7 +101,9 @@ export function WaitView({
           ...prev,
           ...(ev.name !== undefined ? { name: ev.name } : {}),
           ...(ev.logoUrl !== undefined ? { logoUrl: ev.logoUrl } : {}),
-          ...(ev.accentColor !== undefined ? { accentColor: ev.accentColor } : {}),
+          ...(ev.accentColor !== undefined
+            ? { accentColor: ev.accentColor }
+            : {}),
         }));
       } else if (ev.type === "tenant:opened") {
         setTenant((prev) => ({ ...prev, isOpen: true }));
@@ -197,14 +199,19 @@ export function WaitView({
           aria-live="polite"
           aria-atomic="true"
         >
-          <span className="text-5xl font-semibold tabular-nums">{position}</span>
+          <span className="text-5xl font-semibold tabular-nums">
+            {position}
+          </span>
           <span className="text-slate-600">
             {position === 1 ? "you're next" : "in line"}
           </span>
         </div>
       </div>
 
-      <div aria-live="polite" className="min-h-[1.25rem] text-sm text-slate-500">
+      <div
+        aria-live="polite"
+        className="min-h-[1.25rem] text-sm text-slate-500"
+      >
         {reconnecting ? "Reconnecting…" : ""}
       </div>
 

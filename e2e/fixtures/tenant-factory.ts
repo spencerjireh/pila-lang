@@ -28,15 +28,22 @@ export async function setupTenant(
 ): Promise<TenantHandle> {
   const res = await request.post("/api/test/setup-tenant", { data: input });
   if (!res.ok()) {
-    throw new Error(`setup-tenant failed (${res.status()}): ${await res.text()}`);
+    throw new Error(
+      `setup-tenant failed (${res.status()}): ${await res.text()}`,
+    );
   }
   return (await res.json()) as TenantHandle;
 }
 
-export async function resetTenant(request: APIRequestContext, slug: string): Promise<void> {
+export async function resetTenant(
+  request: APIRequestContext,
+  slug: string,
+): Promise<void> {
   const res = await request.post("/api/test/reset-tenant", { data: { slug } });
   if (!res.ok()) {
-    throw new Error(`reset-tenant failed (${res.status()}): ${await res.text()}`);
+    throw new Error(
+      `reset-tenant failed (${res.status()}): ${await res.text()}`,
+    );
   }
 }
 
@@ -58,7 +65,9 @@ export async function mintQrToken(
 ): Promise<string> {
   const res = await request.get(`/api/display/${slug}/token`);
   if (!res.ok()) {
-    throw new Error(`display token failed (${res.status()}): ${await res.text()}`);
+    throw new Error(
+      `display token failed (${res.status()}): ${await res.text()}`,
+    );
   }
   const body = (await res.json()) as { token: string };
   return body.token;
@@ -78,7 +87,13 @@ export async function joinAsGuest(
   const token = await mintQrToken(request, slug);
   const res = await request.post(
     `/api/r/${slug}/join?t=${encodeURIComponent(token)}`,
-    { data: { name: input.name, partySize: input.partySize, phone: input.phone ?? null } },
+    {
+      data: {
+        name: input.name,
+        partySize: input.partySize,
+        phone: input.phone ?? null,
+      },
+    },
   );
   if (!res.ok()) {
     throw new Error(`join failed (${res.status()}): ${await res.text()}`);

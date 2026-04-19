@@ -14,7 +14,11 @@ import { JoinForm } from "./join-form";
 
 export const dynamic = "force-dynamic";
 
-type BannerKind = "closed" | "invalid_token" | "expired_token" | "missing_token";
+type BannerKind =
+  | "closed"
+  | "invalid_token"
+  | "expired_token"
+  | "missing_token";
 
 export default async function JoinPage({
   params,
@@ -44,7 +48,10 @@ export default async function JoinPage({
     try {
       active = await findWaitingPartyBySession(tenant.id, session);
     } catch (err) {
-      log.warn("r.page.session_lookup_failed", { slug: tenant.slug, err: String(err) });
+      log.warn("r.page.session_lookup_failed", {
+        slug: tenant.slug,
+        err: String(err),
+      });
     }
     if (active) redirect(waitUrlFor(tenant.slug, active.id));
   }
@@ -70,7 +77,9 @@ export default async function JoinPage({
     return (
       <PageShell tenant={tenant}>
         <Banner
-          kind={verdict.reason === "expired" ? "expired_token" : "invalid_token"}
+          kind={
+            verdict.reason === "expired" ? "expired_token" : "invalid_token"
+          }
           tenantName={tenant.name}
         />
       </PageShell>
@@ -103,7 +112,13 @@ function PageShell({
   );
 }
 
-function Banner({ kind, tenantName }: { kind: BannerKind; tenantName: string }) {
+function Banner({
+  kind,
+  tenantName,
+}: {
+  kind: BannerKind;
+  tenantName: string;
+}) {
   const content = messageFor(kind, tenantName);
   return (
     <section
@@ -116,7 +131,10 @@ function Banner({ kind, tenantName }: { kind: BannerKind; tenantName: string }) 
   );
 }
 
-function messageFor(kind: BannerKind, tenantName: string): { title: string; body: string } {
+function messageFor(
+  kind: BannerKind,
+  tenantName: string,
+): { title: string; body: string } {
   switch (kind) {
     case "closed":
       return {
@@ -145,7 +163,9 @@ function RateLimitedNotice({ retryAfterSec }: { retryAfterSec: number }) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center p-6 text-center">
       <h1 className="mb-2 text-xl font-semibold">Too many requests</h1>
-      <p className="text-slate-600">Please try again in {retryAfterSec} seconds.</p>
+      <p className="text-slate-600">
+        Please try again in {retryAfterSec} seconds.
+      </p>
     </main>
   );
 }

@@ -16,8 +16,10 @@ export function guestStreamAuth(input: StreamAuthInput): StreamAuthDecision {
   if (!input.tenant) return { ok: false, status: 404 };
   if (!input.cookie) return { ok: false, status: 401 };
   if (!input.party) return { ok: false, status: 204 };
-  if (input.party.tenantId !== input.tenant.id) return { ok: false, status: 403 };
-  if (input.party.sessionToken !== input.cookie) return { ok: false, status: 403 };
+  if (input.party.tenantId !== input.tenant.id)
+    return { ok: false, status: 403 };
+  if (input.party.sessionToken !== input.cookie)
+    return { ok: false, status: 403 };
   if (isTerminalStatus(input.party.status as PartyStatus)) {
     return { ok: false, status: 204 };
   }

@@ -10,7 +10,9 @@ import {
 } from "./tenant-factory";
 
 interface Fixtures {
-  tenantFactory: (input?: Partial<TenantSetupInput> & { slug?: string }) => Promise<TenantHandle>;
+  tenantFactory: (
+    input?: Partial<TenantSetupInput> & { slug?: string },
+  ) => Promise<TenantHandle>;
   adminContext: BrowserContext;
 }
 
@@ -31,9 +33,13 @@ export const test = base.extend<Fixtures>({
 
   adminContext: async ({ browser, request, baseURL }, use) => {
     const email = process.env.E2E_ADMIN_EMAIL ?? "admin@example.com";
-    const res = await request.post("/api/test/sign-in-as-admin", { data: { email } });
+    const res = await request.post("/api/test/sign-in-as-admin", {
+      data: { email },
+    });
     if (!res.ok()) {
-      throw new Error(`sign-in-as-admin failed (${res.status()}): ${await res.text()}`);
+      throw new Error(
+        `sign-in-as-admin failed (${res.status()}): ${await res.text()}`,
+      );
     }
     const body = (await res.json()) as { cookieName: string; token: string };
     const context = await browser.newContext({ baseURL });

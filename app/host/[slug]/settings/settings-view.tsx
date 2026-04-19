@@ -35,7 +35,9 @@ export function SettingsView({ slug, initial }: SettingsViewProps) {
 
   const handleSignOut = useCallback(async () => {
     try {
-      await fetch(`/api/host/${encodeURIComponent(slug)}/logout`, { method: "POST" });
+      await fetch(`/api/host/${encodeURIComponent(slug)}/logout`, {
+        method: "POST",
+      });
     } catch {
       // fall through
     }
@@ -52,7 +54,9 @@ export function SettingsView({ slug, initial }: SettingsViewProps) {
           subtitle="Settings"
         />
         <Button variant="outline" asChild>
-          <Link href={`/host/${encodeURIComponent(slug)}/queue`}>Back to queue</Link>
+          <Link href={`/host/${encodeURIComponent(slug)}/queue`}>
+            Back to queue
+          </Link>
         </Button>
       </header>
 
@@ -69,10 +73,13 @@ export function SettingsView({ slug, initial }: SettingsViewProps) {
         name={tenant.name}
         onChange={onBrandingChange}
       />
-      <PasswordSection slug={slug} onUnauthorized={() => {
-        toast.error("Session expired. Please sign in again.");
-        router.replace(`/host/${encodeURIComponent(slug)}`);
-      }} />
+      <PasswordSection
+        slug={slug}
+        onUnauthorized={() => {
+          toast.error("Session expired. Please sign in again.");
+          router.replace(`/host/${encodeURIComponent(slug)}`);
+        }}
+      />
 
       <footer className="mt-8 flex justify-end">
         <Button variant="outline" onClick={handleSignOut}>

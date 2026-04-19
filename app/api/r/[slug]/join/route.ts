@@ -20,7 +20,10 @@ const joinSchema = z.object({
   partySize: z.number().int().min(1).max(20),
   phone: z
     .union([
-      z.string().trim().regex(/^\+[1-9]\d{5,14}$/u, "bad_phone"),
+      z
+        .string()
+        .trim()
+        .regex(/^\+[1-9]\d{5,14}$/u, "bad_phone"),
       z.literal(""),
       z.null(),
       z.undefined(),
@@ -28,7 +31,10 @@ const joinSchema = z.object({
     .transform((v) => (v && v !== "" ? v : null)),
 });
 
-export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
   const contentType = req.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().startsWith("application/json")) {
     return Response.json({ error: "bad_content_type" }, { status: 415 });
@@ -38,7 +44,10 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
   if (!token) return Response.json({ error: "missing_token" }, { status: 401 });
   const verdict = verifyQrToken(params.slug, token);
   if (!verdict.ok) {
-    return Response.json({ error: "invalid_token", reason: verdict.reason }, { status: 401 });
+    return Response.json(
+      { error: "invalid_token", reason: verdict.reason },
+      { status: 401 },
+    );
   }
 
   const body = await req.json().catch(() => null);
@@ -60,7 +69,8 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     }
     await consume("joinGlobalPerTenant", params.slug);
   } catch (err) {
-    if (err instanceof RateLimitError) return rateLimitResponse(err.retryAfterSec);
+    if (err instanceof RateLimitError)
+      return rateLimitResponse(err.retryAfterSec);
     throw err;
   }
 

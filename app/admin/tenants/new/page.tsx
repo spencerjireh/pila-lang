@@ -1,5 +1,11 @@
 import { CreateTenantForm } from "./create-tenant-form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function NewTenantPage() {
   return (
@@ -8,7 +14,8 @@ export default function NewTenantPage() {
         <CardHeader>
           <CardTitle>Create tenant</CardTitle>
           <CardDescription>
-            Slug is immutable after creation. An initial host password is generated and shown once.
+            Slug is immutable after creation. An initial host password is
+            generated and shown once.
           </CardDescription>
         </CardHeader>
         <CardContent>

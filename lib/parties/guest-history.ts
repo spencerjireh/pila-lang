@@ -23,18 +23,15 @@ export const GUEST_HISTORY_DEFAULT_LIMIT = 25;
 export const GUEST_HISTORY_MAX_LIMIT = 100;
 
 export function encodeCursor(cursor: GuestHistoryCursor): string {
-  return Buffer.from(
-    JSON.stringify(cursor),
-    "utf8",
-  ).toString("base64url");
+  return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
 }
 
-export function decodeCursor(raw: string | null | undefined): GuestHistoryCursor | null {
+export function decodeCursor(
+  raw: string | null | undefined,
+): GuestHistoryCursor | null {
   if (!raw) return null;
   try {
-    const parsed = JSON.parse(
-      Buffer.from(raw, "base64url").toString("utf8"),
-    );
+    const parsed = JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
     if (
       typeof parsed === "object" &&
       parsed !== null &&

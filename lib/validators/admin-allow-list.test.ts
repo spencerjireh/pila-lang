@@ -5,7 +5,8 @@ describe("isAdminEmail", () => {
 
   beforeEach(() => {
     vi.resetModules();
-    process.env.ADMIN_EMAILS = "Alice@Example.com, bob@example.com ,carol@example.com";
+    process.env.ADMIN_EMAILS =
+      "Alice@Example.com, bob@example.com ,carol@example.com";
   });
 
   afterEach(() => {

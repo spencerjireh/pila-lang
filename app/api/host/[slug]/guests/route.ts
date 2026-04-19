@@ -11,10 +11,17 @@ import { log } from "@/lib/log/logger";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) {
-    return unauthorizedJson(guard.status, guard.clearCookie, guardError(guard.status));
+    return unauthorizedJson(
+      guard.status,
+      guard.clearCookie,
+      guardError(guard.status),
+    );
   }
 
   const url = new URL(req.url);
@@ -27,7 +34,10 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
 
   try {
     const page = await loadGuestHistory(guard.tenant.id, { cursor, limit });
-    return withRefresh(Response.json(page, { status: 200 }), guard.refreshedCookie);
+    return withRefresh(
+      Response.json(page, { status: 200 }),
+      guard.refreshedCookie,
+    );
   } catch (err) {
     log.error("host.guests.failed", { slug: params.slug, err: String(err) });
     return Response.json({ error: "internal" }, { status: 500 });

@@ -14,7 +14,11 @@ import { QueueView } from "./queue-view";
 
 export const dynamic = "force-dynamic";
 
-export default async function HostQueuePage({ params }: { params: { slug: string } }) {
+export default async function HostQueuePage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const lookup = await loadTenantBySlug(params.slug);
   if (!lookup.ok) notFound();
   const tenant = lookup.tenant;

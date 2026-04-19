@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { QR_TOKEN_ROTATE_AFTER_MS, QR_TOKEN_TTL_MS, verifyQrToken } from "@/lib/qr/token";
+import {
+  QR_TOKEN_ROTATE_AFTER_MS,
+  QR_TOKEN_TTL_MS,
+  verifyQrToken,
+} from "@/lib/qr/token";
 import { computeDisplayToken, toDisplayPayload } from "./display-token";
 
 const baseTenant = {
@@ -25,7 +29,11 @@ describe("computeDisplayToken", () => {
     const issuedAtMs = now - (QR_TOKEN_ROTATE_AFTER_MS - 1_000);
     const existing = "existing.token";
     const d = computeDisplayToken(
-      { slug: "demo", currentQrToken: existing, qrTokenIssuedAt: new Date(issuedAtMs) },
+      {
+        slug: "demo",
+        currentQrToken: existing,
+        qrTokenIssuedAt: new Date(issuedAtMs),
+      },
       now,
     );
     expect(d.reuse).toBe(true);
@@ -38,7 +46,11 @@ describe("computeDisplayToken", () => {
     const now = 1_700_000_000_000;
     const issuedAtMs = now - QR_TOKEN_ROTATE_AFTER_MS;
     const d = computeDisplayToken(
-      { slug: "demo", currentQrToken: "stale", qrTokenIssuedAt: new Date(issuedAtMs) },
+      {
+        slug: "demo",
+        currentQrToken: "stale",
+        qrTokenIssuedAt: new Date(issuedAtMs),
+      },
       now,
     );
     expect(d.reuse).toBe(false);
@@ -49,7 +61,11 @@ describe("computeDisplayToken", () => {
   it("rotates when no current token exists even if qrTokenIssuedAt is recent", () => {
     const now = 1_700_000_000_000;
     const d = computeDisplayToken(
-      { slug: "demo", currentQrToken: null, qrTokenIssuedAt: new Date(now - 1_000) },
+      {
+        slug: "demo",
+        currentQrToken: null,
+        qrTokenIssuedAt: new Date(now - 1_000),
+      },
       now,
     );
     expect(d.reuse).toBe(false);
@@ -70,7 +86,11 @@ describe("toDisplayPayload", () => {
       validUntilMs: decision.validUntilMs,
       isOpen: true,
     });
-    expect(Object.keys(payload).sort()).toEqual(["isOpen", "token", "validUntilMs"]);
+    expect(Object.keys(payload).sort()).toEqual([
+      "isOpen",
+      "token",
+      "validUntilMs",
+    ]);
   });
 
   it("carries isOpen=false through", () => {

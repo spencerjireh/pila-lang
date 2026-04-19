@@ -87,7 +87,9 @@ export function sseStream(options: SseStreamOptions): Response {
         enqueue(
           formatSse({
             event: "error",
-            data: { message: err instanceof Error ? err.message : "stream failed" },
+            data: {
+              message: err instanceof Error ? err.message : "stream failed",
+            },
           }),
         );
         handle.close();

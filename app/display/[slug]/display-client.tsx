@@ -67,7 +67,12 @@ export function DisplayClient({
     const url = `/api/display/${encodeURIComponent(slug)}/stream`;
     const es = new EventSource(url);
     es.onmessage = (msg) => {
-      let ev: { type?: string; name?: string; logoUrl?: string | null; accentColor?: string };
+      let ev: {
+        type?: string;
+        name?: string;
+        logoUrl?: string | null;
+        accentColor?: string;
+      };
       try {
         ev = JSON.parse(msg.data);
       } catch {
@@ -78,13 +83,17 @@ export function DisplayClient({
           ...prev,
           ...(ev.name !== undefined ? { name: ev.name } : {}),
           ...(ev.logoUrl !== undefined ? { logoUrl: ev.logoUrl } : {}),
-          ...(ev.accentColor !== undefined ? { accentColor: ev.accentColor } : {}),
+          ...(ev.accentColor !== undefined
+            ? { accentColor: ev.accentColor }
+            : {}),
         }));
       } else if (ev.type === "tenant:closed") {
         setLiveIsOpen(false);
       } else if (ev.type === "tenant:opened") {
         setLiveIsOpen(true);
-        void queryClient.invalidateQueries({ queryKey: ["display-token", slug] });
+        void queryClient.invalidateQueries({
+          queryKey: ["display-token", slug],
+        });
       }
     };
     return () => {

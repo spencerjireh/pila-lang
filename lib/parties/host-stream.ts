@@ -1,6 +1,11 @@
 import { and, asc, desc, eq, gt, inArray } from "drizzle-orm";
 
-import { parties, type Party, type PartyStatus, type Tenant } from "@/lib/db/schema";
+import {
+  parties,
+  type Party,
+  type PartyStatus,
+  type Tenant,
+} from "@/lib/db/schema";
 import { tenantDb } from "@/lib/db/tenant-scoped";
 
 import type {
@@ -128,7 +133,11 @@ export function isResolvedRow(
   p: Pick<Party, "status" | "resolvedAt">,
   now: Date = new Date(),
 ): boolean {
-  if (!HOST_RESOLVED_STATUSES.includes(p.status as (typeof HOST_RESOLVED_STATUSES)[number])) {
+  if (
+    !HOST_RESOLVED_STATUSES.includes(
+      p.status as (typeof HOST_RESOLVED_STATUSES)[number],
+    )
+  ) {
     return false;
   }
   if (!p.resolvedAt) return false;

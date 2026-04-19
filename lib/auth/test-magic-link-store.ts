@@ -13,6 +13,8 @@ export function captureMagicLink(email: string, url: string): void {
   store().set(email.toLowerCase(), { url, at: Date.now() });
 }
 
-export function latestMagicLink(email: string): { url: string; at: number } | null {
+export function latestMagicLink(
+  email: string,
+): { url: string; at: number } | null {
   return store().get(email.toLowerCase()) ?? null;
 }

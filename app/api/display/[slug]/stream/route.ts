@@ -9,12 +9,16 @@ import { loadTenantBySlug } from "@/lib/tenants/display-token";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
   const ip = clientIp(req.headers);
   try {
     await consume("displayRequestsPerIp", ip);
   } catch (err) {
-    if (err instanceof RateLimitError) return rateLimitResponse(err.retryAfterSec);
+    if (err instanceof RateLimitError)
+      return rateLimitResponse(err.retryAfterSec);
     throw err;
   }
 
@@ -26,16 +30,19 @@ export async function GET(req: NextRequest, { params }: { params: { slug: string
 
   return sseStream({
     onSubscribe: async (handle) => {
-      unsubscribe = await subscribe([channelForTenantQueue(tenant.slug)], (event) => {
-        const ev = event as { type?: string };
-        if (
-          ev.type === "tenant:updated" ||
-          ev.type === "tenant:opened" ||
-          ev.type === "tenant:closed"
-        ) {
-          handle.send({ data: ev });
-        }
-      });
+      unsubscribe = await subscribe(
+        [channelForTenantQueue(tenant.slug)],
+        (event) => {
+          const ev = event as { type?: string };
+          if (
+            ev.type === "tenant:updated" ||
+            ev.type === "tenant:opened" ||
+            ev.type === "tenant:closed"
+          ) {
+            handle.send({ data: ev });
+          }
+        },
+      );
     },
     snapshot: () => ({
       data: {

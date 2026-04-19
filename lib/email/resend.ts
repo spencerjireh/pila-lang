@@ -8,9 +8,14 @@ function client(): Resend {
   return cached;
 }
 
-export async function sendMagicLink(params: { to: string; url: string; host: string }): Promise<void> {
+export async function sendMagicLink(params: {
+  to: string;
+  url: string;
+  host: string;
+}): Promise<void> {
   const { to, url, host } = params;
-  const from = process.env.ADMIN_MAGIC_LINK_FROM ?? "Queue Admin <onboarding@resend.dev>";
+  const from =
+    process.env.ADMIN_MAGIC_LINK_FROM ?? "Queue Admin <onboarding@resend.dev>";
   const subject = `Sign in to ${host}`;
   const text = `Sign in to ${host}\n\n${url}\n\nIf you did not request this, you can safely ignore this email.`;
   const html = magicLinkHtml({ url, host });

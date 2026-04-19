@@ -12,12 +12,21 @@ export async function POST(
 ) {
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) {
-    return unauthorizedJson(guard.status, guard.clearCookie, guardError(guard.status));
+    return unauthorizedJson(
+      guard.status,
+      guard.clearCookie,
+      guardError(guard.status),
+    );
   }
 
   let result;
   try {
-    result = await performHostAction(guard.tenant.id, guard.tenant.slug, params.partyId, "seat");
+    result = await performHostAction(
+      guard.tenant.id,
+      guard.tenant.slug,
+      params.partyId,
+      "seat",
+    );
   } catch (err) {
     log.error("host.seat.failed", {
       slug: params.slug,

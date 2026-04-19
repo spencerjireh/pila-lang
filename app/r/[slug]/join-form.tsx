@@ -73,7 +73,9 @@ export function JoinForm({ slug, token }: JoinFormProps) {
       }
 
       if (res.status === 429) {
-        const data = (await res.json().catch(() => ({}))) as { retryAfterSec?: number };
+        const data = (await res.json().catch(() => ({}))) as {
+          retryAfterSec?: number;
+        };
         const wait = data.retryAfterSec ?? 60;
         setStatus("error");
         setError(`Too many requests — try again in ${wait} seconds.`);
@@ -146,7 +148,11 @@ export function JoinForm({ slug, token }: JoinFormProps) {
         </p>
       ) : null}
 
-      <Button type="submit" className="w-full" disabled={status === "submitting"}>
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={status === "submitting"}
+      >
         {status === "submitting" ? "Joining…" : "Join the queue"}
       </Button>
     </form>

@@ -38,13 +38,19 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const parsed = createTenantSchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json({ error: "invalid_body", issues: parsed.error.flatten() }, { status: 400 });
+    return Response.json(
+      { error: "invalid_body", issues: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
   const { name, slug, timezone } = parsed.data;
 
   const slugCheck = validateSlug(slug);
   if (!slugCheck.ok) {
-    return Response.json({ error: "invalid_slug", reason: slugCheck.reason }, { status: 400 });
+    return Response.json(
+      { error: "invalid_slug", reason: slugCheck.reason },
+      { status: 400 },
+    );
   }
   if (!isValidTimezone(timezone)) {
     return Response.json({ error: "invalid_timezone" }, { status: 400 });
@@ -80,5 +86,10 @@ export async function POST(req: NextRequest) {
 }
 
 function isUniqueViolation(err: unknown): boolean {
-  return typeof err === "object" && err !== null && "code" in err && (err as { code?: string }).code === "23505";
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code?: string }).code === "23505"
+  );
 }

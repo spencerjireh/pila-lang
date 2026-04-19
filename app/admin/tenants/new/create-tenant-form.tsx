@@ -64,7 +64,12 @@ export function CreateTenantForm() {
       <form className="space-y-4" onSubmit={onSubmit}>
         <div className="space-y-1.5">
           <Label htmlFor="name">Name</Label>
-          <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
+          <Input
+            id="name"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="slug">Slug</Label>
@@ -77,12 +82,18 @@ export function CreateTenantForm() {
             placeholder="garden-table"
           />
           <p className="text-xs text-slate-500">
-            3–32 lowercase letters, numbers, or hyphens. Cannot be changed later.
+            3–32 lowercase letters, numbers, or hyphens. Cannot be changed
+            later.
           </p>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="timezone">Timezone</Label>
-          <TimezoneInput id="timezone" required value={timezone} onChange={setTimezone} />
+          <TimezoneInput
+            id="timezone"
+            required
+            value={timezone}
+            onChange={setTimezone}
+          />
         </div>
         <Button type="submit" disabled={submitting}>
           {submitting ? "Creating…" : "Create tenant"}

@@ -9,7 +9,9 @@ describe("tenantDb", () => {
   });
 
   it("throws on undefined tenantId", () => {
-    expect(() => tenantDb(undefined as unknown as string)).toThrow(TenantScopeError);
+    expect(() => tenantDb(undefined as unknown as string)).toThrow(
+      TenantScopeError,
+    );
   });
 
   it("scopes parties.select with tenant_id filter", () => {

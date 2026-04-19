@@ -8,7 +8,9 @@ import { Label } from "@/components/ui/label";
 
 export function SignInForm() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "sent" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "submitting" | "sent" | "error"
+  >("idle");
   const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -39,7 +41,8 @@ export function SignInForm() {
       <div className="space-y-2">
         <p className="text-sm">Check your email for a sign-in link.</p>
         <p className="text-sm text-slate-500">
-          If you don&apos;t see it within a minute, your address may not be on the allow list.
+          If you don&apos;t see it within a minute, your address may not be on
+          the allow list.
         </p>
       </div>
     );

@@ -3,7 +3,12 @@ export const AA_THRESHOLD = 4.5;
 
 export type ContrastValidation =
   | { ok: true; blackRatio: number; whiteRatio: number }
-  | { ok: false; reason: "format" | "contrast"; blackRatio?: number; whiteRatio?: number };
+  | {
+      ok: false;
+      reason: "format" | "contrast";
+      blackRatio?: number;
+      whiteRatio?: number;
+    };
 
 export function parseHex(hex: string): [number, number, number] | null {
   if (!HEX_PATTERN.test(hex)) return null;
@@ -28,10 +33,17 @@ function channelLuminance(c: number): number {
 
 export function relativeLuminance(rgb: [number, number, number]): number {
   const [r, g, b] = rgb;
-  return 0.2126 * channelLuminance(r) + 0.7152 * channelLuminance(g) + 0.0722 * channelLuminance(b);
+  return (
+    0.2126 * channelLuminance(r) +
+    0.7152 * channelLuminance(g) +
+    0.0722 * channelLuminance(b)
+  );
 }
 
-export function contrastRatio(a: [number, number, number], b: [number, number, number]): number {
+export function contrastRatio(
+  a: [number, number, number],
+  b: [number, number, number],
+): number {
   const la = relativeLuminance(a);
   const lb = relativeLuminance(b);
   const [lighter, darker] = la > lb ? [la, lb] : [lb, la];

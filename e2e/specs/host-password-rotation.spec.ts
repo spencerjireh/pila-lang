@@ -51,10 +51,14 @@ test.describe("host password rotation", () => {
     const bCookie = await hostLoginViaApi(request, slug, password);
 
     await pageA.goto(`/host/${slug}/settings`);
-    await pageA.getByRole("button", { name: /sign out other devices/i }).click();
+    await pageA
+      .getByRole("button", { name: /sign out other devices/i })
+      .click();
     await pageA.getByRole("button", { name: /yes, sign out others/i }).click();
 
-    const res = await request.post(`/api/host/${slug}/open`, { headers: { cookie: bCookie } });
+    const res = await request.post(`/api/host/${slug}/open`, {
+      headers: { cookie: bCookie },
+    });
     expect(res.status()).toBe(401);
 
     // Original password still works (fresh login succeeds).

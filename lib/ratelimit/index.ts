@@ -1,4 +1,10 @@
-import { RateLimiterRedis, RateLimiterMemory, type IRateLimiterOptions, type RateLimiterAbstract, type RateLimiterRes } from "rate-limiter-flexible";
+import {
+  RateLimiterRedis,
+  RateLimiterMemory,
+  type IRateLimiterOptions,
+  type RateLimiterAbstract,
+  type RateLimiterRes,
+} from "rate-limiter-flexible";
 import { redis } from "@/lib/redis/client";
 
 export class RateLimitError extends Error {
@@ -38,7 +44,10 @@ const POLICIES: Record<LimiterName, Policy> = {
 
 const CACHE = new Map<LimiterName, RateLimiterAbstract>();
 
-function build(name: LimiterName, opts?: { useMemory?: boolean }): RateLimiterAbstract {
+function build(
+  name: LimiterName,
+  opts?: { useMemory?: boolean },
+): RateLimiterAbstract {
   const policy = POLICIES[name];
   const base: IRateLimiterOptions = {
     keyPrefix: `rl:${name}`,
@@ -51,7 +60,10 @@ function build(name: LimiterName, opts?: { useMemory?: boolean }): RateLimiterAb
   return new RateLimiterRedis({ ...base, storeClient: redis() });
 }
 
-export function getLimiter(name: LimiterName, opts?: { useMemory?: boolean }): RateLimiterAbstract {
+export function getLimiter(
+  name: LimiterName,
+  opts?: { useMemory?: boolean },
+): RateLimiterAbstract {
   let l = CACHE.get(name);
   if (!l) {
     l = build(name, opts);
@@ -64,7 +76,11 @@ export function _resetForTests() {
   CACHE.clear();
 }
 
-export async function consume(name: LimiterName, key: string, points: number = 1): Promise<void> {
+export async function consume(
+  name: LimiterName,
+  key: string,
+  points: number = 1,
+): Promise<void> {
   try {
     await getLimiter(name).consume(key, points);
   } catch (err) {

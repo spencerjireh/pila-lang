@@ -17,11 +17,16 @@ export function undoKey(tenantId: string): string {
   return `undo:tenant:${tenantId}`;
 }
 
-export function isWithinUndoWindow(frame: UndoFrame, now: number = Date.now()): boolean {
+export function isWithinUndoWindow(
+  frame: UndoFrame,
+  now: number = Date.now(),
+): boolean {
   return now - frame.timestamp <= UNDO_WINDOW_MS;
 }
 
-export function parseFrame(payload: string | null | undefined): UndoFrame | null {
+export function parseFrame(
+  payload: string | null | undefined,
+): UndoFrame | null {
   if (!payload) return null;
   try {
     const parsed = JSON.parse(payload) as Partial<UndoFrame>;
@@ -40,14 +45,19 @@ export function parseFrame(payload: string | null | undefined): UndoFrame | null
   }
 }
 
-export async function pushUndoFrame(tenantId: string, frame: UndoFrame): Promise<void> {
+export async function pushUndoFrame(
+  tenantId: string,
+  frame: UndoFrame,
+): Promise<void> {
   const key = undoKey(tenantId);
   const client = redis();
   await client.lpush(key, JSON.stringify(frame));
   await client.expire(key, UNDO_KEY_TTL_SECONDS);
 }
 
-export async function popUndoFrame(tenantId: string): Promise<UndoFrame | null> {
+export async function popUndoFrame(
+  tenantId: string,
+): Promise<UndoFrame | null> {
   const payload = await redis().lpop(undoKey(tenantId));
   return parseFrame(payload);
 }

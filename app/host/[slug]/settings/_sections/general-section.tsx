@@ -29,7 +29,8 @@ export function GeneralSection({ slug, name, accentColor, onChange }: Props) {
     setError(null);
 
     const patch: { name?: string; accentColor?: string } = {};
-    if (nameValue.trim() && nameValue.trim() !== name) patch.name = nameValue.trim();
+    if (nameValue.trim() && nameValue.trim() !== name)
+      patch.name = nameValue.trim();
     if (accentValue.trim() && accentValue.trim() !== accentColor) {
       patch.accentColor = accentValue.trim();
     }
@@ -71,7 +72,10 @@ export function GeneralSection({ slug, name, accentColor, onChange }: Props) {
       const body = (await res.json()) as {
         tenant: { name: string; accentColor: string };
       };
-      onChange({ name: body.tenant.name, accentColor: body.tenant.accentColor });
+      onChange({
+        name: body.tenant.name,
+        accentColor: body.tenant.accentColor,
+      });
       toast.success("Saved.");
     } catch {
       setError("Network error.");

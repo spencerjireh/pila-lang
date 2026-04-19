@@ -20,13 +20,18 @@ interface TenantActionsProps {
 export function TenantActions({ tenant }: TenantActionsProps) {
   const router = useRouter();
   const [resetPw, setResetPw] = useState<string | null>(null);
-  const [busy, setBusy] = useState<"reset-password" | "reset-demo" | null>(null);
+  const [busy, setBusy] = useState<"reset-password" | "reset-demo" | null>(
+    null,
+  );
 
   async function doResetPassword() {
     if (busy) return;
     setBusy("reset-password");
     try {
-      const res = await fetch(`/api/admin/tenants/${tenant.id}/reset-password`, { method: "POST" });
+      const res = await fetch(
+        `/api/admin/tenants/${tenant.id}/reset-password`,
+        { method: "POST" },
+      );
       const body = await res.json();
       if (!res.ok) {
         toast.error("Could not reset password.");
@@ -48,11 +53,15 @@ export function TenantActions({ tenant }: TenantActionsProps) {
     if (!confirmed) return;
     setBusy("reset-demo");
     try {
-      const res = await fetch(`/api/admin/tenants/${tenant.id}/reset-demo`, { method: "POST" });
+      const res = await fetch(`/api/admin/tenants/${tenant.id}/reset-demo`, {
+        method: "POST",
+      });
       if (!res.ok) {
         const body = await res.json().catch(() => ({ error: "internal" }));
         toast.error(
-          body.error === "not_demo" ? "Only demo tenants can be reset." : "Could not reset demo.",
+          body.error === "not_demo"
+            ? "Only demo tenants can be reset."
+            : "Could not reset demo.",
         );
         return;
       }
@@ -68,15 +77,27 @@ export function TenantActions({ tenant }: TenantActionsProps) {
   return (
     <>
       <div className="flex flex-col gap-3 sm:flex-row">
-        <Button variant="outline" onClick={doResetPassword} disabled={busy !== null}>
+        <Button
+          variant="outline"
+          onClick={doResetPassword}
+          disabled={busy !== null}
+        >
           {busy === "reset-password" ? "Rotating…" : "Reset host password"}
         </Button>
         {tenant.isDemo ? (
-          <Button variant="outline" onClick={doResetDemo} disabled={busy !== null}>
+          <Button
+            variant="outline"
+            onClick={doResetDemo}
+            disabled={busy !== null}
+          >
             {busy === "reset-demo" ? "Resetting…" : "Reset demo data"}
           </Button>
         ) : null}
-        <DeleteTenantDialog tenantId={tenant.id} slug={tenant.slug} tenantName={tenant.name} />
+        <DeleteTenantDialog
+          tenantId={tenant.id}
+          slug={tenant.slug}
+          tenantName={tenant.name}
+        />
       </div>
 
       <OneTimePasswordDialog

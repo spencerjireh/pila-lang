@@ -8,7 +8,11 @@ import { validateAccentColor } from "@/lib/validators/contrast";
 import { isValidTimezone } from "@/lib/timezones";
 import { updateTenantSchema } from "@/lib/admin/tenant-schema";
 import { hardDeleteTenant } from "@/lib/admin/delete-tenant";
-import { publish, channelForTenantQueue, channelForParty } from "@/lib/redis/pubsub";
+import {
+  publish,
+  channelForTenantQueue,
+  channelForParty,
+} from "@/lib/redis/pubsub";
 import { log } from "@/lib/log/logger";
 
 type Params = { params: { id: string } };
@@ -30,7 +34,11 @@ export async function GET(_req: NextRequest, ctx: Params) {
   if (!guard.ok) return guard.response;
   const { id } = ctx.params;
 
-  const [row] = await getDb().select(TENANT_COLUMNS).from(tenants).where(eq(tenants.id, id)).limit(1);
+  const [row] = await getDb()
+    .select(TENANT_COLUMNS)
+    .from(tenants)
+    .where(eq(tenants.id, id))
+    .limit(1);
   if (!row) return Response.json({ error: "not_found" }, { status: 404 });
   return Response.json({ tenant: row });
 }
@@ -43,14 +51,20 @@ export async function PATCH(req: NextRequest, ctx: Params) {
   const body = await req.json().catch(() => null);
   const parsed = updateTenantSchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json({ error: "invalid_body", issues: parsed.error.flatten() }, { status: 400 });
+    return Response.json(
+      { error: "invalid_body", issues: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
   const patch = parsed.data;
 
   if (patch.accentColor !== undefined) {
     const check = validateAccentColor(patch.accentColor);
     if (!check.ok) {
-      return Response.json({ error: "invalid_accent_color", reason: check.reason }, { status: 422 });
+      return Response.json(
+        { error: "invalid_accent_color", reason: check.reason },
+        { status: 422 },
+      );
     }
   }
   if (patch.timezone !== undefined && !isValidTimezone(patch.timezone)) {
@@ -67,7 +81,11 @@ export async function PATCH(req: NextRequest, ctx: Params) {
     .limit(1);
   if (!existing) return Response.json({ error: "not_found" }, { status: 404 });
 
-  const [row] = await getDb().update(tenants).set(patch).where(eq(tenants.id, id)).returning(TENANT_COLUMNS);
+  const [row] = await getDb()
+    .update(tenants)
+    .set(patch)
+    .where(eq(tenants.id, id))
+    .returning(TENANT_COLUMNS);
   if (!row) return Response.json({ error: "not_found" }, { status: 404 });
 
   if (patch.isOpen !== undefined && patch.isOpen !== existing.isOpen) {
@@ -76,7 +94,10 @@ export async function PATCH(req: NextRequest, ctx: Params) {
     });
   }
 
-  log.info("admin.tenant.updated", { tenantId: id, fields: Object.keys(patch) });
+  log.info("admin.tenant.updated", {
+    tenantId: id,
+    fields: Object.keys(patch),
+  });
   return Response.json({ tenant: row });
 }
 
@@ -87,7 +108,8 @@ export async function DELETE(_req: NextRequest, ctx: Params) {
 
   const result = await hardDeleteTenant(id);
   if (!result.ok) {
-    if (result.reason === "not_found") return Response.json({ error: "not_found" }, { status: 404 });
+    if (result.reason === "not_found")
+      return Response.json({ error: "not_found" }, { status: 404 });
     return Response.json({ error: "internal" }, { status: 500 });
   }
 
@@ -95,7 +117,11 @@ export async function DELETE(_req: NextRequest, ctx: Params) {
   const resolvedAt = new Date().toISOString();
   await Promise.all(
     result.affectedPartyIds.map((partyId) =>
-      publish(channelForParty(partyId), { type: "status_changed", status: "no_show", resolvedAt }),
+      publish(channelForParty(partyId), {
+        type: "status_changed",
+        status: "no_show",
+        resolvedAt,
+      }),
     ),
   );
 

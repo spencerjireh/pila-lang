@@ -3,7 +3,10 @@ import { assertAxe } from "../helpers/axe";
 import { mintQrToken } from "../fixtures/tenant-factory";
 
 test.describe("axe-core smoke scan", () => {
-  test("display page has no axe violations", async ({ page, tenantFactory }) => {
+  test("display page has no axe violations", async ({
+    page,
+    tenantFactory,
+  }) => {
     const { slug } = await tenantFactory({ name: "A11y Display" });
     await page.goto(`/display/${slug}`);
     await assertAxe(page, "display");

@@ -12,7 +12,13 @@ export interface TimezoneInputProps {
   name?: string;
 }
 
-export function TimezoneInput({ value, onChange, required, id: providedId, name }: TimezoneInputProps) {
+export function TimezoneInput({
+  value,
+  onChange,
+  required,
+  id: providedId,
+  name,
+}: TimezoneInputProps) {
   const autoId = useId();
   const id = providedId ?? autoId;
   const listId = `${id}-list`;

@@ -7,18 +7,22 @@ import { tenantDb } from "@/lib/db/tenant-scoped";
 import { log } from "@/lib/log/logger";
 import { undoPublishPlan } from "@/lib/parties/host-actions";
 import { publishPositionUpdates } from "@/lib/parties/position";
-import {
-  isWithinUndoWindow,
-  popUndoFrame,
-} from "@/lib/parties/undo-store";
+import { isWithinUndoWindow, popUndoFrame } from "@/lib/parties/undo-store";
 import { publish } from "@/lib/redis/pubsub";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) {
-    return unauthorizedJson(guard.status, guard.clearCookie, guardError(guard.status));
+    return unauthorizedJson(
+      guard.status,
+      guard.clearCookie,
+      guardError(guard.status),
+    );
   }
   const { tenant } = guard;
 
@@ -56,7 +60,10 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
   }
 
   try {
-    for (const { channel, event } of undoPublishPlan({ slug: tenant.slug, party: restored })) {
+    for (const { channel, event } of undoPublishPlan({
+      slug: tenant.slug,
+      party: restored,
+    })) {
       await publish(channel, event);
     }
     await publishPositionUpdates(tenant.id, tenant.slug);
@@ -68,9 +75,16 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     });
   }
 
-  log.info("host.undo.ok", { slug: params.slug, partyId: frame.partyId, action: frame.action });
+  log.info("host.undo.ok", {
+    slug: params.slug,
+    partyId: frame.partyId,
+    action: frame.action,
+  });
   return withRefresh(
-    Response.json({ ok: true, partyId: frame.partyId, action: frame.action }, { status: 200 }),
+    Response.json(
+      { ok: true, partyId: frame.partyId, action: frame.action },
+      { status: 200 },
+    ),
     guard.refreshedCookie,
   );
 }

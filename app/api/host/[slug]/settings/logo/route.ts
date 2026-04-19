@@ -16,10 +16,17 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) {
-    return unauthorizedJson(guard.status, guard.clearCookie, guardError(guard.status));
+    return unauthorizedJson(
+      guard.status,
+      guard.clearCookie,
+      guardError(guard.status),
+    );
   }
 
   const contentType = (req.headers.get("content-type") ?? "").toLowerCase();
@@ -105,7 +112,9 @@ function errorFor(reason: "mime" | "size" | "decode" | "dims"): string {
 
 async function safeDelete(urlOrKey: string | null): Promise<void> {
   if (!urlOrKey) return;
-  const key = urlOrKey.startsWith("http") ? objectKeyFromUrl(urlOrKey) : urlOrKey;
+  const key = urlOrKey.startsWith("http")
+    ? objectKeyFromUrl(urlOrKey)
+    : urlOrKey;
   if (!key) return;
   try {
     await deleteLogo(key);

@@ -35,7 +35,10 @@ describe("validateAccentColor", () => {
   it("accepts the default accent #1F6FEB (passes AA against white)", () => {
     const r = validateAccentColor("#1F6FEB");
     expect(r.ok).toBe(true);
-    if (r.ok) expect(Math.max(r.blackRatio, r.whiteRatio)).toBeGreaterThanOrEqual(AA_THRESHOLD);
+    if (r.ok)
+      expect(Math.max(r.blackRatio, r.whiteRatio)).toBeGreaterThanOrEqual(
+        AA_THRESHOLD,
+      );
   });
 
   it("accepts pure black (infinite contrast against white)", () => {

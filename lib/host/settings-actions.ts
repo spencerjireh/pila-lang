@@ -86,7 +86,10 @@ export async function rotateHostPassword(
   tenantId: string,
   opts: { newHash?: string } = {},
 ): Promise<{ newVersion: number } | null> {
-  const patch: { hostPasswordVersion: ReturnType<typeof sql>; hostPasswordHash?: string } = {
+  const patch: {
+    hostPasswordVersion: ReturnType<typeof sql>;
+    hostPasswordHash?: string;
+  } = {
     hostPasswordVersion: sql`${tenants.hostPasswordVersion} + 1`,
   };
   if (opts.newHash) patch.hostPasswordHash = opts.newHash;

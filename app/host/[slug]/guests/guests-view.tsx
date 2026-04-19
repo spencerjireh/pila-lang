@@ -80,7 +80,9 @@ export function GuestsView({ slug, tenantName, timezone, initial }: Props) {
           </p>
         </div>
         <Button variant="outline" asChild>
-          <Link href={`/host/${encodeURIComponent(slug)}/queue`}>Back to queue</Link>
+          <Link href={`/host/${encodeURIComponent(slug)}/queue`}>
+            Back to queue
+          </Link>
         </Button>
       </header>
 

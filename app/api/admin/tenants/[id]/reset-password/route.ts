@@ -19,12 +19,22 @@ export async function POST(_req: NextRequest, ctx: Params) {
 
   const [row] = await getDb()
     .update(tenants)
-    .set({ hostPasswordHash, hostPasswordVersion: sql`${tenants.hostPasswordVersion} + 1` })
+    .set({
+      hostPasswordHash,
+      hostPasswordVersion: sql`${tenants.hostPasswordVersion} + 1`,
+    })
     .where(eq(tenants.id, id))
-    .returning({ id: tenants.id, slug: tenants.slug, hostPasswordVersion: tenants.hostPasswordVersion });
+    .returning({
+      id: tenants.id,
+      slug: tenants.slug,
+      hostPasswordVersion: tenants.hostPasswordVersion,
+    });
 
   if (!row) return Response.json({ error: "not_found" }, { status: 404 });
 
-  log.info("admin.tenant.password_reset", { tenantId: id, version: row.hostPasswordVersion });
+  log.info("admin.tenant.password_reset", {
+    tenantId: id,
+    version: row.hostPasswordVersion,
+  });
   return Response.json({ initialPassword });
 }

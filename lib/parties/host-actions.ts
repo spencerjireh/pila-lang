@@ -10,10 +10,7 @@ import {
 } from "@/lib/redis/pubsub";
 
 import { publishPositionUpdates } from "./position";
-import type {
-  TenantPartyResolved,
-  TenantPartyRestored,
-} from "./stream-events";
+import type { TenantPartyResolved, TenantPartyRestored } from "./stream-events";
 import { pushUndoFrame, type UndoAction, type UndoFrame } from "./undo-store";
 
 export type HostAction = UndoAction;
@@ -74,12 +71,17 @@ export async function performHostAction(
   const [existing] = await scoped.parties.select(eq(parties.id, partyId));
   const existingParty = existing as Party | undefined;
   if (!existingParty) return { ok: false, reason: "not_found" };
-  if (existingParty.status !== "waiting") return { ok: false, reason: "conflict" };
+  if (existingParty.status !== "waiting")
+    return { ok: false, reason: "conflict" };
 
   const resolvedAtDate = new Date();
   const update: Partial<typeof parties.$inferInsert> =
     action === "seat"
-      ? { status: "seated", seatedAt: resolvedAtDate, resolvedAt: resolvedAtDate }
+      ? {
+          status: "seated",
+          seatedAt: resolvedAtDate,
+          resolvedAt: resolvedAtDate,
+        }
       : { status: "no_show", resolvedAt: resolvedAtDate };
 
   const [updated] = await scoped.parties
@@ -122,7 +124,10 @@ export interface UndoPublishInput {
   party: Party;
 }
 
-export function undoPublishPlan({ slug, party }: UndoPublishInput): HostPublishStep[] {
+export function undoPublishPlan({
+  slug,
+  party,
+}: UndoPublishInput): HostPublishStep[] {
   return [
     {
       channel: channelForParty(party.id),

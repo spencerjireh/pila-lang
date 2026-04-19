@@ -54,9 +54,7 @@ describe("parseFrame", () => {
   });
 
   it("rejects a missing partyId", () => {
-    expect(
-      parseFrame(JSON.stringify({ ...FRAME, partyId: "" })),
-    ).toBeNull();
+    expect(parseFrame(JSON.stringify({ ...FRAME, partyId: "" }))).toBeNull();
   });
 
   it("rejects a non-numeric timestamp", () => {

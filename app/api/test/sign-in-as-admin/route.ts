@@ -25,17 +25,28 @@ export async function POST(req: NextRequest) {
   }
 
   const db = getDb();
-  let [user] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
+  let [user] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
   if (!user) {
-    [user] = await db.insert(users).values({ email, emailVerified: new Date() }).returning({ id: users.id });
+    [user] = await db
+      .insert(users)
+      .values({ email, emailVerified: new Date() })
+      .returning({ id: users.id });
   }
 
   const token = randomUUID() + "." + randomUUID();
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  await db.insert(sessions).values({ sessionToken: token, userId: user!.id, expires });
+  await db
+    .insert(sessions)
+    .values({ sessionToken: token, userId: user!.id, expires });
 
   const isHttps = (process.env.NEXTAUTH_URL ?? "").startsWith("https://");
-  const cookieName = isHttps ? "__Secure-authjs.session-token" : "authjs.session-token";
+  const cookieName = isHttps
+    ? "__Secure-authjs.session-token"
+    : "authjs.session-token";
   const attrs = [
     `${cookieName}=${token}`,
     "Path=/",
@@ -45,11 +56,14 @@ export async function POST(req: NextRequest) {
   ];
   if (isHttps) attrs.push("Secure");
 
-  return new Response(JSON.stringify({ ok: true, userId: user!.id, cookieName, token }), {
-    status: 200,
-    headers: {
-      "content-type": "application/json",
-      "set-cookie": attrs.join("; "),
+  return new Response(
+    JSON.stringify({ ok: true, userId: user!.id, cookieName, token }),
+    {
+      status: 200,
+      headers: {
+        "content-type": "application/json",
+        "set-cookie": attrs.join("; "),
+      },
     },
-  });
+  );
 }

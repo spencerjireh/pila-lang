@@ -14,7 +14,10 @@ export async function expectPositionDecreases(
   await expect
     .poll(
       async () => {
-        const text = await page.getByTestId("wait-position").textContent().catch(() => null);
+        const text = await page
+          .getByTestId("wait-position")
+          .textContent()
+          .catch(() => null);
         const match = text?.match(/(\d+)/);
         return match ? Number(match[1]) : null;
       },

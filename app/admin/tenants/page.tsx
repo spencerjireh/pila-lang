@@ -47,19 +47,29 @@ export default async function TenantsListPage() {
             </thead>
             <tbody>
               {rows.map((t) => (
-                <tr key={t.id} className="border-t border-slate-200 hover:bg-slate-50">
+                <tr
+                  key={t.id}
+                  className="border-t border-slate-200 hover:bg-slate-50"
+                >
                   <td className="px-4 py-3">
-                    <Link className="font-medium hover:underline" href={`/admin/tenants/${t.id}`}>
+                    <Link
+                      className="font-medium hover:underline"
+                      href={`/admin/tenants/${t.id}`}
+                    >
                       {t.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-600">{t.slug}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-slate-600">
+                    {t.slug}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <Badge variant={t.isOpen ? "success" : "warning"}>
                         {t.isOpen ? "Open" : "Closed"}
                       </Badge>
-                      {t.isDemo ? <Badge variant="secondary">Demo</Badge> : null}
+                      {t.isDemo ? (
+                        <Badge variant="secondary">Demo</Badge>
+                      ) : null}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-slate-600">

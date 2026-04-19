@@ -30,20 +30,30 @@ test.describe("host undo across devices", () => {
       .click();
 
     // Both sides see the waiting list empty — the SSE propagated the removal.
-    await expect(pageA.getByRole("heading", { name: /waiting \(0\)/i })).toBeVisible({
+    await expect(
+      pageA.getByRole("heading", { name: /waiting \(0\)/i }),
+    ).toBeVisible({
       timeout: 15_000,
     });
-    await expect(pageB.getByRole("heading", { name: /waiting \(0\)/i })).toBeVisible({
+    await expect(
+      pageB.getByRole("heading", { name: /waiting \(0\)/i }),
+    ).toBeVisible({
       timeout: 15_000,
     });
 
     // Undo via the host API from any session. Both sides should see the restore.
     const cookie = await hostLoginViaApi(request, slug, password);
-    const undoRes = await request.post(`/api/host/${slug}/undo`, { headers: { cookie } });
+    const undoRes = await request.post(`/api/host/${slug}/undo`, {
+      headers: { cookie },
+    });
     expect(undoRes.ok()).toBeTruthy();
 
-    await expect(pageA.getByText("Alice Restore")).toBeVisible({ timeout: 10_000 });
-    await expect(pageB.getByText("Alice Restore")).toBeVisible({ timeout: 10_000 });
+    await expect(pageA.getByText("Alice Restore")).toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(pageB.getByText("Alice Restore")).toBeVisible({
+      timeout: 10_000,
+    });
 
     await ctxA.close();
     await ctxB.close();

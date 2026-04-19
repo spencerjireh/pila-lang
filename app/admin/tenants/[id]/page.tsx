@@ -3,7 +3,13 @@ import { eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/client";
 import { tenants } from "@/lib/db/schema";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { EditTenantForm } from "./edit-tenant-form";
 import { TenantActions } from "./tenant-actions";
 
@@ -41,7 +47,9 @@ export default async function TenantDetailPage({ params }: PageProps) {
       <Card>
         <CardHeader>
           <CardTitle>Settings</CardTitle>
-          <CardDescription>Slug and created date are immutable.</CardDescription>
+          <CardDescription>
+            Slug and created date are immutable.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <EditTenantForm tenant={tenant} />

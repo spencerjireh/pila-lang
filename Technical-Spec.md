@@ -6,23 +6,23 @@ One Next.js 14 monolith. One Postgres database. One Redis instance (pub/sub + ra
 
 ## Stack
 
-| Layer | Choice |
-|-------|--------|
-| Language | TypeScript |
-| Framework | Next.js 14 (App Router), long-running Node server |
-| Database | Postgres 16 (Compose service) |
-| Cache / pub-sub / rate limit / undo | Redis 7 (Compose service) |
-| Blob storage | MinIO (Compose service, S3-compatible) |
-| ORM | Drizzle |
-| Styling | Tailwind CSS |
-| UI components | shadcn/ui |
-| Client data fetching | TanStack Query for mutations; native `EventSource` for SSE |
-| Admin auth | NextAuth (email magic links via Resend) |
-| Host auth | Custom per-tenant shared password → JWT with rolling refresh |
-| Rate limiting | `rate-limiter-flexible` backed by Redis |
-| Hosting | Self-hosted Docker Compose |
-| Magic link email | Resend |
-| Error tracking | None in v1 (container logs only) |
+| Layer                               | Choice                                                       |
+| ----------------------------------- | ------------------------------------------------------------ |
+| Language                            | TypeScript                                                   |
+| Framework                           | Next.js 14 (App Router), long-running Node server            |
+| Database                            | Postgres 16 (Compose service)                                |
+| Cache / pub-sub / rate limit / undo | Redis 7 (Compose service)                                    |
+| Blob storage                        | MinIO (Compose service, S3-compatible)                       |
+| ORM                                 | Drizzle                                                      |
+| Styling                             | Tailwind CSS                                                 |
+| UI components                       | shadcn/ui                                                    |
+| Client data fetching                | TanStack Query for mutations; native `EventSource` for SSE   |
+| Admin auth                          | NextAuth (email magic links via Resend)                      |
+| Host auth                           | Custom per-tenant shared password → JWT with rolling refresh |
+| Rate limiting                       | `rate-limiter-flexible` backed by Redis                      |
+| Hosting                             | Self-hosted Docker Compose                                   |
+| Magic link email                    | Resend                                                       |
+| Error tracking                      | None in v1 (container logs only)                             |
 
 ## Compose topology
 
@@ -115,55 +115,55 @@ CREATE TABLE admins (
 
 ### Public (guest)
 
-| Path | Purpose |
-|------|---------|
-| `/` | Marketing page (minimal in v1) |
-| `/r/<slug>?t=<token>` | Join page (validates QR token; shows hard-close banner when tenant is closed) |
-| `/r/<slug>/wait/<partyId>` | Guest wait page (opens SSE stream) |
-| `/display/<slug>` | QR display page (polls for fresh token every 60s) |
+| Path                       | Purpose                                                                       |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| `/`                        | Marketing page (minimal in v1)                                                |
+| `/r/<slug>?t=<token>`      | Join page (validates QR token; shows hard-close banner when tenant is closed) |
+| `/r/<slug>/wait/<partyId>` | Guest wait page (opens SSE stream)                                            |
+| `/display/<slug>`          | QR display page (polls for fresh token every 60s)                             |
 
 ### Host stand
 
-| Path | Purpose |
-|------|---------|
-| `/host/<slug>` | Login page (shared password) |
-| `/host/<slug>/queue` | Main queue view (opens SSE stream) |
-| `/host/<slug>/settings` | Name, logo, color, password |
-| `/host/<slug>/guests` | Guest history |
+| Path                    | Purpose                            |
+| ----------------------- | ---------------------------------- |
+| `/host/<slug>`          | Login page (shared password)       |
+| `/host/<slug>/queue`    | Main queue view (opens SSE stream) |
+| `/host/<slug>/settings` | Name, logo, color, password        |
+| `/host/<slug>/guests`   | Guest history                      |
 
 ### Admin (internal)
 
-| Path | Purpose |
-|------|---------|
-| `/admin` | Magic-link login |
-| `/admin/tenants` | Tenant list and create form |
+| Path                  | Purpose                                                |
+| --------------------- | ------------------------------------------------------ |
+| `/admin`              | Magic-link login                                       |
+| `/admin/tenants`      | Tenant list and create form                            |
 | `/admin/tenants/<id>` | Single-tenant edit, demo controls, reset host password |
 
 ### API
 
-| Path | Method | Purpose |
-|------|--------|---------|
-| `/api/r/<slug>/join` | POST | Create party (valid QR token and `tenant.is_open` required) |
-| `/api/r/<slug>/parties/<id>/stream` | GET | SSE stream of party status (guest). 204 if party already resolved |
-| `/api/r/<slug>/parties/<id>/leave` | POST | Guest leaves queue |
-| `/api/display/<slug>/token` | GET | Current signed QR token + `isOpen` flag |
-| `/api/host/<slug>/login` | POST | Exchange password for host session JWT |
-| `/api/host/<slug>/logout` | POST | Clear host session cookie |
-| `/api/host/<slug>/queue/stream` | GET | SSE stream of the queue (host) |
-| `/api/host/<slug>/parties/<id>/seat` | POST | Host seats party |
-| `/api/host/<slug>/parties/<id>/remove` | POST | Host marks party no-show |
-| `/api/host/<slug>/undo` | POST | Undo last host action for this tenant (shared across sessions) |
-| `/api/host/<slug>/open` | POST | Toggle queue open/closed |
-| `/api/host/<slug>/settings` | POST | Update name and accent color |
-| `/api/host/<slug>/settings/logo` | POST | Upload logo (multipart) |
-| `/api/host/<slug>/password` | POST | Rotate shared host password; bumps `host_password_version` |
-| `/api/admin/tenants` | GET | List all tenants |
-| `/api/admin/tenants` | POST | Create tenant; response includes the auto-generated initial host password once |
-| `/api/admin/tenants/<id>` | PATCH | Update name, logo, accent_color, timezone, is_demo, is_open |
-| `/api/admin/tenants/<id>` | DELETE | Hard-delete tenant (force-closes first, then CASCADE wipes parties/notifications) |
-| `/api/admin/tenants/<id>/toggle-demo` | POST | Flip `is_demo` |
-| `/api/admin/tenants/<id>/reset-demo` | POST | Clear and re-seed demo data |
-| `/api/admin/tenants/<id>/reset-password` | POST | Rotate host password |
+| Path                                     | Method | Purpose                                                                           |
+| ---------------------------------------- | ------ | --------------------------------------------------------------------------------- |
+| `/api/r/<slug>/join`                     | POST   | Create party (valid QR token and `tenant.is_open` required)                       |
+| `/api/r/<slug>/parties/<id>/stream`      | GET    | SSE stream of party status (guest). 204 if party already resolved                 |
+| `/api/r/<slug>/parties/<id>/leave`       | POST   | Guest leaves queue                                                                |
+| `/api/display/<slug>/token`              | GET    | Current signed QR token + `isOpen` flag                                           |
+| `/api/host/<slug>/login`                 | POST   | Exchange password for host session JWT                                            |
+| `/api/host/<slug>/logout`                | POST   | Clear host session cookie                                                         |
+| `/api/host/<slug>/queue/stream`          | GET    | SSE stream of the queue (host)                                                    |
+| `/api/host/<slug>/parties/<id>/seat`     | POST   | Host seats party                                                                  |
+| `/api/host/<slug>/parties/<id>/remove`   | POST   | Host marks party no-show                                                          |
+| `/api/host/<slug>/undo`                  | POST   | Undo last host action for this tenant (shared across sessions)                    |
+| `/api/host/<slug>/open`                  | POST   | Toggle queue open/closed                                                          |
+| `/api/host/<slug>/settings`              | POST   | Update name and accent color                                                      |
+| `/api/host/<slug>/settings/logo`         | POST   | Upload logo (multipart)                                                           |
+| `/api/host/<slug>/password`              | POST   | Rotate shared host password; bumps `host_password_version`                        |
+| `/api/admin/tenants`                     | GET    | List all tenants                                                                  |
+| `/api/admin/tenants`                     | POST   | Create tenant; response includes the auto-generated initial host password once    |
+| `/api/admin/tenants/<id>`                | PATCH  | Update name, logo, accent_color, timezone, is_demo, is_open                       |
+| `/api/admin/tenants/<id>`                | DELETE | Hard-delete tenant (force-closes first, then CASCADE wipes parties/notifications) |
+| `/api/admin/tenants/<id>/toggle-demo`    | POST   | Flip `is_demo`                                                                    |
+| `/api/admin/tenants/<id>/reset-demo`     | POST   | Clear and re-seed demo data                                                       |
+| `/api/admin/tenants/<id>/reset-password` | POST   | Rotate host password                                                              |
 
 ## Key technical flows
 
@@ -174,8 +174,8 @@ CREATE TABLE admins (
   - `tenant:<slug>:queue` — host view; fired on every party status change in this tenant, plus `tenant:closed` / `tenant:opened` / `tenant:reset`
   - `party:<id>` — guest view; fired for this party's own status changes **and** for position changes when the queue ahead of it shifts
 - Every write path that changes queue state (`join`, `seat`, `remove`, `leave`, `open`, `undo`, stale-cleanup) publishes events after the DB write commits:
-  - One event on `tenant:<slug>:queue` carrying the full affected row (see *Event payloads* below).
-  - On any change that reorders the waiting list, one `position_changed` event on **each** still-waiting `party:<id>` with `{ type: 'position_changed', position }`. Implement as a single helper `publishPositionUpdates(tenantId, slug)` — see *Position-update helper* below.
+  - One event on `tenant:<slug>:queue` carrying the full affected row (see _Event payloads_ below).
+  - On any change that reorders the waiting list, one `position_changed` event on **each** still-waiting `party:<id>` with `{ type: 'position_changed', position }`. Implement as a single helper `publishPositionUpdates(tenantId, slug)` — see _Position-update helper_ below.
 - **Stream setup order is load-bearing.** The handler subscribes to its Redis channel(s) **first**, then reads the snapshot from Postgres, then sends the snapshot as the initial SSE event, then forwards live events as diffs. Subscribing after the snapshot read would drop any event published in the gap between the two — the client would be silently out of sync until the next reconnect.
 - **Event payloads.** Diffs carry the data the client needs to render without an extra fetch:
   - `party:joined` → `{ type, id, name, partySize, phone, joinedAt }`
@@ -216,7 +216,10 @@ if (!tenant.currentQrToken || now - tenant.qrTokenIssuedAt > 60 * 60_000) {
   const payload = `${slug}:${now}`;
   const sig = hmacSha256(payload, process.env.QR_TOKEN_SECRET);
   const token = `${base64urlEncode(payload)}.${sig}`;
-  await updateTenant(tenant.id, { currentQrToken: token, qrTokenIssuedAt: now });
+  await updateTenant(tenant.id, {
+    currentQrToken: token,
+    qrTokenIssuedAt: now,
+  });
   return { token, validUntilMs: now + 65 * 60_000, isOpen: tenant.is_open };
 }
 return {
@@ -229,9 +232,9 @@ return {
 On `GET /r/<slug>?t=<token>`:
 
 ```ts
-const [payloadB64, sig] = token.split('.');
+const [payloadB64, sig] = token.split(".");
 const payload = base64urlDecode(payloadB64);
-const [tokenSlug, issuedAtStr] = payload.split(':');
+const [tokenSlug, issuedAtStr] = payload.split(":");
 if (tokenSlug !== slug) return invalidToken();
 if (!timingSafeEqual(sig, hmacSha256(payload, SECRET))) return invalidToken();
 if (Date.now() - Number(issuedAtStr) > 65 * 60_000) return expiredToken();
@@ -273,7 +276,7 @@ On `GET /api/r/<slug>/parties/<partyId>/stream` (SSE):
 3. If the party row no longer exists (e.g., wiped by a demo-tenant reset), respond **204** — the client's cookie is orphaned; the wait page renders a generic "session ended" terminal screen.
 4. Verify `party.sessionToken === cookie` and `party.tenantId === resolveSlug(slug)`. Reject with 403 on mismatch.
 5. If the party is already in a terminal status, respond **204** (tells `EventSource` not to retry).
-6. Subscribe to the `party:<id>` Redis channel, buffering any incoming events. This happens **before** the snapshot read so events published between read and subscribe aren't lost (see *Stream setup order* in §Real-time transport).
+6. Subscribe to the `party:<id>` Redis channel, buffering any incoming events. This happens **before** the snapshot read so events published between read and subscribe aren't lost (see _Stream setup order_ in §Real-time transport).
 7. Compute current position (count of `waiting` parties at this tenant ordered by `joined_at`, find target's rank). Emit initial `snapshot` SSE event: `{ type: 'snapshot', status, position, name, joinedAt }`.
 8. **Refresh the `party_session` cookie** on the response: re-set with a fresh 24h `Max-Age`. A long wait no longer expires the session out from under the guest.
 9. Drain the subscription buffer, then forward live `status_changed` and `position_changed` events as SSE messages. Write a `:ping` comment every 15 seconds.
@@ -329,27 +332,34 @@ No algorithmic "next" selection. The host stand renders parties in arrival order
 ```ts
 // POST /api/host/<slug>/parties/<id>/seat
 const party = await loadPartyInTenant(id, tenantId);
-if (party.status !== 'waiting') return conflict();
+if (party.status !== "waiting") return conflict();
 const resolvedAt = now();
-await db.update(parties).set({
-  status: 'seated',
-  seated_at: resolvedAt,
-  resolved_at: resolvedAt,
-}).where(and(eq(parties.id, id), eq(parties.tenantId, tenantId)));
+await db
+  .update(parties)
+  .set({
+    status: "seated",
+    seated_at: resolvedAt,
+    resolved_at: resolvedAt,
+  })
+  .where(and(eq(parties.id, id), eq(parties.tenantId, tenantId)));
 await notifier.onPartyReady(party);
 await pushUndoFrame(tenantId, {
-  action: 'seat',
+  action: "seat",
   partyId: id,
-  previousStatus: 'waiting',
+  previousStatus: "waiting",
   timestamp: Date.now(),
 });
 await publish(`tenant:${slug}:queue`, {
-  type: 'party:seated',
+  type: "party:seated",
   id,
-  status: 'seated',
+  status: "seated",
   resolvedAt,
 });
-await publish(`party:${id}`, { type: 'status_changed', status: 'seated', resolvedAt });
+await publish(`party:${id}`, {
+  type: "status_changed",
+  status: "seated",
+  resolvedAt,
+});
 await publishPositionUpdates(tenantId, slug); // emits position_changed on every still-waiting party:<id>
 ```
 
@@ -405,13 +415,18 @@ Subsequent SSE diff events (`party:joined`, `party:seated`, `party:removed`, `pa
 On join (step 7 above), after inserting the new party:
 
 ```ts
-const previous = await db.select().from(parties).where(and(
-  eq(parties.tenantId, tenantId),
-  eq(parties.phone, submittedPhone),
-  ne(parties.id, newPartyId),
-));
+const previous = await db
+  .select()
+  .from(parties)
+  .where(
+    and(
+      eq(parties.tenantId, tenantId),
+      eq(parties.phone, submittedPhone),
+      ne(parties.id, newPartyId),
+    ),
+  );
 if (previous.length > 0) {
-  response.cookies.set('welcome_back', '1', { maxAge: 300, sameSite: 'lax' });
+  response.cookies.set("welcome_back", "1", { maxAge: 300, sameSite: "lax" });
 }
 ```
 
@@ -452,7 +467,7 @@ All seeded rows get a random `session_token` so the schema invariant holds even 
 `DELETE /api/admin/tenants/<id>`:
 
 1. In a single transaction: set `is_open = false`; transition any still-`waiting` parties to `status = 'no_show'` with `resolved_at = now()`, capturing the affected `id`s via `RETURNING`; then `DELETE FROM tenants WHERE id = $1`. The `parties` and `notifications` foreign keys are `ON DELETE CASCADE`, so the row removal wipes all attached data atomically. Hold the returned party IDs in application memory for step 2.
-2. After the transaction commits, publish `tenant:closed` on `tenant:<slug>:queue` so active host UIs transition to a closed state, and a final `status_changed` with `status: 'no_show'` on each affected `party:<id>` (using the IDs captured in step 1) so open guest streams emit one terminal event and close. Publishing after commit matches the global rule in *Real-time transport* — no phantom closures if the transaction aborts. Subsequent guest reconnects hit the SSE terminal path and receive 204 — the wait page renders a generic "queue ended" screen with no PII about the tenant.
+2. After the transaction commits, publish `tenant:closed` on `tenant:<slug>:queue` so active host UIs transition to a closed state, and a final `status_changed` with `status: 'no_show'` on each affected `party:<id>` (using the IDs captured in step 1) so open guest streams emit one terminal event and close. Publishing after commit matches the global rule in _Real-time transport_ — no phantom closures if the transaction aborts. Subsequent guest reconnects hit the SSE terminal path and receive 204 — the wait page renders a generic "queue ended" screen with no PII about the tenant.
 3. Return 200.
 
 Hard-delete is irreversible; the admin UI gates the action behind a typed-slug confirmation prompt. No soft-delete window in v1. If a restore path is needed later, add `deleted_at` and a separate purge job — not in v1 scope.
@@ -500,14 +515,14 @@ NextAuth email provider with magic links delivered via Resend. The `ADMIN_EMAILS
 
 Redis-backed sliding-window limits via `rate-limiter-flexible`. Default key is the client IP unless otherwise specified.
 
-| Endpoint | Limit | Key |
-|----------|-------|-----|
-| `GET /r/<slug>` with token | 30/minute | IP |
-| `POST /api/r/<slug>/join` | 10/hour per phone (if phone present), else 10/hour per IP | phone when present, else IP |
-| `POST /api/r/<slug>/join` (global) | 200/hour per tenant | tenant |
-| `GET /api/r/<slug>/parties/<id>/stream` | 10 new connections/minute | IP |
-| `GET /api/host/<slug>/queue/stream` | 30 new connections/minute | IP + slug |
-| `POST /api/host/<slug>/login` | 10/hour | IP |
+| Endpoint                                | Limit                                                     | Key                         |
+| --------------------------------------- | --------------------------------------------------------- | --------------------------- |
+| `GET /r/<slug>` with token              | 30/minute                                                 | IP                          |
+| `POST /api/r/<slug>/join`               | 10/hour per phone (if phone present), else 10/hour per IP | phone when present, else IP |
+| `POST /api/r/<slug>/join` (global)      | 200/hour per tenant                                       | tenant                      |
+| `GET /api/r/<slug>/parties/<id>/stream` | 10 new connections/minute                                 | IP                          |
+| `GET /api/host/<slug>/queue/stream`     | 30 new connections/minute                                 | IP + slug                   |
+| `POST /api/host/<slug>/login`           | 10/hour                                                   | IP                          |
 
 Keying join by phone fixes the restaurant-NAT problem where every guest shares one public IP. The per-tenant global cap is a belt-and-braces guard against abuse if a join URL leaks. Keying the host queue stream by (IP, slug) prevents one tenant's flaky-wifi reconnect storm from starving hosts at another tenant that happens to share the same upstream IP (unlikely but costs nothing to guard against), and also lets a multi-tablet restaurant stack reconnects without clipping.
 
@@ -580,20 +595,20 @@ The script uses the same Drizzle service wrappers as the app so schema drift bre
 
 ### Required environment variables
 
-| Name | Purpose |
-|------|---------|
-| `DATABASE_URL` | Postgres connection string (compose `postgres` service) |
-| `REDIS_URL` | Redis connection string |
-| `S3_ENDPOINT` | MinIO endpoint URL |
-| `S3_BUCKET` | MinIO bucket for logos |
-| `S3_ACCESS_KEY` | MinIO access key |
-| `S3_SECRET_KEY` | MinIO secret key |
-| `QR_TOKEN_SECRET` | HMAC key for QR tokens |
-| `HOST_JWT_SECRET` | JWT signing key for host sessions |
-| `ADMIN_EMAILS` | Comma-separated allow list |
-| `NEXTAUTH_SECRET` | NextAuth session signing |
-| `NEXTAUTH_URL` | App URL (for magic link email content) |
-| `RESEND_API_KEY` | Magic-link email delivery |
+| Name              | Purpose                                                 |
+| ----------------- | ------------------------------------------------------- |
+| `DATABASE_URL`    | Postgres connection string (compose `postgres` service) |
+| `REDIS_URL`       | Redis connection string                                 |
+| `S3_ENDPOINT`     | MinIO endpoint URL                                      |
+| `S3_BUCKET`       | MinIO bucket for logos                                  |
+| `S3_ACCESS_KEY`   | MinIO access key                                        |
+| `S3_SECRET_KEY`   | MinIO secret key                                        |
+| `QR_TOKEN_SECRET` | HMAC key for QR tokens                                  |
+| `HOST_JWT_SECRET` | JWT signing key for host sessions                       |
+| `ADMIN_EMAILS`    | Comma-separated allow list                              |
+| `NEXTAUTH_SECRET` | NextAuth session signing                                |
+| `NEXTAUTH_URL`    | App URL (for magic link email content)                  |
+| `RESEND_API_KEY`  | Magic-link email delivery                               |
 
 ## Observability
 
@@ -640,18 +655,18 @@ Formal audit and keyboard-only QA pass are deferred to post-v1.
 
 ## Resolved implementation choices
 
-| Area | Choice |
-|------|--------|
-| QR rendering library | `qrcode.react` |
-| Phone input library | `react-phone-number-input` |
-| Rate limiter library | `rate-limiter-flexible` |
-| SSE transport | Native Next.js `Response` streaming with `ReadableStream`; no library |
+| Area                           | Choice                                                                                                                                                                                                                                                     |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| QR rendering library           | `qrcode.react`                                                                                                                                                                                                                                             |
+| Phone input library            | `react-phone-number-input`                                                                                                                                                                                                                                 |
+| Rate limiter library           | `rate-limiter-flexible`                                                                                                                                                                                                                                    |
+| SSE transport                  | Native Next.js `Response` streaming with `ReadableStream`; no library                                                                                                                                                                                      |
 | Redis pub/sub connection model | One shared subscribe connection multiplexed across all SSE handlers in the process; publishes and rate-limit ops share the default pooled client. Redis clients can't mix subscribe and normal commands on the same connection, so this split is mandatory |
-| Timezone source | Tenant setting, IANA value picked at creation by the admin (typeahead, default `Asia/Kolkata`) |
-| Absolute time rendering | `Intl.DateTimeFormat` using `tenant.timezone` across host queue timestamps and guest history |
-| Image re-encoder | `sharp` (512×512 PNG output) |
-| Password hashing | `bcrypt`, cost 10+ |
-| JWT library | `jose` |
+| Timezone source                | Tenant setting, IANA value picked at creation by the admin (typeahead, default `Asia/Kolkata`)                                                                                                                                                             |
+| Absolute time rendering        | `Intl.DateTimeFormat` using `tenant.timezone` across host queue timestamps and guest history                                                                                                                                                               |
+| Image re-encoder               | `sharp` (512×512 PNG output)                                                                                                                                                                                                                               |
+| Password hashing               | `bcrypt`, cost 10+                                                                                                                                                                                                                                         |
+| JWT library                    | `jose`                                                                                                                                                                                                                                                     |
 
 ## What comes next after v1 ships
 

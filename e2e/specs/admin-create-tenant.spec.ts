@@ -2,7 +2,9 @@ import { test, expect } from "../fixtures/test-env";
 import { uniqueSlug } from "../fixtures/tenant-factory";
 
 test.describe("admin create tenant", () => {
-  test("create returns the initial password exactly once", async ({ adminContext }) => {
+  test("create returns the initial password exactly once", async ({
+    adminContext,
+  }) => {
     const page = await adminContext.newPage();
     await page.goto("/admin/tenants/new");
 
@@ -21,7 +23,9 @@ test.describe("admin create tenant", () => {
     await page.close();
   });
 
-  test("reserved slug is rejected with inline error", async ({ adminContext }) => {
+  test("reserved slug is rejected with inline error", async ({
+    adminContext,
+  }) => {
     const page = await adminContext.newPage();
     await page.goto("/admin/tenants/new");
 

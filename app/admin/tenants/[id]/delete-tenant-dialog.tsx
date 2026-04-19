@@ -34,7 +34,9 @@ export function DeleteTenantDialog({ tenantId, slug, tenantName }: Props) {
     if (!canDelete) return;
     setBusy(true);
     try {
-      const res = await fetch(`/api/admin/tenants/${tenantId}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/tenants/${tenantId}`, {
+        method: "DELETE",
+      });
       if (!res.ok) {
         toast.error("Could not delete tenant.");
         return;
@@ -65,8 +67,8 @@ export function DeleteTenantDialog({ tenantId, slug, tenantName }: Props) {
         <DialogHeader>
           <DialogTitle>Delete {tenantName}?</DialogTitle>
           <DialogDescription>
-            This is irreversible. All parties and notifications will be wiped. Active guests will see
-            a generic closed screen.
+            This is irreversible. All parties and notifications will be wiped.
+            Active guests will see a generic closed screen.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
@@ -85,7 +87,11 @@ export function DeleteTenantDialog({ tenantId, slug, tenantName }: Props) {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={onDelete} disabled={!canDelete}>
+          <Button
+            variant="destructive"
+            onClick={onDelete}
+            disabled={!canDelete}
+          >
             {busy ? "Deleting…" : "Permanently delete"}
           </Button>
         </DialogFooter>

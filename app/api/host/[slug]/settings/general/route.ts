@@ -15,10 +15,17 @@ const generalSchema = z
   })
   .strict();
 
-export async function PATCH(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) {
-    return unauthorizedJson(guard.status, guard.clearCookie, guardError(guard.status));
+    return unauthorizedJson(
+      guard.status,
+      guard.clearCookie,
+      guardError(guard.status),
+    );
   }
 
   const contentType = req.headers.get("content-type") ?? "";
@@ -50,14 +57,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { slug: stri
     }
   }
 
-  const row = await updateTenantBranding(guard.tenant.id, guard.tenant.slug, patch);
+  const row = await updateTenantBranding(
+    guard.tenant.id,
+    guard.tenant.slug,
+    patch,
+  );
   if (!row) return Response.json({ error: "not_found" }, { status: 404 });
 
   log.info("host.settings.general.updated", {
     slug: params.slug,
     fields: Object.keys(patch),
   });
-  return withRefresh(Response.json({ tenant: row }, { status: 200 }), guard.refreshedCookie);
+  return withRefresh(
+    Response.json({ tenant: row }, { status: 200 }),
+    guard.refreshedCookie,
+  );
 }
 
 function guardError(status: 401 | 403 | 404): string {

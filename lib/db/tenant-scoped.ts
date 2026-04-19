@@ -1,6 +1,11 @@
 import { and, eq, inArray, type SQL } from "drizzle-orm";
 import { getDb } from "./client";
-import { notifications, parties, type NewNotification, type NewParty } from "./schema";
+import {
+  notifications,
+  parties,
+  type NewNotification,
+  type NewParty,
+} from "./schema";
 
 export class TenantScopeError extends Error {
   constructor(message = "tenant-scoped query requires a non-empty tenantId") {

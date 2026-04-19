@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export interface OneTimePasswordDialogProps {
   open: boolean;
@@ -48,15 +55,20 @@ export function OneTimePasswordDialog({
         <Alert variant="warning">
           <AlertTitle>One-time display</AlertTitle>
           <AlertDescription>
-            Once you close this dialog, the password is gone. Hand it to the restaurant before
-            dismissing.
+            Once you close this dialog, the password is gone. Hand it to the
+            restaurant before dismissing.
           </AlertDescription>
         </Alert>
         <div className="flex items-center gap-2">
           <code className="flex-1 rounded-md border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-base">
             {password ?? "…"}
           </code>
-          <Button type="button" variant="outline" onClick={copy} disabled={!password}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={copy}
+            disabled={!password}
+          >
             {copied ? "Copied" : "Copy"}
           </Button>
         </div>

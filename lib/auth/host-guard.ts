@@ -8,11 +8,7 @@ import {
   clearHostCookieHeader,
   serializeHostCookie,
 } from "./host-session";
-import {
-  maybeRefresh,
-  verifyHostToken,
-  type HostClaims,
-} from "./host-token";
+import { maybeRefresh, verifyHostToken, type HostClaims } from "./host-token";
 
 export type HostGuardDecision =
   | {
@@ -31,7 +27,11 @@ export interface HostGuardInput {
   reason: "ok" | "missing" | "invalid" | "expired";
 }
 
-export function decideHostGuard(input: HostGuardInput): Exclude<HostGuardDecision, { ok: true }> | { ok: true; claims: HostClaims; tenantVersion: number } {
+export function decideHostGuard(
+  input: HostGuardInput,
+):
+  | Exclude<HostGuardDecision, { ok: true }>
+  | { ok: true; claims: HostClaims; tenantVersion: number } {
   if (!input.cookie || input.reason === "missing") {
     return { ok: false, status: 401, clearCookie: false };
   }
@@ -45,7 +45,11 @@ export function decideHostGuard(input: HostGuardInput): Exclude<HostGuardDecisio
   if (input.claims.pwv < input.tenant.hostPasswordVersion) {
     return { ok: false, status: 401, clearCookie: true };
   }
-  return { ok: true, claims: input.claims, tenantVersion: input.tenant.hostPasswordVersion };
+  return {
+    ok: true,
+    claims: input.claims,
+    tenantVersion: input.tenant.hostPasswordVersion,
+  };
 }
 
 export async function guardHostRequest(
@@ -105,7 +109,11 @@ export function clearHostCookieResponse(status: number): Response {
   });
 }
 
-export function unauthorizedJson(status: 401 | 403 | 404, clearCookie: boolean, error: string): Response {
+export function unauthorizedJson(
+  status: 401 | 403 | 404,
+  clearCookie: boolean,
+  error: string,
+): Response {
   const headers: Record<string, string> = {};
   if (clearCookie) headers["Set-Cookie"] = clearHostCookieHeader();
   return Response.json({ error }, { status, headers });

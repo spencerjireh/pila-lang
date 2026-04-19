@@ -8,13 +8,13 @@ Audience: an SRE or ops engineer standing the product up on a fresh host, keepin
 
 Four services, one network:
 
-| Service | Image | Role |
-| --- | --- | --- |
-| `app` | `ghcr.io/<owner>/pila-lang:<tag>` | Next.js server on port 3000. Serves the UI, REST + SSE APIs. |
-| `postgres` | `postgres:16-alpine` | Source of truth for tenants, parties, notifications, admin sessions. |
-| `redis` | `redis:7-alpine` | Pub/sub channel per tenant + per party, per-key rate limits, undo buffer. |
-| `minio` | `minio/minio:latest` | S3-compatible blob store for tenant logos. Swap for AWS S3 in prod if preferred. |
-| `migrator` | `node:22-alpine` | One-shot Drizzle migration runner. `app` waits on it. |
+| Service    | Image                             | Role                                                                             |
+| ---------- | --------------------------------- | -------------------------------------------------------------------------------- |
+| `app`      | `ghcr.io/<owner>/pila-lang:<tag>` | Next.js server on port 3000. Serves the UI, REST + SSE APIs.                     |
+| `postgres` | `postgres:16-alpine`              | Source of truth for tenants, parties, notifications, admin sessions.             |
+| `redis`    | `redis:7-alpine`                  | Pub/sub channel per tenant + per party, per-key rate limits, undo buffer.        |
+| `minio`    | `minio/minio:latest`              | S3-compatible blob store for tenant logos. Swap for AWS S3 in prod if preferred. |
+| `migrator` | `node:22-alpine`                  | One-shot Drizzle migration runner. `app` waits on it.                            |
 
 The `app` container is stateless — scale horizontally by starting more copies behind a shared-nothing load balancer (sticky sessions not required).
 
@@ -62,22 +62,22 @@ Create the first tenant via the admin UI:
 
 Every variable is required unless noted. `lib/config/env.ts` is the source of truth.
 
-| Variable | Secret? | Purpose |
-| --- | --- | --- |
-| `NODE_ENV` | no | `production` on a prod host. |
-| `DATABASE_URL` | yes | Postgres connection string used by the app and migrator. |
-| `REDIS_URL` | yes | Redis connection string. |
-| `S3_ENDPOINT` | no | Blob store host. |
-| `S3_BUCKET` | no | Bucket for tenant logos. Defaults to `queue-logos`. |
-| `S3_ACCESS_KEY` | yes | Blob access key. |
-| `S3_SECRET_KEY` | yes | Blob secret key. |
-| `S3_PUBLIC_URL_BASE` | no | Optional. Use when a CDN fronts the bucket. Defaults to `${S3_ENDPOINT}/${S3_BUCKET}`. |
-| `QR_TOKEN_SECRET` | yes | 32+ char secret that signs display QR tokens. Rotating invalidates every live QR. |
-| `HOST_JWT_SECRET` | yes | 32+ char secret that signs host session JWTs. Rotating signs every host out. |
-| `ADMIN_EMAILS` | no | Comma-separated allow list. Only these emails can sign in to `/admin`. |
-| `NEXTAUTH_SECRET` | yes | 16+ char secret for NextAuth (admin sessions). |
-| `NEXTAUTH_URL` | no | Public base URL. Must match the host serving the app. |
-| `RESEND_API_KEY` | yes | Resend key for admin magic links. |
+| Variable             | Secret? | Purpose                                                                                |
+| -------------------- | ------- | -------------------------------------------------------------------------------------- |
+| `NODE_ENV`           | no      | `production` on a prod host.                                                           |
+| `DATABASE_URL`       | yes     | Postgres connection string used by the app and migrator.                               |
+| `REDIS_URL`          | yes     | Redis connection string.                                                               |
+| `S3_ENDPOINT`        | no      | Blob store host.                                                                       |
+| `S3_BUCKET`          | no      | Bucket for tenant logos. Defaults to `queue-logos`.                                    |
+| `S3_ACCESS_KEY`      | yes     | Blob access key.                                                                       |
+| `S3_SECRET_KEY`      | yes     | Blob secret key.                                                                       |
+| `S3_PUBLIC_URL_BASE` | no      | Optional. Use when a CDN fronts the bucket. Defaults to `${S3_ENDPOINT}/${S3_BUCKET}`. |
+| `QR_TOKEN_SECRET`    | yes     | 32+ char secret that signs display QR tokens. Rotating invalidates every live QR.      |
+| `HOST_JWT_SECRET`    | yes     | 32+ char secret that signs host session JWTs. Rotating signs every host out.           |
+| `ADMIN_EMAILS`       | no      | Comma-separated allow list. Only these emails can sign in to `/admin`.                 |
+| `NEXTAUTH_SECRET`    | yes     | 16+ char secret for NextAuth (admin sessions).                                         |
+| `NEXTAUTH_URL`       | no      | Public base URL. Must match the host serving the app.                                  |
+| `RESEND_API_KEY`     | yes     | Resend key for admin magic links.                                                      |
 
 Edit `.env.prod`, then `docker compose --env-file .env.prod … up -d` — no restart is needed if only `ADMIN_EMAILS` changed, but a bounce of `app` picks it up within seconds.
 

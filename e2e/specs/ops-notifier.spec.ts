@@ -23,23 +23,35 @@ test.describe("notifier wiring", () => {
 
     await drain(request); // clear buffer
 
-    const me = await joinAsGuest(request, slug, { name: "NotifyMe", partySize: 2 });
+    const me = await joinAsGuest(request, slug, {
+      name: "NotifyMe",
+      partySize: 2,
+    });
 
     // Small delay to let async notifier call land.
     await new Promise((r) => setTimeout(r, 500));
     const afterJoin = await drain(request);
-    expect(afterJoin.calls.some((c) => c.type === "onPartyJoined" && c.party.name === "NotifyMe"))
-      .toBeTruthy();
+    expect(
+      afterJoin.calls.some(
+        (c) => c.type === "onPartyJoined" && c.party.name === "NotifyMe",
+      ),
+    ).toBeTruthy();
 
     const cookie = await hostLoginViaApi(request, slug, password);
-    const seatRes = await request.post(`/api/host/${slug}/parties/${me.partyId}/seat`, {
-      headers: { cookie },
-    });
+    const seatRes = await request.post(
+      `/api/host/${slug}/parties/${me.partyId}/seat`,
+      {
+        headers: { cookie },
+      },
+    );
     expect(seatRes.ok()).toBeTruthy();
 
     await new Promise((r) => setTimeout(r, 500));
     const afterSeat = await drain(request);
-    expect(afterSeat.calls.some((c) => c.type === "onPartyReady" && c.party.name === "NotifyMe"))
-      .toBeTruthy();
+    expect(
+      afterSeat.calls.some(
+        (c) => c.type === "onPartyReady" && c.party.name === "NotifyMe",
+      ),
+    ).toBeTruthy();
   });
 });

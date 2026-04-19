@@ -23,9 +23,9 @@ export function TenantHeader({
   size = "md",
 }: TenantHeaderProps) {
   const fg = pickForeground(accentColor);
-  const boxClass =
-    size === "lg" ? "h-24 w-24 text-3xl" : "h-14 w-14 text-xl";
-  const textClass = size === "lg" ? "text-3xl font-semibold" : "text-xl font-semibold";
+  const boxClass = size === "lg" ? "h-24 w-24 text-3xl" : "h-14 w-14 text-xl";
+  const textClass =
+    size === "lg" ? "text-3xl font-semibold" : "text-xl font-semibold";
 
   return (
     <div className="flex items-center gap-4">
@@ -46,7 +46,9 @@ export function TenantHeader({
       )}
       <div className="flex flex-col">
         <span className={textClass}>{name}</span>
-        {subtitle ? <span className="text-sm text-slate-600">{subtitle}</span> : null}
+        {subtitle ? (
+          <span className="text-sm text-slate-600">{subtitle}</span>
+        ) : null}
       </div>
     </div>
   );

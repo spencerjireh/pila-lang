@@ -10,7 +10,11 @@ import { LoginForm } from "./_components/login-form";
 
 export const dynamic = "force-dynamic";
 
-export default async function HostLoginPage({ params }: { params: { slug: string } }) {
+export default async function HostLoginPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const lookup = await loadTenantBySlug(params.slug);
   if (!lookup.ok) notFound();
   const tenant = lookup.tenant;

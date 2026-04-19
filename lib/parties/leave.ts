@@ -70,14 +70,15 @@ export async function leaveQueue(
   if (outcome === "conflict") return { ok: false, reason: "conflict" };
 
   const [updated] = await scoped.parties
-    .update(
-      { status: "left", resolvedAt: new Date() },
-      eq(parties.id, partyId),
-    )
+    .update({ status: "left", resolvedAt: new Date() }, eq(parties.id, partyId))
     .returning();
   const resolvedAt = (updated as Party).resolvedAt!.toISOString();
 
-  for (const { channel, event } of leavePublishPlan({ partyId, slug, resolvedAt })) {
+  for (const { channel, event } of leavePublishPlan({
+    partyId,
+    slug,
+    resolvedAt,
+  })) {
     await publish(channel, event);
   }
   await publishPositionUpdates(tenantId, slug);

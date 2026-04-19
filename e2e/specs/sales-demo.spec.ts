@@ -34,11 +34,14 @@ test.describe("sales demo", () => {
     await host.getByLabel(/password/i).fill(password);
     await host.getByRole("button", { name: /sign in/i }).click();
     await host.waitForURL(new RegExp(`/host/${slug}/queue$`));
-    await host.locator("li", { hasText: "Sales Demo Guest" })
+    await host
+      .locator("li", { hasText: "Sales Demo Guest" })
       .getByRole("button", { name: /^seat$/i })
       .click();
 
-    await expect(guest.getByRole("heading", { name: /your table is ready/i })).toBeVisible({
+    await expect(
+      guest.getByRole("heading", { name: /your table is ready/i }),
+    ).toBeVisible({
       timeout: 10_000,
     });
 

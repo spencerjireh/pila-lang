@@ -2,7 +2,10 @@ import { test, expect } from "../fixtures/test-env";
 import { fetchLatestMagicLink } from "../fixtures/mailbox";
 
 test.describe("admin sign-in", () => {
-  test("allow-listed email completes magic-link sign-in", async ({ page, request }) => {
+  test("allow-listed email completes magic-link sign-in", async ({
+    page,
+    request,
+  }) => {
     const email = process.env.E2E_ADMIN_EMAIL ?? "admin@example.com";
 
     await page.goto("/admin");
@@ -23,7 +26,9 @@ test.describe("admin sign-in", () => {
     await page.getByRole("button", { name: /send sign-in link/i }).click();
 
     // The route still claims to send — but no token row exists for this address.
-    const res = await request.get(`/api/test/magic-link?email=${encodeURIComponent(email)}`);
+    const res = await request.get(
+      `/api/test/magic-link?email=${encodeURIComponent(email)}`,
+    );
     expect([404, 400]).toContain(res.status());
   });
 });

@@ -33,13 +33,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Resend({
       apiKey: env().RESEND_API_KEY,
-      from: process.env.ADMIN_MAGIC_LINK_FROM ?? "Queue Admin <onboarding@resend.dev>",
+      from:
+        process.env.ADMIN_MAGIC_LINK_FROM ??
+        "Queue Admin <onboarding@resend.dev>",
       async sendVerificationRequest({ identifier, url }) {
         if (!isAdminEmail(identifier)) {
           log.warn("admin.magic_link.blocked", { email: identifier });
           return;
         }
-        if (process.env.NODE_ENV === "test" || process.env.ENABLE_TEST_ROUTES === "1") {
+        if (
+          process.env.NODE_ENV === "test" ||
+          process.env.ENABLE_TEST_ROUTES === "1"
+        ) {
           // Capture the URL (with plaintext token) so E2E can fetch it via /api/test/magic-link.
           captureMagicLink(identifier, url);
           log.info("admin.magic_link.test_captured", { email: identifier });

@@ -6,7 +6,11 @@ import { DisplayClient } from "./display-client";
 
 export const dynamic = "force-dynamic";
 
-export default async function DisplayPage({ params }: { params: { slug: string } }) {
+export default async function DisplayPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const result = await resolveDisplayToken(params.slug);
   if (!result.ok) notFound();
 

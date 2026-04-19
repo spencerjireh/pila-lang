@@ -35,7 +35,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) {
-    return Response.json({ error: "invalid_body", issues: parsed.error.flatten() }, { status: 400 });
+    return Response.json(
+      { error: "invalid_body", issues: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
 
   const {
@@ -53,19 +56,38 @@ export async function POST(req: NextRequest) {
   const hash = await hashPassword(password);
 
   // Upsert: if slug exists, reset fully.
-  const existing = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.slug, slug)).limit(1);
+  const existing = await db
+    .select({ id: tenants.id })
+    .from(tenants)
+    .where(eq(tenants.slug, slug))
+    .limit(1);
   let tenantId: string;
   if (existing[0]) {
     tenantId = existing[0].id;
     await db.delete(parties).where(eq(parties.tenantId, tenantId));
     await db
       .update(tenants)
-      .set({ name, accentColor, timezone, isOpen, isDemo, hostPasswordHash: hash })
+      .set({
+        name,
+        accentColor,
+        timezone,
+        isOpen,
+        isDemo,
+        hostPasswordHash: hash,
+      })
       .where(eq(tenants.id, tenantId));
   } else {
     const [row] = await db
       .insert(tenants)
-      .values({ slug, name, accentColor, timezone, isOpen, isDemo, hostPasswordHash: hash })
+      .values({
+        slug,
+        name,
+        accentColor,
+        timezone,
+        isOpen,
+        isDemo,
+        hostPasswordHash: hash,
+      })
       .returning({ id: tenants.id });
     tenantId = row!.id;
   }

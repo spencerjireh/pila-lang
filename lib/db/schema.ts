@@ -27,7 +27,9 @@ export const tenants = pgTable("tenants", {
   isDemo: boolean("is_demo").notNull().default(false),
   currentQrToken: text("current_qr_token"),
   qrTokenIssuedAt: timestamp("qr_token_issued_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 export const parties = pgTable(
@@ -42,7 +44,9 @@ export const parties = pgTable(
     partySize: integer("party_size").notNull(),
     status: text("status").notNull(),
     sessionToken: text("session_token").notNull(),
-    joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+    joinedAt: timestamp("joined_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     seatedAt: timestamp("seated_at", { withTimezone: true }),
     resolvedAt: timestamp("resolved_at", { withTimezone: true }),
   },
@@ -54,7 +58,10 @@ export const parties = pgTable(
     oneWaitingPerPhone: uniqueIndex("idx_parties_one_waiting_per_phone")
       .on(t.tenantId, t.phone)
       .where(sql`${t.status} = 'waiting' AND ${t.phone} IS NOT NULL`),
-    partySizeRange: check("parties_size_range", sql`${t.partySize} BETWEEN 1 AND 20`),
+    partySizeRange: check(
+      "parties_size_range",
+      sql`${t.partySize} BETWEEN 1 AND 20`,
+    ),
     statusEnum: check(
       "parties_status_enum",
       sql`${t.status} IN ('waiting','seated','no_show','left')`,
@@ -84,7 +91,9 @@ export const admins = pgTable("admins", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
   role: text("role").notNull().default("admin"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 export const users = pgTable("user", {
@@ -93,7 +102,10 @@ export const users = pgTable("user", {
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name"),
   email: text("email").notNull().unique(),
-  emailVerified: timestamp("email_verified", { mode: "date", withTimezone: true }),
+  emailVerified: timestamp("email_verified", {
+    mode: "date",
+    withTimezone: true,
+  }),
   image: text("image"),
 });
 
@@ -132,7 +144,10 @@ export const verificationTokens = pgTable(
   {
     identifier: text("identifier").notNull(),
     token: text("token").notNull(),
-    expires: timestamp("expires", { mode: "date", withTimezone: true }).notNull(),
+    expires: timestamp("expires", {
+      mode: "date",
+      withTimezone: true,
+    }).notNull(),
   },
   (t) => ({
     compoundKey: primaryKey({ columns: [t.identifier, t.token] }),

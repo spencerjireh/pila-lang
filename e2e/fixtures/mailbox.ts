@@ -9,7 +9,9 @@ export async function fetchLatestMagicLink(
   request: APIRequestContext,
   email: string,
 ): Promise<MagicLinkResponse> {
-  const res = await request.get(`/api/test/magic-link?email=${encodeURIComponent(email)}`);
+  const res = await request.get(
+    `/api/test/magic-link?email=${encodeURIComponent(email)}`,
+  );
   if (!res.ok()) {
     throw new Error(`magic-link failed (${res.status()}): ${await res.text()}`);
   }

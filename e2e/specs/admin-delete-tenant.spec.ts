@@ -1,7 +1,10 @@
 import { test, expect } from "../fixtures/test-env";
 
 test.describe("admin delete tenant", () => {
-  test("typed-slug confirmation is required to delete", async ({ adminContext, tenantFactory }) => {
+  test("typed-slug confirmation is required to delete", async ({
+    adminContext,
+    tenantFactory,
+  }) => {
     const { id, slug } = await tenantFactory({ name: "Delete Me" });
 
     const page = await adminContext.newPage();
@@ -10,7 +13,9 @@ test.describe("admin delete tenant", () => {
 
     const confirmInput = page.locator("#confirm-slug");
     await confirmInput.fill("wrong-slug");
-    const finalDelete = page.getByRole("button", { name: /permanently delete/i });
+    const finalDelete = page.getByRole("button", {
+      name: /permanently delete/i,
+    });
     await expect(finalDelete).toBeDisabled();
 
     await confirmInput.fill(slug);

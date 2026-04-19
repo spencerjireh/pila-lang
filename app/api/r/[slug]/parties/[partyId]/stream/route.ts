@@ -44,7 +44,8 @@ export async function GET(
   try {
     await consume("guestStreamPerIp", ip);
   } catch (err) {
-    if (err instanceof RateLimitError) return rateLimitResponse(err.retryAfterSec);
+    if (err instanceof RateLimitError)
+      return rateLimitResponse(err.retryAfterSec);
     throw err;
   }
 

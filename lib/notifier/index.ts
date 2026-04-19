@@ -22,10 +22,18 @@ export class TestSpyNotifier implements Notifier {
   private calls: NotifierCall[] = [];
 
   async onPartyJoined(party: Party): Promise<void> {
-    this.calls.push({ type: "onPartyJoined", party, at: new Date().toISOString() });
+    this.calls.push({
+      type: "onPartyJoined",
+      party,
+      at: new Date().toISOString(),
+    });
   }
   async onPartyReady(party: Party): Promise<void> {
-    this.calls.push({ type: "onPartyReady", party, at: new Date().toISOString() });
+    this.calls.push({
+      type: "onPartyReady",
+      party,
+      at: new Date().toISOString(),
+    });
   }
 
   drain(): NotifierCall[] {
@@ -40,7 +48,9 @@ declare global {
 }
 
 function shouldUseSpy(): boolean {
-  return process.env.NODE_ENV === "test" || process.env.ENABLE_TEST_ROUTES === "1";
+  return (
+    process.env.NODE_ENV === "test" || process.env.ENABLE_TEST_ROUTES === "1"
+  );
 }
 
 function bootstrap(): Notifier {

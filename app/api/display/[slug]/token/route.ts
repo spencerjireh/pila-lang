@@ -5,18 +5,23 @@ import { log } from "@/lib/log/logger";
 import { RateLimitError, consume } from "@/lib/ratelimit";
 import { resolveDisplayToken } from "@/lib/tenants/display-token";
 
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { slug: string } },
+) {
   const ip = clientIp(req.headers);
   try {
     await consume("displayRequestsPerIp", ip);
   } catch (err) {
-    if (err instanceof RateLimitError) return rateLimitResponse(err.retryAfterSec);
+    if (err instanceof RateLimitError)
+      return rateLimitResponse(err.retryAfterSec);
     throw err;
   }
 
   try {
     const result = await resolveDisplayToken(params.slug);
-    if (!result.ok) return Response.json({ error: "not_found" }, { status: 404 });
+    if (!result.ok)
+      return Response.json({ error: "not_found" }, { status: 404 });
     return Response.json(result.payload, {
       headers: { "Cache-Control": "no-store" },
     });

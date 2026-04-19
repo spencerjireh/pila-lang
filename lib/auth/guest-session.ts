@@ -15,7 +15,9 @@ export function generateGuestSessionToken(): string {
   return randomUUID();
 }
 
-export function guestCookieAttrs(maxAgeSeconds: number = GUEST_COOKIE_MAX_AGE): GuestCookieAttrs {
+export function guestCookieAttrs(
+  maxAgeSeconds: number = GUEST_COOKIE_MAX_AGE,
+): GuestCookieAttrs {
   return {
     httpOnly: true,
     secure: true,

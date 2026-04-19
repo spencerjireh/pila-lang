@@ -4,7 +4,11 @@ import { DEMO_HISTORICAL, DEMO_WAITING } from "./demo-fixture";
 describe("demo fixture shape", () => {
   it("exposes exactly 3 waiting parties with deterministic names and party sizes", () => {
     expect(DEMO_WAITING).toHaveLength(3);
-    expect(DEMO_WAITING.map((w) => w.name)).toEqual(["Priya Sharma", "Raj Patel", "Anya Lim"]);
+    expect(DEMO_WAITING.map((w) => w.name)).toEqual([
+      "Priya Sharma",
+      "Raj Patel",
+      "Anya Lim",
+    ]);
     expect(DEMO_WAITING.map((w) => w.partySize)).toEqual([2, 4, 2]);
     const minutes = DEMO_WAITING.map((w) => w.minutesAgo);
     const sortedDesc = [...minutes].sort((a, b) => b - a);

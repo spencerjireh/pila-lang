@@ -41,7 +41,10 @@ export function waitUrlFor(slug: string, partyId: string): string {
   return `/r/${slug}/wait/${partyId}`;
 }
 
-export async function joinQueue(slug: string, input: JoinInput): Promise<JoinResult> {
+export async function joinQueue(
+  slug: string,
+  input: JoinInput,
+): Promise<JoinResult> {
   const lookup = await loadTenantBySlug(slug);
   if (!lookup.ok) return { ok: false, reason: "not_found" };
   const tenant = lookup.tenant;
@@ -71,7 +74,8 @@ export async function joinQueue(slug: string, input: JoinInput): Promise<JoinRes
       .returning();
     inserted = row as Party;
   } catch (err) {
-    if (isPartyPhoneConflict(err)) return { ok: false, reason: "already_waiting" };
+    if (isPartyPhoneConflict(err))
+      return { ok: false, reason: "already_waiting" };
     throw err;
   }
 

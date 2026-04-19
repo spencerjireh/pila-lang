@@ -15,7 +15,13 @@ interface Props {
   onChange: (patch: { logoUrl?: string | null }) => void;
 }
 
-export function BrandingSection({ slug, logoUrl, accentColor, name, onChange }: Props) {
+export function BrandingSection({
+  slug,
+  logoUrl,
+  accentColor,
+  name,
+  onChange,
+}: Props) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -41,7 +47,9 @@ export function BrandingSection({ slug, logoUrl, accentColor, name, onChange }: 
         { method: "POST", body: form },
       );
       if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as { error?: string } | null;
+        const body = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
         setError(errorMessage(body?.error));
         return;
       }
@@ -89,7 +97,12 @@ export function BrandingSection({ slug, logoUrl, accentColor, name, onChange }: 
         Upload a square logo (PNG or JPG, under 500KB). We re-encode to 512×512.
       </p>
       <div className="mb-4 flex items-center gap-4">
-        <TenantHeader name={name} logoUrl={logoUrl} accentColor={accentColor} size="lg" />
+        <TenantHeader
+          name={name}
+          logoUrl={logoUrl}
+          accentColor={accentColor}
+          size="lg"
+        />
       </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <input

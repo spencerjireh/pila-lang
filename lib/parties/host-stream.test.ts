@@ -104,15 +104,15 @@ describe("isResolvedRow", () => {
   const now = new Date("2026-04-19T12:00:00.000Z");
 
   it("is false for a waiting row", () => {
-    expect(
-      isResolvedRow({ status: "waiting", resolvedAt: null }, now),
-    ).toBe(false);
+    expect(isResolvedRow({ status: "waiting", resolvedAt: null }, now)).toBe(
+      false,
+    );
   });
 
   it("is false for a terminal row with no resolvedAt", () => {
-    expect(
-      isResolvedRow({ status: "seated", resolvedAt: null }, now),
-    ).toBe(false);
+    expect(isResolvedRow({ status: "seated", resolvedAt: null }, now)).toBe(
+      false,
+    );
   });
 
   it("is true for a terminal row resolved within the 30-minute window", () => {
@@ -132,7 +132,9 @@ describe("isResolvedRow", () => {
       isResolvedRow(
         {
           status: "no_show",
-          resolvedAt: new Date(now.getTime() - HOST_RECENTLY_RESOLVED_WINDOW_MS - 1),
+          resolvedAt: new Date(
+            now.getTime() - HOST_RECENTLY_RESOLVED_WINDOW_MS - 1,
+          ),
         },
         now,
       ),
@@ -140,6 +142,10 @@ describe("isResolvedRow", () => {
   });
 
   it("covers every terminal status", () => {
-    expect([...HOST_RESOLVED_STATUSES].sort()).toEqual(["left", "no_show", "seated"]);
+    expect([...HOST_RESOLVED_STATUSES].sort()).toEqual([
+      "left",
+      "no_show",
+      "seated",
+    ]);
   });
 });

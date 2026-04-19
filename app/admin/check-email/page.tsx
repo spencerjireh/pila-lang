@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function CheckEmailPage() {
   return (
@@ -7,8 +13,8 @@ export default function CheckEmailPage() {
         <CardHeader>
           <CardTitle>Check your email</CardTitle>
           <CardDescription>
-            If your address is on the allow list, a sign-in link is on its way. The link expires in 24
-            hours.
+            If your address is on the allow list, a sign-in link is on its way.
+            The link expires in 24 hours.
           </CardDescription>
         </CardHeader>
         <CardContent>
