@@ -10,12 +10,14 @@
     "./tenant-scoped": "./src/tenant-scoped.ts"
   },
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "generate": "drizzle-kit generate --config=drizzle.config.ts",
     "migrate": "drizzle-kit migrate --config=drizzle.config.ts",
     "studio": "drizzle-kit studio --config=drizzle.config.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.36.4",
+    "next-auth": "5.0.0-beta.31",
     "pg": "^8.13.1"
   },
   "devDependencies": {

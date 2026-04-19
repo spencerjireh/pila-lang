@@ -34,3 +34,6 @@ apps/mobile/android/local.properties
 # Mobile push-notification credentials (never commit)
 **/GoogleService-Info.plist
 **/google-services.json
+
+# Turbo caches
+.turbo
