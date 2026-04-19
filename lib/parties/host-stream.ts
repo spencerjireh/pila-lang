@@ -43,6 +43,7 @@ export interface HostSnapshotEvent {
     isOpen: boolean;
     logoUrl: string | null;
     accentColor: string;
+    timezone: string;
   };
   waiting: HostWaitingRow[];
   recentlyResolved: HostRecentlyResolvedRow[];
@@ -102,7 +103,10 @@ export async function loadRecentlyResolved(
 }
 
 export function buildHostSnapshot(
-  tenant: Pick<Tenant, "slug" | "name" | "isOpen" | "logoUrl" | "accentColor">,
+  tenant: Pick<
+    Tenant,
+    "slug" | "name" | "isOpen" | "logoUrl" | "accentColor" | "timezone"
+  >,
   waiting: HostWaitingRow[],
   recentlyResolved: HostRecentlyResolvedRow[],
 ): HostSnapshotEvent {
@@ -114,6 +118,7 @@ export function buildHostSnapshot(
       isOpen: tenant.isOpen,
       logoUrl: tenant.logoUrl,
       accentColor: tenant.accentColor,
+      timezone: tenant.timezone,
     },
     waiting,
     recentlyResolved,
