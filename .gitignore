@@ -20,7 +20,6 @@ drizzle/migrations/meta/_journal.json.bak
 flutter/.dart_tool/
 flutter/.packages
 flutter/.pub/
-flutter/pubspec.lock
 flutter/build/
 flutter/ios/Pods/
 flutter/ios/.symlinks/

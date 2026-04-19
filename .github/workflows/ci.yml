@@ -96,14 +96,14 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Migrate database
+        run: pnpm db:migrate
+
       - name: Unit tests
         run: pnpm test
 
       - name: Build
         run: pnpm build
-
-      - name: Migrate database
-        run: pnpm db:migrate
 
       - name: Seed demo tenant
         run: pnpm seed --tenant=demo
@@ -161,7 +161,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: "3.27.x"
+          flutter-version: "3.41.x"
           cache: true
 
       - name: Pub get
