@@ -668,6 +668,149 @@ Formal audit and keyboard-only QA pass are deferred to post-v1.
 | Password hashing               | `bcrypt`, cost 10+                                                                                                                                                                                                                                         |
 | JWT library                    | `jose`                                                                                                                                                                                                                                                     |
 
-## What comes next after v1 ships
+## v1.5 — Flutter mobile
 
-The Notifier abstraction is the most valuable seam in the codebase. The first real implementation should be chosen based on which market the sales person closes a pilot in: WhatsApp for Brazil or most of SEA, SMS for India. Either implementation is a new class behind the existing interface and an env flag to swap it in. V2 ships a Flutter native app (guest + host) against the same API — web becomes one surface among two, the schema and endpoints stay as-is.
+V1.5 adds a Flutter app covering guest, host, and display against the same API. Admin stays web-only. Web remains authoritative; the mobile app is additive. One multi-tenant binary — the landing destination is decided by what the user does (scan a QR, tap Sign in, open a paired device). English only. Ships to TestFlight and raw APK; store launch is deferred.
+
+### Scope
+
+- Flutter surfaces: guest (join + wait), host (login + queue + settings + history + open/close), display (kiosk QR)
+- Guest "seat ready" push via APNs + FCM — the first real `Notifier` implementation
+- Universal Links on iOS and App Links on Android; QR opens the app when installed, the existing web page otherwise
+- Best-effort accessibility on mobile (formal audit still deferred)
+- TestFlight + raw APK distribution; App Store / Play Store submission out of scope
+- Demo tenant pilot only
+
+Out of scope for v1.5: admin on mobile, per-tenant branded apps, offline writes, SMS / WhatsApp notifier implementations, host push notifications.
+
+### Mobile stack
+
+| Layer            | Choice                                                                                               |
+| ---------------- | ---------------------------------------------------------------------------------------------------- |
+| Language         | Dart                                                                                                 |
+| UI               | Flutter (stable channel, ≥3.22)                                                                      |
+| HTTP             | `dio` with a bearer-token interceptor                                                                |
+| SSE              | Thin wrapper around `http` streamed responses; foreground reconnect + re-snapshot; no library        |
+| State            | `riverpod`                                                                                           |
+| Secure storage   | `flutter_secure_storage` (iOS Keychain, Android EncryptedSharedPreferences)                          |
+| Push             | `firebase_messaging` on device; `firebase-admin` on server dispatching to FCM (FCM handles APNs too) |
+| Deep linking     | Native Universal Links + App Links; cold-start URL plus warm-start intents                           |
+| QR rendering     | `qr_flutter`                                                                                         |
+| QR scanning      | `mobile_scanner`                                                                                     |
+| Image picker     | `image_picker` (camera + photo library)                                                              |
+| Phone input      | `intl_phone_field`                                                                                   |
+| Persistent cache | `sqflite` for host snapshot + metadata                                                               |
+
+### Repo layout
+
+```
+/flutter
+  /lib
+    /auth        — bearer storage, login, refresh
+    /sse         — SSE client and reconnect state machine
+    /theme       — palette + helpers ported from web Tailwind tokens
+    /guest       — join + wait screens
+    /host        — login, queue, settings, history
+    /display     — kiosk QR
+    /push        — FCM registration + routing
+    /deeplink    — universal-link parser + router
+  /ios
+  /android
+  /integration_test
+  pubspec.yaml
+```
+
+### Server changes
+
+- **Host middleware** accepts either the existing `host_session` cookie or `Authorization: Bearer <token>`. Both carry the same JWT claim shape (slug + `host_password_version`); the version-check and stale-version clear paths are shared.
+- **`POST /api/host/token`** — password + slug → host bearer token; shares the rate limiter policy and hash-compare path with the cookie login endpoint. Token TTL matches the cookie (12 hours).
+- **`POST /api/guest/token`** — authenticates the caller via the party session cookie and returns a guest bearer scoped to that party id. TTL matches the guest session cookie.
+- **`POST /api/push/register`** / **`POST /api/push/unregister`** — authenticated by bearer, tenant-scoped, rate-limited, idempotent on `(scope_id, device_token)`.
+- **`PushNotifier`** — first real `Notifier` implementation; subscribes to `party.seated`, dispatches via Firebase Admin SDK, records outcomes in `notifications` with `channel='push'` and `status` derived from the FCM response.
+
+### New table
+
+```sql
+CREATE TABLE push_tokens (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  scope        text NOT NULL CHECK (scope IN ('guest_party','host_session')),
+  scope_id     uuid NOT NULL,
+  tenant_id    uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  platform     text NOT NULL CHECK (platform IN ('ios','android')),
+  device_token text NOT NULL,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  revoked_at   timestamptz
+);
+
+CREATE UNIQUE INDEX idx_push_tokens_unique_live
+  ON push_tokens(scope_id, device_token) WHERE revoked_at IS NULL;
+CREATE INDEX idx_push_tokens_tenant ON push_tokens(tenant_id);
+```
+
+### Deep linking
+
+- iOS: `apple-app-site-association` served at `/.well-known/apple-app-site-association` as `application/json`, long cache. Claims `/q/*`, `/host/*`, `/display/*` for the Pila bundle id.
+- Android: `assetlinks.json` at `/.well-known/assetlinks.json` with the app signing SHA-256.
+- Both files are committed under `public/.well-known/`; a CI check asserts they serve with the expected content-type.
+- QR payload format is unchanged. The existing `/q/<slug>?t=<token>` URL is claimed by the app when installed and falls back to the current web join page otherwise.
+
+### Auth transport on mobile
+
+- **Host**: one-time exchange of password → bearer; stored in `flutter_secure_storage`. Same JWT claims as the cookie, same server validation path.
+- **Guest**: the party session cookie returned from `/api/join` is exchanged once for a guest bearer via `/api/guest/token`; the cookie never persists on mobile.
+- **Refresh**: both tokens re-issue inside the last hour of validity, matching the cookie behavior.
+- **Stale version / wrong slug**: a 401 wipes the bearer from secure storage and routes the app back to the login or join screen.
+
+### Push notifications
+
+- The only event wired in v1.5 is `party.seated`, delivered to the guest whose party was seated.
+- Host `PushNotifier` registration is also wired so host tokens are captured, but no host event fires yet — this reserves the foothold without shipping host push UX.
+- Server dispatches through a single FCM project; the same project holds the APNs auth key so iOS delivery is transparent.
+- Device tokens are registered immediately after join (guest) or login (host), not at app launch. Permissions are requested at the same moment, so the user sees a reason for the ask.
+- Foreground suppression: the client-side Flutter handler drops messages when the app is foregrounded and the SSE stream is live, because SSE is authoritative for in-app state. Backgrounded and terminated states route the message into the system tray normally.
+
+### Offline behavior
+
+- Host queue snapshot persisted to `sqflite` on every successful SSE event.
+- Cold launch without connectivity renders the last snapshot read-only with a stale indicator.
+- Writes (Seat, Remove, Undo, settings saves) are disabled whenever the SSE stream is closed or the snapshot is stale. No optimistic writes, no queued mutations — consistent with the v1 server invariant that every state change emits the canonical event.
+
+### Theming
+
+- Tailwind palette (accent, neutrals) exported as Dart constants into `lib/theme/`.
+- Accent-contrast helper ported from the web so the foreground picker matches web behavior at render time.
+- Logo and initials-badge rules mirror the web helpers; logos continue to be re-encoded server-side to 512×512 PNG.
+
+### Testing
+
+- **Unit**: bearer middleware matrix (cookie, bearer, stale version, wrong slug), token-exchange endpoints, `PushNotifier` dispatch + failure recording, deep-link parser, SSE reconnect state machine, offline gating, accent-contrast helper port, logo validation matrix.
+- **Widget tests**: every screen renders from an injected snapshot; permission prompts gated at the right moment.
+- **Integration (`integration_test`)**: sales-demo flow end-to-end on iOS simulator and Android emulator — display pairs, guest joins via deep link, host seats, guest receives push, terminal screen renders.
+- **Cross-surface**: Playwright (web host) + Flutter (guest) joint test asserting a seat on web reaches the Flutter guest as a push within 3 seconds on both platforms.
+
+### Distribution
+
+- iOS: Apple Developer Program membership ($99/yr). Builds ship to TestFlight internal testers.
+- Android: release-keystore-signed APK distributed via direct download or Firebase App Distribution; Play Console deferred.
+- Both platforms: version string aligned to the backend tag; CI pipeline produces the web image and both mobile artifacts in the same run.
+- Pilot: demo tenant only in v1.5; a real-restaurant pilot follows in v1.5.x.
+
+### Resolved mobile choices
+
+| Area             | Choice                                                   |
+| ---------------- | -------------------------------------------------------- |
+| Flutter channel  | stable, ≥3.22                                            |
+| HTTP client      | `dio` + bearer interceptor                               |
+| SSE on mobile    | Custom thin wrapper, no library                          |
+| State management | `riverpod`                                               |
+| Secure storage   | `flutter_secure_storage`                                 |
+| Push SDK         | `firebase_messaging` (device), `firebase-admin` (server) |
+| QR render        | `qr_flutter`                                             |
+| QR scan          | `mobile_scanner`                                         |
+| Phone input      | `intl_phone_field`                                       |
+| Local cache      | `sqflite`                                                |
+| Deep linking     | Native Universal Links + App Links (no third-party lib)  |
+
+## What comes next after v1.5 ships
+
+Admin on mobile, host push notifications ("new party joined" while backgrounded), Play Console + App Store submission, white-label per-tenant builds, SMS and WhatsApp `Notifier` implementations, formal WCAG audit on mobile, and Filipino / multi-locale support. All of these slot cleanly onto the v1.5 foundation — the `Notifier` seam, the bearer-token middleware, and the `push_tokens` scope column were all shaped to absorb these additions without schema churn.

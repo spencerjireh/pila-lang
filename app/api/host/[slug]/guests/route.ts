@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 
-import { guardHostRequest, unauthorizedJson } from "@/lib/auth/host-guard";
+import {
+  applyHostRefresh,
+  guardHostRequest,
+  unauthorizedJson,
+} from "@/lib/auth/host-guard";
 import {
   GUEST_HISTORY_DEFAULT_LIMIT,
   GUEST_HISTORY_MAX_LIMIT,
@@ -34,10 +38,7 @@ export async function GET(
 
   try {
     const page = await loadGuestHistory(guard.tenant.id, { cursor, limit });
-    return withRefresh(
-      Response.json(page, { status: 200 }),
-      guard.refreshedCookie,
-    );
+    return applyHostRefresh(Response.json(page, { status: 200 }), guard);
   } catch (err) {
     log.error("host.guests.failed", { slug: params.slug, err: String(err) });
     return Response.json({ error: "internal" }, { status: 500 });
@@ -48,10 +49,4 @@ function guardError(status: 401 | 403 | 404): string {
   if (status === 401) return "unauthorized";
   if (status === 403) return "forbidden";
   return "not_found";
-}
-
-function withRefresh(res: Response, cookie: string | null): Response {
-  if (!cookie) return res;
-  res.headers.append("Set-Cookie", cookie);
-  return res;
 }

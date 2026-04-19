@@ -1,0 +1,67 @@
+name: pila
+description: Pila Lang mobile — guest, host, and display surfaces.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.11.0 <4.0.0"
+  flutter: ">=3.41.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+
+  # HTTP + auth transport
+  dio: ^5.5.0
+  dio_cookie_manager: ^3.1.1
+  cookie_jar: ^4.0.8
+  http: ^1.2.2
+  flutter_secure_storage: ^9.2.2
+
+  # State
+  flutter_riverpod: ^2.5.1
+
+  # Routing
+  go_router: ^14.2.0
+
+  # i18n helpers
+  intl: ^0.19.0
+
+  # Push
+  firebase_core: ^3.3.0
+  firebase_messaging: ^15.0.4
+
+  # QR
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.2.0
+
+  # Forms / phone
+  intl_phone_field: ^3.2.0
+
+  # Persistence
+  sqflite: ^2.3.3+1
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+  # Deep linking (platform channels only — cold + warm start URLs)
+  app_links: ^6.1.4
+
+  # Host settings — image picker (camera + gallery) for logo upload
+  image_picker: ^1.1.2
+
+  # IANA timezone rendering (tenant-local timestamps in history)
+  timezone: ^0.9.4
+
+  # Kiosk mode — screen-on / immersive for the display surface
+  wakelock_plus: ^1.2.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

@@ -17,6 +17,7 @@ const tenant = {
   isOpen: true,
   logoUrl: null,
   accentColor: "#1F6FEB",
+  timezone: "Asia/Kolkata",
 };
 
 function partyRow(overrides: Partial<Party>): Party {

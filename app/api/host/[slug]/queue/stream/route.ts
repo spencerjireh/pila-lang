@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 
-import { guardHostRequest, unauthorizedJson } from "@/lib/auth/host-guard";
+import {
+  guardHostRequest,
+  HOST_REFRESH_HEADER,
+  unauthorizedJson,
+} from "@/lib/auth/host-guard";
 import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
 import { log } from "@/lib/log/logger";
 import {
@@ -42,6 +46,8 @@ export async function GET(
 
   const extraHeaders: Record<string, string> = {};
   if (guard.refreshedCookie) extraHeaders["Set-Cookie"] = guard.refreshedCookie;
+  if (guard.refreshedBearer)
+    extraHeaders[HOST_REFRESH_HEADER] = guard.refreshedBearer;
 
   return sseStream({
     extraHeaders,

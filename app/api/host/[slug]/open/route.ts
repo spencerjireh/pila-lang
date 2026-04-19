@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 
-import { guardHostRequest, unauthorizedJson } from "@/lib/auth/host-guard";
+import {
+  applyHostRefresh,
+  guardHostRequest,
+  unauthorizedJson,
+} from "@/lib/auth/host-guard";
 import { setTenantOpen } from "@/lib/host/settings-actions";
 import { log } from "@/lib/log/logger";
 
@@ -26,9 +30,9 @@ export async function POST(
     slug: params.slug,
     changed: result.changed,
   });
-  return withRefresh(
+  return applyHostRefresh(
     Response.json({ isOpen: result.isOpen }, { status: 200 }),
-    guard.refreshedCookie,
+    guard,
   );
 }
 
@@ -36,10 +40,4 @@ function guardError(status: 401 | 403 | 404): string {
   if (status === 401) return "unauthorized";
   if (status === 403) return "forbidden";
   return "not_found";
-}
-
-function withRefresh(res: Response, cookie: string | null): Response {
-  if (!cookie) return res;
-  res.headers.append("Set-Cookie", cookie);
-  return res;
 }

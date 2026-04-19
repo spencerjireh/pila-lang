@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { guardHostRequest, unauthorizedJson } from "@/lib/auth/host-guard";
+import {
+  guardHostRequest,
+  HOST_REFRESH_HEADER,
+  unauthorizedJson,
+} from "@/lib/auth/host-guard";
 import { hostCookieAttrs, HOST_COOKIE_NAME } from "@/lib/auth/host-session";
 import { signHostToken } from "@/lib/auth/host-token";
 import { hashPassword } from "@/lib/auth/password";
@@ -55,11 +59,15 @@ export async function POST(
     { ok: true, version: result.newVersion },
     { status: 200 },
   );
-  res.cookies.set({
-    name: HOST_COOKIE_NAME,
-    value: token,
-    ...hostCookieAttrs(),
-  });
+  if (guard.source === "cookie") {
+    res.cookies.set({
+      name: HOST_COOKIE_NAME,
+      value: token,
+      ...hostCookieAttrs(),
+    });
+  } else {
+    res.headers.set(HOST_REFRESH_HEADER, token);
+  }
 
   log.info("host.settings.password.rotated", {
     slug: params.slug,

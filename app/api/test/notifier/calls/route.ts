@@ -1,6 +1,8 @@
 import { requireTestEnv } from "@/lib/test-api/guard";
 import { testSpyNotifier } from "@/lib/notifier";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const guard = requireTestEnv();
   if (guard) return guard;

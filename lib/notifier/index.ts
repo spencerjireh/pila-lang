@@ -1,4 +1,5 @@
 import type { Party } from "@/lib/db/schema";
+import { PushNotifier } from "@/lib/push/push-notifier";
 
 export interface Notifier {
   onPartyJoined(party: Party): Promise<void>;
@@ -14,11 +15,22 @@ export class NoopNotifier implements Notifier {
   }
 }
 
+function firebaseConfigured(): boolean {
+  return (process.env.FIREBASE_SERVICE_ACCOUNT_JSON ?? "").trim().length > 0;
+}
+
 export type NotifierCall =
   | { type: "onPartyJoined"; party: Party; at: string }
   | { type: "onPartyReady"; party: Party; at: string };
 
+const TEST_SPY_BRAND = Symbol.for("pila.notifier.testSpy");
+
+function isTestSpy(n: Notifier): n is TestSpyNotifier {
+  return (n as { [TEST_SPY_BRAND]?: boolean })[TEST_SPY_BRAND] === true;
+}
+
 export class TestSpyNotifier implements Notifier {
+  readonly [TEST_SPY_BRAND] = true;
   private calls: NotifierCall[] = [];
 
   async onPartyJoined(party: Party): Promise<void> {
@@ -53,15 +65,21 @@ function shouldUseSpy(): boolean {
   );
 }
 
+function defaultImpl(): Notifier {
+  if (shouldUseSpy()) return new TestSpyNotifier();
+  if (firebaseConfigured()) return new PushNotifier();
+  return new NoopNotifier();
+}
+
 function bootstrap(): Notifier {
   const useSpy = shouldUseSpy();
   if (globalThis.__notifier) {
-    if (useSpy && !(globalThis.__notifier instanceof TestSpyNotifier)) {
+    if (useSpy && !isTestSpy(globalThis.__notifier)) {
       globalThis.__notifier = new TestSpyNotifier();
     }
     return globalThis.__notifier;
   }
-  globalThis.__notifier = useSpy ? new TestSpyNotifier() : new NoopNotifier();
+  globalThis.__notifier = defaultImpl();
   return globalThis.__notifier;
 }
 
@@ -75,5 +93,5 @@ export function setNotifier(n: Notifier) {
 
 export function testSpyNotifier(): TestSpyNotifier | null {
   const n = bootstrap();
-  return n instanceof TestSpyNotifier ? n : null;
+  return isTestSpy(n) ? n : null;
 }

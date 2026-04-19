@@ -87,6 +87,38 @@ export const notifications = pgTable(
   }),
 );
 
+export const pushTokens = pgTable(
+  "push_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    scope: text("scope").notNull(),
+    scopeId: uuid("scope_id").notNull(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    platform: text("platform").notNull(),
+    deviceToken: text("device_token").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (t) => ({
+    scopeEnum: check(
+      "push_tokens_scope_enum",
+      sql`${t.scope} IN ('guest_party','host_session')`,
+    ),
+    platformEnum: check(
+      "push_tokens_platform_enum",
+      sql`${t.platform} IN ('ios','android')`,
+    ),
+    uniqueLive: uniqueIndex("idx_push_tokens_unique_live")
+      .on(t.scopeId, t.deviceToken)
+      .where(sql`${t.revokedAt} IS NULL`),
+    tenant: index("idx_push_tokens_tenant").on(t.tenantId),
+  }),
+);
+
 export const admins = pgTable("admins", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
@@ -162,5 +194,9 @@ export type Notification = typeof notifications.$inferSelect;
 export type NewNotification = typeof notifications.$inferInsert;
 export type Admin = typeof admins.$inferSelect;
 export type NewAdmin = typeof admins.$inferInsert;
+export type PushToken = typeof pushTokens.$inferSelect;
+export type NewPushToken = typeof pushTokens.$inferInsert;
 
 export type PartyStatus = "waiting" | "seated" | "no_show" | "left";
+export type PushScope = "guest_party" | "host_session";
+export type PushPlatform = "ios" | "android";

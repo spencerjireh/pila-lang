@@ -15,3 +15,22 @@ tsconfig.tsbuildinfo
 .DS_Store
 next-env.d.ts
 drizzle/migrations/meta/_journal.json.bak
+
+# Flutter build artifacts
+flutter/.dart_tool/
+flutter/.packages
+flutter/.pub/
+flutter/build/
+flutter/ios/Pods/
+flutter/ios/.symlinks/
+flutter/ios/Flutter/Flutter.framework
+flutter/ios/Flutter/Flutter.podspec
+flutter/android/.gradle/
+flutter/android/app/debug
+flutter/android/app/profile
+flutter/android/app/release
+flutter/android/local.properties
+
+# Mobile push-notification credentials (never commit)
+**/GoogleService-Info.plist
+**/google-services.json

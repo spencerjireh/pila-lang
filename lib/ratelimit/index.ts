@@ -24,7 +24,11 @@ export type LimiterName =
   | "guestStreamPerIp"
   | "hostStreamPerIpSlug"
   | "loginPerIp"
-  | "loginPerSlug";
+  | "loginPerSlug"
+  | "hostTokenPerIp"
+  | "hostTokenPerSlug"
+  | "guestTokenPerIp"
+  | "pushRegisterPerIp";
 
 interface Policy {
   points: number;
@@ -40,6 +44,10 @@ const POLICIES: Record<LimiterName, Policy> = {
   hostStreamPerIpSlug: { points: 30, durationSec: 60 },
   loginPerIp: { points: 10, durationSec: 60 * 60 },
   loginPerSlug: { points: 20, durationSec: 60 * 60 },
+  hostTokenPerIp: { points: 10, durationSec: 60 * 60 },
+  hostTokenPerSlug: { points: 20, durationSec: 60 * 60 },
+  guestTokenPerIp: { points: 30, durationSec: 60 * 60 },
+  pushRegisterPerIp: { points: 20, durationSec: 60 },
 };
 
 const CACHE = new Map<LimiterName, RateLimiterAbstract>();
