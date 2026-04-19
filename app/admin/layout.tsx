@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { auth } from "@/lib/auth/admin-session";
-import { isAdminEmail } from "@/lib/validators/admin-allow-list";
+import { auth } from "@pila/shared/auth/admin-session";
+import { isAdminEmail } from "@pila/shared/validators/admin-allow-list";
 import { SignOutButton } from "./_components/sign-out-button";
 
 export default async function AdminLayout({

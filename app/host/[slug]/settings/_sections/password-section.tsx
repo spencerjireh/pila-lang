@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MIN_PASSWORD_LENGTH } from "@/lib/validators/password";
+import { MIN_PASSWORD_LENGTH } from "@pila/shared/validators/password";
 
 interface Props {
   slug: string;

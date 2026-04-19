@@ -4,13 +4,16 @@ import {
   guardHostRequest,
   HOST_REFRESH_HEADER,
   unauthorizedJson,
-} from "@/lib/auth/host-guard";
-import { hostCookieAttrs, HOST_COOKIE_NAME } from "@/lib/auth/host-session";
-import { signHostToken } from "@/lib/auth/host-token";
-import { hashPassword } from "@/lib/auth/password";
-import { rotateHostPassword } from "@/lib/host/settings-actions";
-import { log } from "@/lib/log/logger";
-import { passwordChangeSchema } from "@/lib/validators/password";
+} from "@pila/shared/auth/host-guard";
+import {
+  hostCookieAttrs,
+  HOST_COOKIE_NAME,
+} from "@pila/shared/auth/host-session";
+import { signHostToken } from "@pila/shared/auth/host-token";
+import { hashPassword } from "@pila/shared/auth/password";
+import { rotateHostPassword } from "@pila/shared/host/settings-actions";
+import { log } from "@pila/shared/log/logger";
+import { passwordChangeSchema } from "@pila/shared/validators/password";
 
 export const dynamic = "force-dynamic";
 

@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
-import { HOST_COOKIE_NAME } from "@/lib/auth/host-session";
-import { verifyHostToken } from "@/lib/auth/host-token";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
+import { HOST_COOKIE_NAME } from "@pila/shared/auth/host-session";
+import { verifyHostToken } from "@pila/shared/auth/host-token";
+import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 
 import { SettingsView } from "./settings-view";
 

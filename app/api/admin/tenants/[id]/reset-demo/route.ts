@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 
-import { requireAdminApi } from "@/lib/auth/admin-guard";
-import { resetDemoFixture } from "@/lib/admin/demo-fixture";
-import { channelForTenantQueue, publish } from "@/lib/redis/pubsub";
-import { log } from "@/lib/log/logger";
+import { requireAdminApi } from "@pila/shared/auth/admin-guard";
+import { resetDemoFixture } from "@pila/shared/admin/demo-fixture";
+import { channelForTenantQueue, publish } from "@pila/shared/redis/pubsub";
+import { log } from "@pila/shared/log/logger";
 
 type Params = { params: { id: string } };
 

@@ -1,11 +1,11 @@
 import { NextRequest } from "next/server";
 
-import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
-import { log } from "@/lib/log/logger";
-import { RateLimitError, consume } from "@/lib/ratelimit";
-import { channelForTenantQueue, subscribe } from "@/lib/redis/pubsub";
+import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
+import { log } from "@pila/shared/log/logger";
+import { RateLimitError, consume } from "@pila/shared/ratelimit";
+import { channelForTenantQueue, subscribe } from "@pila/shared/redis/pubsub";
 import { sseStream } from "@/lib/sse/stream";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
+import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 
 export const dynamic = "force-dynamic";
 

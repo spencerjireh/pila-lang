@@ -4,17 +4,17 @@ import {
   guardHostRequest,
   HOST_REFRESH_HEADER,
   unauthorizedJson,
-} from "@/lib/auth/host-guard";
-import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
-import { log } from "@/lib/log/logger";
+} from "@pila/shared/auth/host-guard";
+import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
+import { log } from "@pila/shared/log/logger";
 import {
   buildHostSnapshot,
   loadRecentlyResolved,
   loadWaiting,
   type HostStreamDiff,
-} from "@/lib/parties/host-stream";
-import { RateLimitError, consume } from "@/lib/ratelimit";
-import { channelForTenantQueue, subscribe } from "@/lib/redis/pubsub";
+} from "@pila/shared/parties/host-stream";
+import { RateLimitError, consume } from "@pila/shared/ratelimit";
+import { channelForTenantQueue, subscribe } from "@pila/shared/redis/pubsub";
 import { sseStream } from "@/lib/sse/stream";
 
 export const dynamic = "force-dynamic";

@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
-import { GUEST_COOKIE_NAME } from "@/lib/auth/guest-session";
+import { GUEST_COOKIE_NAME } from "@pila/shared/auth/guest-session";
 import type { PartyStatus } from "@pila/db/schema";
-import { findPartyById } from "@/lib/parties/lookup";
-import { computePosition } from "@/lib/parties/position";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
+import { findPartyById } from "@pila/shared/parties/lookup";
+import { computePosition } from "@pila/shared/parties/position";
+import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 
 import { WaitView } from "./wait-view";
 

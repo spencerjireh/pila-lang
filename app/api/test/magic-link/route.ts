@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 
-import { latestMagicLink } from "@/lib/auth/test-magic-link-store";
-import { requireTestEnv } from "@/lib/test-api/guard";
+import { latestMagicLink } from "@pila/shared/auth/test-magic-link-store";
+import { requireTestEnv } from "@pila/shared/test-api/guard";
 
 export async function GET(req: NextRequest) {
   const guard = requireTestEnv();

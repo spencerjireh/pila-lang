@@ -1,11 +1,14 @@
 import { NextRequest } from "next/server";
 import { eq, sql } from "drizzle-orm";
 
-import { requireAdminApi } from "@/lib/auth/admin-guard";
+import { requireAdminApi } from "@pila/shared/auth/admin-guard";
 import { getDb } from "@pila/db/client";
 import { tenants } from "@pila/db/schema";
-import { generateInitialPassword, hashPassword } from "@/lib/auth/password";
-import { log } from "@/lib/log/logger";
+import {
+  generateInitialPassword,
+  hashPassword,
+} from "@pila/shared/auth/password";
+import { log } from "@pila/shared/log/logger";
 
 type Params = { params: { id: string } };
 

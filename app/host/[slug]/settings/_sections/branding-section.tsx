@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { TenantHeader } from "@/components/tenant-branding";
 import { Button } from "@/components/ui/button";
-import { MAX_UPLOAD_BYTES } from "@/lib/storage/logo-limits";
+import { MAX_UPLOAD_BYTES } from "@pila/shared/storage/logo-limits";
 
 interface Props {
   slug: string;

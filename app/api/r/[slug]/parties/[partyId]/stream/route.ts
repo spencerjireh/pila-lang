@@ -4,26 +4,26 @@ import {
   GUEST_REFRESH_HEADER,
   guardGuestRequest,
   statusForGuestFailure,
-} from "@/lib/auth/guest-guard";
+} from "@pila/shared/auth/guest-guard";
 import {
   GUEST_COOKIE_MAX_AGE,
   GUEST_COOKIE_NAME,
-} from "@/lib/auth/guest-session";
-import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
-import { log } from "@/lib/log/logger";
-import { computePosition } from "@/lib/parties/position";
+} from "@pila/shared/auth/guest-session";
+import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
+import { log } from "@pila/shared/log/logger";
+import { computePosition } from "@pila/shared/parties/position";
 import type { PartyStatus } from "@pila/db/schema";
 import {
   buildGuestSnapshot,
   isTerminalStatus,
   type GuestStreamEvent,
-} from "@/lib/parties/stream-events";
-import { RateLimitError, consume } from "@/lib/ratelimit";
+} from "@pila/shared/parties/stream-events";
+import { RateLimitError, consume } from "@pila/shared/ratelimit";
 import {
   channelForParty,
   channelForTenantQueue,
   subscribe,
-} from "@/lib/redis/pubsub";
+} from "@pila/shared/redis/pubsub";
 import { resolvedPartyShortCircuit, sseStream } from "@/lib/sse/stream";
 
 export const dynamic = "force-dynamic";

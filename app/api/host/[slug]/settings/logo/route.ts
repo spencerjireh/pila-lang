@@ -4,19 +4,19 @@ import {
   applyHostRefresh,
   guardHostRequest,
   unauthorizedJson,
-} from "@/lib/auth/host-guard";
-import { swapLogo } from "@/lib/host/settings-actions";
-import { log } from "@/lib/log/logger";
+} from "@pila/shared/auth/host-guard";
+import { swapLogo } from "@pila/shared/host/settings-actions";
+import { log } from "@pila/shared/log/logger";
 import {
   MAX_UPLOAD_BYTES,
   processLogoUpload,
-} from "@/lib/storage/logo-pipeline";
+} from "@pila/shared/storage/logo-pipeline";
 import {
   deleteLogo,
   objectKeyFromUrl,
   publicUrlFor,
   putLogo,
-} from "@/lib/storage/s3-client";
+} from "@pila/shared/storage/s3-client";
 
 export const dynamic = "force-dynamic";
 

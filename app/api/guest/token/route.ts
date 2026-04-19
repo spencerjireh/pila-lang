@@ -2,17 +2,17 @@ import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
-import { GUEST_COOKIE_NAME } from "@/lib/auth/guest-session";
+import { GUEST_COOKIE_NAME } from "@pila/shared/auth/guest-session";
 import {
   GUEST_TOKEN_TTL_SECONDS,
   signGuestToken,
-} from "@/lib/auth/guest-token";
+} from "@pila/shared/auth/guest-token";
 import { parties } from "@pila/db/schema";
 import { getDb } from "@pila/db/client";
-import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
-import { log } from "@/lib/log/logger";
-import { RateLimitError, consume } from "@/lib/ratelimit";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
+import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
+import { log } from "@pila/shared/log/logger";
+import { RateLimitError, consume } from "@pila/shared/ratelimit";
+import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 
 export const dynamic = "force-dynamic";
 

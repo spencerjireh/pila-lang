@@ -4,9 +4,9 @@ import {
   applyGuestRefresh,
   guardGuestRequest,
   statusForGuestFailure,
-} from "@/lib/auth/guest-guard";
-import { log } from "@/lib/log/logger";
-import { leaveQueue } from "@/lib/parties/leave";
+} from "@pila/shared/auth/guest-guard";
+import { log } from "@pila/shared/log/logger";
+import { leaveQueue } from "@pila/shared/parties/leave";
 
 export const dynamic = "force-dynamic";
 

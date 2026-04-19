@@ -1,3 +1,3 @@
-import { handlers } from "@/lib/auth/admin-session";
+import { handlers } from "@pila/shared/auth/admin-session";
 
 export const { GET, POST } = handlers;

@@ -1,5 +1,5 @@
-import { redis } from "@/lib/redis/client";
-import { requireTestEnv } from "@/lib/test-api/guard";
+import { redis } from "@pila/shared/redis/client";
+import { requireTestEnv } from "@pila/shared/test-api/guard";
 
 export async function POST() {
   const guard = requireTestEnv();

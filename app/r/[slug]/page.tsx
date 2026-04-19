@@ -2,14 +2,14 @@ import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 import { TenantHeader } from "@/components/tenant-branding";
-import { GUEST_COOKIE_NAME } from "@/lib/auth/guest-session";
-import { clientIp } from "@/lib/http/client-ip";
-import { log } from "@/lib/log/logger";
-import { findWaitingPartyBySession } from "@/lib/parties/lookup";
-import { waitUrlFor } from "@/lib/parties/join";
-import { verifyQrToken, type QrVerification } from "@/lib/qr/token";
-import { RateLimitError, consume } from "@/lib/ratelimit";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
+import { GUEST_COOKIE_NAME } from "@pila/shared/auth/guest-session";
+import { clientIp } from "@pila/shared/http/client-ip";
+import { log } from "@pila/shared/log/logger";
+import { findWaitingPartyBySession } from "@pila/shared/parties/lookup";
+import { waitUrlFor } from "@pila/shared/parties/join";
+import { verifyQrToken, type QrVerification } from "@pila/shared/qr/token";
+import { RateLimitError, consume } from "@pila/shared/ratelimit";
+import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 import { JoinForm } from "./join-form";
 
 export const dynamic = "force-dynamic";

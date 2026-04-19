@@ -1,10 +1,10 @@
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
-import { HOST_COOKIE_NAME } from "@/lib/auth/host-session";
-import { verifyHostToken } from "@/lib/auth/host-token";
-import { loadGuestHistory } from "@/lib/parties/guest-history";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
+import { HOST_COOKIE_NAME } from "@pila/shared/auth/host-session";
+import { verifyHostToken } from "@pila/shared/auth/host-token";
+import { loadGuestHistory } from "@pila/shared/parties/guest-history";
+import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 
 import { GuestsView } from "./guests-view";
 

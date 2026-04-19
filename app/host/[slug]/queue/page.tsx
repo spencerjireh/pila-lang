@@ -1,14 +1,14 @@
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
-import { HOST_COOKIE_NAME } from "@/lib/auth/host-session";
-import { verifyHostToken } from "@/lib/auth/host-token";
+import { HOST_COOKIE_NAME } from "@pila/shared/auth/host-session";
+import { verifyHostToken } from "@pila/shared/auth/host-token";
 import {
   buildHostSnapshot,
   loadRecentlyResolved,
   loadWaiting,
-} from "@/lib/parties/host-stream";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
+} from "@pila/shared/parties/host-stream";
+import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 
 import { QueueView } from "./queue-view";
 

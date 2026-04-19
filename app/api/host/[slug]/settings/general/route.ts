@@ -5,10 +5,10 @@ import {
   applyHostRefresh,
   guardHostRequest,
   unauthorizedJson,
-} from "@/lib/auth/host-guard";
-import { updateTenantBranding } from "@/lib/host/settings-actions";
-import { log } from "@/lib/log/logger";
-import { validateAccentColor } from "@/lib/validators/contrast";
+} from "@pila/shared/auth/host-guard";
+import { updateTenantBranding } from "@pila/shared/host/settings-actions";
+import { log } from "@pila/shared/log/logger";
+import { validateAccentColor } from "@pila/shared/validators/contrast";
 
 export const dynamic = "force-dynamic";
 

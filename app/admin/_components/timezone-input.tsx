@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import { Input } from "@/components/ui/input";
-import { IANA_TIMEZONES } from "@/lib/timezones";
+import { IANA_TIMEZONES } from "@pila/shared/timezones";
 
 export interface TimezoneInputProps {
   value: string;

@@ -4,9 +4,9 @@ import {
   applyHostRefresh,
   guardHostRequest,
   unauthorizedJson,
-} from "@/lib/auth/host-guard";
-import { log } from "@/lib/log/logger";
-import { performHostAction } from "@/lib/parties/host-actions";
+} from "@pila/shared/auth/host-guard";
+import { log } from "@pila/shared/log/logger";
+import { performHostAction } from "@pila/shared/parties/host-actions";
 
 export const dynamic = "force-dynamic";
 

@@ -1,19 +1,19 @@
 import { NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 
-import { requireAdminApi } from "@/lib/auth/admin-guard";
+import { requireAdminApi } from "@pila/shared/auth/admin-guard";
 import { getDb } from "@pila/db/client";
 import { tenants } from "@pila/db/schema";
-import { validateAccentColor } from "@/lib/validators/contrast";
-import { isValidTimezone } from "@/lib/timezones";
-import { updateTenantSchema } from "@/lib/admin/tenant-schema";
-import { hardDeleteTenant } from "@/lib/admin/delete-tenant";
+import { validateAccentColor } from "@pila/shared/validators/contrast";
+import { isValidTimezone } from "@pila/shared/timezones";
+import { updateTenantSchema } from "@pila/shared/admin/tenant-schema";
+import { hardDeleteTenant } from "@pila/shared/admin/delete-tenant";
 import {
   publish,
   channelForTenantQueue,
   channelForParty,
-} from "@/lib/redis/pubsub";
-import { log } from "@/lib/log/logger";
+} from "@pila/shared/redis/pubsub";
+import { log } from "@pila/shared/log/logger";
 
 type Params = { params: { id: string } };
 

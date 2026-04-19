@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
 
-import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
-import { log } from "@/lib/log/logger";
-import { RateLimitError, consume } from "@/lib/ratelimit";
-import { resolveDisplayToken } from "@/lib/tenants/display-token";
+import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
+import { log } from "@pila/shared/log/logger";
+import { RateLimitError, consume } from "@pila/shared/ratelimit";
+import { resolveDisplayToken } from "@pila/shared/tenants/display-token";
 
 export async function GET(
   req: NextRequest,

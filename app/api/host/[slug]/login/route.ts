@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { hostCookieAttrs, HOST_COOKIE_NAME } from "@/lib/auth/host-session";
-import { signHostToken } from "@/lib/auth/host-token";
-import { verifyPassword } from "@/lib/auth/password";
-import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
-import { log } from "@/lib/log/logger";
-import { RateLimitError, consume } from "@/lib/ratelimit";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
+import {
+  hostCookieAttrs,
+  HOST_COOKIE_NAME,
+} from "@pila/shared/auth/host-session";
+import { signHostToken } from "@pila/shared/auth/host-token";
+import { verifyPassword } from "@pila/shared/auth/password";
+import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
+import { log } from "@pila/shared/log/logger";
+import { RateLimitError, consume } from "@pila/shared/ratelimit";
+import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 
 export const dynamic = "force-dynamic";
 

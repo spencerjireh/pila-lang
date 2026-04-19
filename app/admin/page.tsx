@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/admin-session";
-import { isAdminEmail } from "@/lib/validators/admin-allow-list";
+import { auth } from "@pila/shared/auth/admin-session";
+import { isAdminEmail } from "@pila/shared/validators/admin-allow-list";
 import { SignInForm } from "./_components/sign-in-form";
 import {
   Card,

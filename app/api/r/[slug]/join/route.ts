@@ -5,12 +5,12 @@ import {
   GUEST_COOKIE_MAX_AGE,
   GUEST_COOKIE_NAME,
   guestCookieAttrs,
-} from "@/lib/auth/guest-session";
-import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
-import { log } from "@/lib/log/logger";
-import { joinQueue } from "@/lib/parties/join";
-import { verifyQrToken } from "@/lib/qr/token";
-import { RateLimitError, consume } from "@/lib/ratelimit";
+} from "@pila/shared/auth/guest-session";
+import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
+import { log } from "@pila/shared/log/logger";
+import { joinQueue } from "@pila/shared/parties/join";
+import { verifyQrToken } from "@pila/shared/qr/token";
+import { RateLimitError, consume } from "@pila/shared/ratelimit";
 
 const WELCOME_BACK_COOKIE = "welcome_back";
 const WELCOME_BACK_MAX_AGE = 5 * 60;

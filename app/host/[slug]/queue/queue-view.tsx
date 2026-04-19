@@ -14,7 +14,7 @@ import type {
   HostStreamDiff,
   HostStreamEvent,
   HostWaitingRow,
-} from "@/lib/parties/host-stream";
+} from "@pila/shared/parties/host-stream";
 
 interface QueueViewProps {
   slug: string;

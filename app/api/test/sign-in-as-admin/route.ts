@@ -5,8 +5,8 @@ import { z } from "zod";
 
 import { getDb } from "@pila/db/client";
 import { sessions, users } from "@pila/db/schema";
-import { requireTestEnv } from "@/lib/test-api/guard";
-import { isAdminEmail } from "@/lib/validators/admin-allow-list";
+import { requireTestEnv } from "@pila/shared/test-api/guard";
+import { isAdminEmail } from "@pila/shared/validators/admin-allow-list";
 
 const bodySchema = z.object({ email: z.string().email() });
 

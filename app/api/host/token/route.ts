@@ -1,12 +1,15 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
-import { HOST_TOKEN_TTL_SECONDS, signHostToken } from "@/lib/auth/host-token";
-import { verifyPassword } from "@/lib/auth/password";
-import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
-import { log } from "@/lib/log/logger";
-import { RateLimitError, consume } from "@/lib/ratelimit";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
+import {
+  HOST_TOKEN_TTL_SECONDS,
+  signHostToken,
+} from "@pila/shared/auth/host-token";
+import { verifyPassword } from "@pila/shared/auth/password";
+import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
+import { log } from "@pila/shared/log/logger";
+import { RateLimitError, consume } from "@pila/shared/ratelimit";
+import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 
 export const dynamic = "force-dynamic";
 

@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import type {
   GuestHistoryPage,
   GuestHistoryRow,
-} from "@/lib/parties/guest-history";
-import { formatInTenantTz } from "@/lib/time/format-in-tenant-tz";
+} from "@pila/shared/parties/guest-history";
+import { formatInTenantTz } from "@pila/shared/time/format-in-tenant-tz";
 
 interface Props {
   slug: string;

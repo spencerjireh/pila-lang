@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OneTimePasswordDialog } from "../../_components/one-time-password";
 import { TimezoneInput } from "../../_components/timezone-input";
-import { DEFAULT_TIMEZONE } from "@/lib/timezones";
+import { DEFAULT_TIMEZONE } from "@pila/shared/timezones";
 
 export function CreateTenantForm() {
   const router = useRouter();

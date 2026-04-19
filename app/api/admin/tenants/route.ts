@@ -1,14 +1,17 @@
 import { NextRequest } from "next/server";
 import { desc } from "drizzle-orm";
 
-import { requireAdminApi } from "@/lib/auth/admin-guard";
+import { requireAdminApi } from "@pila/shared/auth/admin-guard";
 import { getDb } from "@pila/db/client";
 import { tenants } from "@pila/db/schema";
-import { validateSlug } from "@/lib/validators/slug";
-import { generateInitialPassword, hashPassword } from "@/lib/auth/password";
-import { isValidTimezone } from "@/lib/timezones";
-import { createTenantSchema } from "@/lib/admin/tenant-schema";
-import { log } from "@/lib/log/logger";
+import { validateSlug } from "@pila/shared/validators/slug";
+import {
+  generateInitialPassword,
+  hashPassword,
+} from "@pila/shared/auth/password";
+import { isValidTimezone } from "@pila/shared/timezones";
+import { createTenantSchema } from "@pila/shared/admin/tenant-schema";
+import { log } from "@pila/shared/log/logger";
 
 export async function GET() {
   const guard = await requireAdminApi();

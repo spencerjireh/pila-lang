@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 
-import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
-import { log } from "@/lib/log/logger";
-import { verifyQrToken } from "@/lib/qr/token";
-import { RateLimitError, consume } from "@/lib/ratelimit";
-import { loadTenantBySlug } from "@/lib/tenants/display-token";
+import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
+import { log } from "@pila/shared/log/logger";
+import { verifyQrToken } from "@pila/shared/qr/token";
+import { RateLimitError, consume } from "@pila/shared/ratelimit";
+import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 
 export const dynamic = "force-dynamic";
 
