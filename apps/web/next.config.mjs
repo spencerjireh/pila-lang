@@ -5,6 +5,16 @@ const config = {
   experimental: {
     serverComponentsExternalPackages: ["bcrypt", "sharp", "pg", "ioredis"],
   },
+  webpack: (webpackConfig, { isServer }) => {
+    if (isServer) {
+      // bcrypt reaches for @mapbox/node-pre-gyp which in turn \`require()\`s
+      // `aws-sdk`, `mock-aws-s3`, `nock`, and an HTML file — none of which
+      // ship in a prod build. Externalizing the whole bcrypt module lets
+      // Node resolve it at runtime from node_modules.
+      webpackConfig.externals.push("bcrypt");
+    }
+    return webpackConfig;
+  },
   async headers() {
     return [
       {
