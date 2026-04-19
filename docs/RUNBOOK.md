@@ -8,13 +8,13 @@ Audience: an SRE or ops engineer standing the product up on a fresh host, keepin
 
 Four services, one network:
 
-| Service    | Image                             | Role                                                                             |
-| ---------- | --------------------------------- | -------------------------------------------------------------------------------- |
-| `app`      | `ghcr.io/<owner>/pila-lang:<tag>` | Next.js server on port 3000. Serves the UI, REST + SSE APIs.                     |
-| `postgres` | `postgres:16-alpine`              | Source of truth for tenants, parties, notifications, admin sessions.             |
-| `redis`    | `redis:7-alpine`                  | Pub/sub channel per tenant + per party, per-key rate limits, undo buffer.        |
-| `minio`    | `minio/minio:latest`              | S3-compatible blob store for tenant logos. Swap for AWS S3 in prod if preferred. |
-| `migrator` | `node:22-alpine`                  | One-shot Drizzle migration runner. `app` waits on it.                            |
+| Service    | Image                             | Role                                                                                                                              |
+| ---------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `app`      | `ghcr.io/<owner>/pila-lang:<tag>` | Next.js server on port 3000. Serves the UI, REST + SSE APIs.                                                                      |
+| `postgres` | `postgres:16-alpine`              | Source of truth for tenants, parties, notifications, admin sessions.                                                              |
+| `redis`    | `redis:7-alpine`                  | Pub/sub channel per tenant + per party, per-key rate limits, undo buffer.                                                         |
+| `minio`    | `rustfs/rustfs:1.0.0-alpha.95`    | S3-compatible blob store for tenant logos (RustFS, Apache-2.0). Service name is historical; swap for AWS S3 in prod if preferred. |
+| `migrator` | `node:22-alpine`                  | One-shot Drizzle migration runner. `app` waits on it.                                                                             |
 
 The `app` container is stateless — scale horizontally by starting more copies behind a shared-nothing load balancer (sticky sessions not required).
 
@@ -60,7 +60,7 @@ Create the first tenant via the admin UI:
 
 ## 3. Environment reference
 
-Every variable is required unless noted. `lib/config/env.ts` is the source of truth.
+Every variable is required unless noted. `packages/shared/src/config/env.ts` is the source of truth.
 
 | Variable             | Secret? | Purpose                                                                                |
 | -------------------- | ------- | -------------------------------------------------------------------------------------- |
@@ -188,7 +188,7 @@ docker compose logs --no-log-prefix app | jq -r 'select(.event=="host.login.fail
 
 **"SSE clients disconnect every few seconds."** Check the reverse proxy timeout. Nginx default is 60s — raise `proxy_read_timeout` to 120s+. The stream sends `:ping` comments every 15s so idle timeout never fires in a healthy deployment.
 
-**"Logo uploads return 500."** Verify MinIO is reachable from the `app` container: `docker compose exec app wget -qO- http://minio:9000/minio/health/live`. If that fails, MinIO is down. If it succeeds, check `S3_ACCESS_KEY`/`S3_SECRET_KEY` in `.env.prod`.
+**"Logo uploads return 500."** Verify the S3 store is reachable from the `app` container: `docker compose exec app wget -qO- http://minio:9000/health` (the service name `minio` is historical — the image is RustFS). If that fails, the store is down. If it succeeds, check `S3_ACCESS_KEY`/`S3_SECRET_KEY` in `.env.prod`.
 
 **"Redis OOM."** Pub/sub + rate limits should never exceed a few MB. If Redis is at the `maxmemory` limit, something else in the network is writing to it. Confirm `SELECT 0` keys with `redis-cli DBSIZE`.
 
@@ -215,7 +215,7 @@ Optional in dev, required in prod once push goes live:
 1. Firebase console → Create Project (or pick existing). Add iOS and Android apps under the project with the bundle id / package name above.
 2. Project settings → Service accounts → Generate new private key. This yields a JSON file. Store it as `FIREBASE_SERVICE_ACCOUNT_JSON` (preferably base64-encoded: `base64 -w 0 firebase.json`). **Never commit.**
 3. Project settings → Cloud Messaging → APNs authentication key → upload the `.p8` you export from the Apple Developer portal. Key id + team id are both filled in by the form.
-4. Download `GoogleService-Info.plist` (iOS) and `google-services.json` (Android) and drop them into `flutter/ios/Runner/` and `flutter/android/app/` respectively. Both paths are gitignored.
+4. Download `GoogleService-Info.plist` (iOS) and `google-services.json` (Android) and drop them into `apps/mobile/ios/Runner/` and `apps/mobile/android/app/` respectively. Both paths are gitignored.
 
 ### Universal Links / App Links
 
@@ -248,10 +248,10 @@ flutter doctor                                      # iOS + Chrome should be gre
 
 Xcode must already be installed. Accept its licences with `sudo xcodebuild -runFirstLaunch` if `flutter doctor` complains.
 
-Flutter is an independent build tree under `flutter/`:
+Flutter is an independent build tree under `apps/mobile/`:
 
 ```bash
-cd flutter
+cd apps/mobile
 flutter pub get
 flutter analyze
 flutter test
@@ -270,11 +270,11 @@ After any regeneration, re-apply the iOS associated-domains entitlement and the 
 
 Phase 9 ships guest-mobile code that is **push-dormant by default**: with no `GoogleService-Info.plist` / `google-services.json` on device, `ensureFirebase()` catches the init failure and leaves `pushEnabled=false`. The SSE-only path still verifies end-to-end without Firebase.
 
-1. **Throwaway Firebase project**: Firebase console → new project → add iOS + Android apps with bundle id `com.pila.pila` (default from `flutter create`). Download the config files and drop them into `flutter/ios/Runner/` and `flutter/android/app/`.
+1. **Throwaway Firebase project**: Firebase console → new project → add iOS + Android apps with bundle id `com.pila.pila` (default from `flutter create`). Download the config files and drop them into `apps/mobile/ios/Runner/` and `apps/mobile/android/app/`.
 2. **APNs auth key**: Apple Developer → Certificates, Identifiers & Profiles → Keys → `.p8` with APNs enabled; upload to the Firebase Cloud Messaging tab. Required for any real iOS push — iOS simulators can't receive APNs.
 3. **Run on a physical iPhone**:
    ```bash
-   cd flutter && flutter run -d <device-udid> \
+   cd apps/mobile && flutter run -d <device-udid> \
      --dart-define=PILA_API_BASE_URL=https://<your-dev-host> \
      --dart-define=PILA_LINK_HOST=<your-dev-host>
    ```
@@ -293,7 +293,7 @@ Phase 9 ships guest-mobile code that is **push-dormant by default**: with no `Go
 
 ```bash
 GUEST_JWT_SECRET=<32+char> pnpm test          # server suite incl. guest-guard
-cd flutter && flutter analyze && flutter test  # Dart suite incl. router matrix, reducer, party store, push coordinator
+cd apps/mobile && flutter analyze && flutter test  # Dart suite incl. router matrix, reducer, party store, push coordinator
 ```
 
 ### Phase 10 manual verification (host mobile)
@@ -332,7 +332,7 @@ Run against the dev docker stack (`docker compose up -d postgres redis minio mig
 
 ```bash
 pnpm test                                     # includes the extended host-stream test
-cd flutter && flutter analyze && flutter test  # adds host reducer, controller, store, api mapping, stream events
+cd apps/mobile && flutter analyze && flutter test  # adds host reducer, controller, store, api mapping, stream events
 ```
 
 ### Interactive iOS Simulator smoke (optional)
@@ -340,7 +340,7 @@ cd flutter && flutter analyze && flutter test  # adds host reducer, controller, 
 For visual verification of Flutter screens on the iPhone Simulator beyond what unit tests cover:
 
 - **Boot the sim**: `xcrun simctl boot "iPhone 16 Pro" && open -a Simulator`.
-- **Land on a specific route**: `cd flutter && flutter run -d <sim-udid> --route=/host/demo` — `--route` seeds the initial GoRouter location so you can skip past the splash on cold-launch.
+- **Land on a specific route**: `cd apps/mobile && flutter run -d <sim-udid> --route=/host/demo` — `--route` seeds the initial GoRouter location so you can skip past the splash on cold-launch.
 - **Tap / type from the CLI** requires `cliclick` (`brew install cliclick`) plus **Accessibility** permission granted to the terminal running the CLI (System Settings → Privacy & Security → Accessibility → toggle on your terminal; requires terminal restart). Without Accessibility, `cliclick`, `osascript` System Events, `screencapture` of the sim window, and JXA `Application("Simulator").windows` all fail.
 - **Auth-gated routes** (`/host/:slug/queue`, `/settings`, `/guests`) need a host bearer in secure storage. The cheapest path is to submit the password via the login screen; a future `--dart-define=PILA_SMOKE_HOST_TOKEN=...` hook could pre-seed it for fully unattended smokes.
 - **Pod / plugin conflicts** (Phase 10): iOS Podfile `platform :ios` is pinned to `15.0` to satisfy Firebase 11 + GoogleDataTransport 10+ constraints; `mobile_scanner` is on `^7.2.0` (same API as 5.x).
@@ -365,15 +365,15 @@ Phase 11 adds the display surface, kiosk-mode plumbing, and an `integration_test
 
 Prerequisites: an Apple Developer account with Team ID, a signed provisioning profile, and the `GoogleService-Info.plist` from Firebase if push is wanted.
 
-1. In Xcode: open `flutter/ios/Runner.xcworkspace`. Select the **Runner** target → Signing & Capabilities → check **Automatically manage signing**. Pick your Team.
+1. In Xcode: open `apps/mobile/ios/Runner.xcworkspace`. Select the **Runner** target → Signing & Capabilities → check **Automatically manage signing**. Pick your Team.
 2. Set the build bundle identifier to match `com.pila.pila` (already in `project.pbxproj`). Add capabilities: **Associated Domains** (`applinks:<your-host>`), **Push Notifications**, **Background Modes → Remote notifications** if using push.
-3. Replace `applinks:pila.example.com` in `flutter/ios/Runner/Runner.entitlements` with your production host.
+3. Replace `applinks:pila.example.com` in `apps/mobile/ios/Runner/Runner.entitlements` with your production host.
 4. Replace the literal `TEAMID` in `public/.well-known/apple-app-site-association` with your Team ID (format: `ABCDE12345.com.pila.pila`).
 5. Upload an APNs auth key to Firebase console → Cloud Messaging (required for real push; simulator receives none).
-6. Drop `GoogleService-Info.plist` into `flutter/ios/Runner/` (gitignored).
+6. Drop `GoogleService-Info.plist` into `apps/mobile/ios/Runner/` (gitignored).
 7. Build + archive:
    ```bash
-   cd flutter
+   cd apps/mobile
    flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
    ```
    Or open the workspace in Xcode and run Product → Archive → Distribute App → App Store Connect → Upload.
@@ -388,21 +388,21 @@ Prerequisites: a JDK 17 + a release keystore.
    keytool -genkey -v -keystore ~/.android/pila-release.jks \
      -keyalg RSA -keysize 2048 -validity 10000 -alias pila
    ```
-2. Create `flutter/android/key.properties` (gitignored) with:
+2. Create `apps/mobile/android/key.properties` (gitignored) with:
    ```
    storePassword=<pw>
    keyPassword=<pw>
    keyAlias=pila
    storeFile=/absolute/path/to/pila-release.jks
    ```
-3. Add a `signingConfigs.release` block in `flutter/android/app/build.gradle.kts` that reads `key.properties` and wire `buildTypes.release` to it. (Currently release is signed with the debug keystore — explicit TODO in the file.)
+3. Add a `signingConfigs.release` block in `apps/mobile/android/app/build.gradle.kts` that reads `key.properties` and wire `buildTypes.release` to it. (Currently release is signed with the debug keystore — explicit TODO in the file.)
 4. Obtain SHA-256 fingerprints (both debug + release) for App Link verification:
    ```bash
    keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
    keytool -list -v -keystore ~/.android/pila-release.jks -alias pila
    ```
 5. Replace the two `REPLACE:WITH:...:FINGERPRINT` placeholders in `public/.well-known/assetlinks.json` with the uppercase colon-delimited fingerprints.
-6. Drop `google-services.json` into `flutter/android/app/` (gitignored).
+6. Drop `google-services.json` into `apps/mobile/android/app/` (gitignored).
 7. Build the release artifact:
    ```bash
    flutter build appbundle --release    # Play Store (preferred)
@@ -435,7 +435,7 @@ pnpm db:migrate
 NODE_ENV=test pnpm dev
 
 # terminal 2 — integration tests on a booted iOS simulator
-cd flutter
+cd apps/mobile
 flutter test integration_test/sales_demo_test.dart \
   -d "iPhone 16 Pro" \
   --dart-define=PILA_API_BASE_URL=http://localhost:3000
@@ -454,7 +454,7 @@ Tests are idempotent — each one calls `/api/test/reset-tenant` + `/api/test/fl
 #### Phase 11 manual smoke (display flow)
 
 1. `pnpm seed --tenant=demo` (if not already seeded).
-2. `cd flutter && flutter run -d <sim-or-device> --dart-define=PILA_API_BASE_URL=http://<host>:3000 --route=/display`.
+2. `cd apps/mobile && flutter run -d <sim-or-device> --dart-define=PILA_API_BASE_URL=http://<host>:3000 --route=/display`.
 3. Pair with slug `demo`. Display renders QR + tenant header.
 4. From the web host at `http://localhost:3000/host/demo`, toggle **Close queue** → display swaps to "Not accepting guests right now" within ~2 seconds (SSE-driven).
 5. Reopen → QR returns.
