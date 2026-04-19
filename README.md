@@ -40,15 +40,16 @@ pnpm seed --tenant=<slug> [--with-waiters=N]
 
 ## Architecture
 
-- Next.js 14 App Router, React 18, Tailwind.
-- Postgres 16 (Drizzle ORM), Redis 7 (pub/sub + rate limits), S3-compatible blob store (MinIO in dev).
-- SSE for live updates, signed JWT cookies for host sessions, signed QR tokens for the display.
+- pnpm workspace + Turborepo monorepo: `apps/web` (Next.js 14 App Router, React 18, Tailwind), `apps/mobile` (Flutter 3.41+), `packages/db` (Drizzle), `packages/shared` (auth, parties, redis, storage, push, validators…), `packages/config` (shared tsconfig + eslint).
+- Postgres 16 (Drizzle ORM), Redis 7 (pub/sub + rate limits), S3-compatible blob store (RustFS in dev — Apache-2.0 Rust S3 server).
+- SSE for live updates, signed JWT cookies for host sessions, signed QR tokens for the display. Bearer-token acceptance on the same endpoints for the Flutter client.
 - Admin sign-in via NextAuth magic link (Resend).
 
 ## Testing
 
-- Vitest unit tests live next to the modules they cover (`lib/**/*.test.ts`).
-- Playwright E2E specs live in `e2e/specs/`. The suite requires running docker services (postgres, redis, minio) and builds the app via `pnpm build && pnpm start` under `NODE_ENV=test`. Test-only API routes at `/api/test/*` are gated on `NODE_ENV==="test"` and never ship to production.
+- Vitest unit tests live next to the modules they cover (`packages/**/src/**/*.test.ts`, `apps/web/**/*.test.ts`).
+- Playwright E2E specs live in `e2e/specs/`. The suite requires running docker services (postgres, redis, minio) and builds the app via `pnpm --filter @pila/web build && pnpm --filter @pila/web start` under `NODE_ENV=test`. Test-only API routes at `/api/test/*` are gated on `NODE_ENV==="test"` OR `ENABLE_TEST_ROUTES=1` and never ship to production.
+- Flutter unit tests: `cd apps/mobile && flutter test` (128 tests).
 
 ## Production + ops
 
@@ -56,7 +57,7 @@ See `docs/RUNBOOK.md` for host bootstrap, backup/restore, environment reference,
 
 ## Drizzle migrations
 
-Migrations live in `drizzle/migrations/`. **Do not import them at runtime.** The migrator service applies them at boot.
+Migrations live in `packages/db/migrations/`. **Do not import them at runtime.** The migrator service applies them at boot.
 
 ## Contributing
 

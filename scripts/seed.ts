@@ -19,9 +19,12 @@ import {
   DEMO_WAITING,
   DEMO_HISTORICAL,
   resetDemoFixture,
-} from "@/lib/admin/demo-fixture";
-import { generateInitialPassword, hashPassword } from "@/lib/auth/password";
-import { getDb } from "@/lib/db/client";
+} from "@pila/shared/admin/demo-fixture";
+import {
+  generateInitialPassword,
+  hashPassword,
+} from "@pila/shared/auth/password";
+import { getDb } from "@pila/db/client";
 import {
   accounts,
   admins,
@@ -31,8 +34,8 @@ import {
   tenants,
   users,
   verificationTokens,
-} from "@/lib/db/schema";
-import { validateSlug } from "@/lib/validators/slug";
+} from "@pila/db/schema";
+import { validateSlug } from "@pila/shared/validators/slug";
 
 interface Args {
   reset: boolean;

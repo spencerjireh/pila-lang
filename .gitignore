@@ -17,20 +17,23 @@ next-env.d.ts
 drizzle/migrations/meta/_journal.json.bak
 
 # Flutter build artifacts
-flutter/.dart_tool/
-flutter/.packages
-flutter/.pub/
-flutter/build/
-flutter/ios/Pods/
-flutter/ios/.symlinks/
-flutter/ios/Flutter/Flutter.framework
-flutter/ios/Flutter/Flutter.podspec
-flutter/android/.gradle/
-flutter/android/app/debug
-flutter/android/app/profile
-flutter/android/app/release
-flutter/android/local.properties
+apps/mobile/.dart_tool/
+apps/mobile/.packages
+apps/mobile/.pub/
+apps/mobile/build/
+apps/mobile/ios/Pods/
+apps/mobile/ios/.symlinks/
+apps/mobile/ios/Flutter/Flutter.framework
+apps/mobile/ios/Flutter/Flutter.podspec
+apps/mobile/android/.gradle/
+apps/mobile/android/app/debug
+apps/mobile/android/app/profile
+apps/mobile/android/app/release
+apps/mobile/android/local.properties
 
 # Mobile push-notification credentials (never commit)
 **/GoogleService-Info.plist
 **/google-services.json
+
+# Turbo caches
+.turbo

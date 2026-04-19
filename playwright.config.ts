@@ -22,7 +22,8 @@ export default defineConfig({
   webServer: EXTERNAL
     ? undefined
     : {
-        command: "pnpm build && pnpm start",
+        command:
+          "pnpm --filter @pila/web build && pnpm --filter @pila/web start",
         url: `${BASE_URL}/api/health`,
         reuseExistingServer: !process.env.CI,
         timeout: 240_000,

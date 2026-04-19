@@ -19,7 +19,8 @@
     "coverage",
     "test-results",
     "playwright-report",
-    "drizzle/migrations",
+    "packages/db/migrations",
+    "apps/mobile",
     "next-env.d.ts"
   ]
 }

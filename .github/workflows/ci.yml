@@ -38,15 +38,15 @@ jobs:
           --health-timeout 3s
           --health-retries 20
       minio:
-        image: bitnamilegacy/minio:latest
+        image: rustfs/rustfs:1.0.0-alpha.95
         env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-          MINIO_DEFAULT_BUCKETS: queue-logos
+          RUSTFS_ACCESS_KEY: minioadmin
+          RUSTFS_SECRET_KEY: minioadmin
+          RUSTFS_ADDRESS: 0.0.0.0:9000
         ports:
           - 9000:9000
         options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-cmd "curl -f http://localhost:9000/health"
           --health-interval 5s
           --health-timeout 3s
           --health-retries 20
@@ -169,12 +169,12 @@ jobs:
 
       - name: Pub get
         run: flutter pub get
-        working-directory: flutter
+        working-directory: apps/mobile
 
       - name: Analyze
         run: flutter analyze
-        working-directory: flutter
+        working-directory: apps/mobile
 
       - name: Test
         run: flutter test
-        working-directory: flutter
+        working-directory: apps/mobile

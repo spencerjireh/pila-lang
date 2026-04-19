@@ -4,12 +4,16 @@ import path from "node:path";
 export default defineConfig({
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "."),
+      "@": path.resolve(__dirname, "./apps/web"),
     },
   },
   test: {
     environment: "node",
-    include: ["lib/**/*.test.ts", "scripts/**/*.test.ts"],
+    include: [
+      "apps/web/**/*.test.ts",
+      "packages/**/src/**/*.test.ts",
+      "scripts/**/*.test.ts",
+    ],
     globals: false,
     setupFiles: ["./vitest.setup.ts"],
   },
