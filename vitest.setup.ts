@@ -1,0 +1,12 @@
+process.env.DATABASE_URL ??= "postgres://test:test@localhost:5432/test";
+process.env.REDIS_URL ??= "redis://localhost:6379";
+process.env.S3_ENDPOINT ??= "http://localhost:9000";
+process.env.S3_BUCKET ??= "test";
+process.env.S3_ACCESS_KEY ??= "test";
+process.env.S3_SECRET_KEY ??= "test";
+process.env.QR_TOKEN_SECRET ??= "x".repeat(40);
+process.env.HOST_JWT_SECRET ??= "y".repeat(40);
+process.env.ADMIN_EMAILS ??= "admin@example.com";
+process.env.NEXTAUTH_SECRET ??= "n".repeat(32);
+process.env.NEXTAUTH_URL ??= "http://localhost:3000";
+process.env.RESEND_API_KEY ??= "re_test";

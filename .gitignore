@@ -1,0 +1,17 @@
+node_modules
+.pnpm-store
+.next
+dist
+out
+coverage
+test-results
+playwright-report
+tsconfig.tsbuildinfo
+.env
+.env.local
+.env.dev
+.env.prod
+*.local
+.DS_Store
+next-env.d.ts
+drizzle/migrations/meta/_journal.json.bak

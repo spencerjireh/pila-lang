@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1776527194769,
+      "tag": "0000_old_plazm",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776528988519,
+      "tag": "0001_damp_dexter_bennett",
+      "breakpoints": true
+    }
+  ]
+}
