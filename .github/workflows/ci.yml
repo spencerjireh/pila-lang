@@ -134,6 +134,8 @@ jobs:
 
       - name: End-to-end tests
         run: pnpm e2e
+        env:
+          E2E_EXTERNAL_SERVER: "1"
 
       - name: Stop app
         if: always()
