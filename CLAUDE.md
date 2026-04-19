@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Pila Lang — a hosted, QR-first waitlist for small restaurants. Next.js 14 monolith with Postgres, Redis, and MinIO, self-hosted via Docker Compose. Pre-pilot v1 MVP; breaking changes are expected.
 
-Authoritative design docs: `Technical-Spec.md` (the contract — read this before changing queue, SSE, auth, or tenancy behavior), `PRD.md`, `User-Stories.md`, `docs/RUNBOOK.md`.
+Authoritative design docs: `docs/Technical-Spec.md` (the contract — read this before changing queue, SSE, auth, or tenancy behavior), `docs/PRD.md`, `docs/User-Stories.md`, `docs/RUNBOOK.md`.
 
 ## Common commands
 
@@ -55,7 +55,7 @@ Single Next.js 14 App Router server. No edge functions, no serverless split — 
 
 ### Load-bearing invariants
 
-These are easy to break and expensive to debug. Read `Technical-Spec.md` for the full rationale before editing the code that enforces them.
+These are easy to break and expensive to debug. Read `docs/Technical-Spec.md` for the full rationale before editing the code that enforces them.
 
 - **Tenancy scoping.** Every query on `parties` / `notifications` must go through a service wrapper that takes a `tenantId`. Never expose `tenant_id` to the client; resolve from the URL slug server-side.
 - **SSE setup order.** In stream handlers: subscribe to Redis **first**, then read the Postgres snapshot, then emit the snapshot, then forward live diffs. Inverting this drops events in the gap.

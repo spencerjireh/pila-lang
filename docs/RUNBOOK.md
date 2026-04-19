@@ -449,7 +449,7 @@ flutter test integration_test/display_flow_test.dart \
 
 Tests are idempotent — each one calls `/api/test/reset-tenant` + `/api/test/flush-redis` before seeding. On Android, swap the device id for `emulator-5554` (launch via `~/Library/Android/sdk/emulator/emulator -avd Pixel_7_API_34` or the Android Studio AVD manager).
 
-**CI note**: integration_test is **not** wired into GitHub Actions yet. Running the full stack on a Mac runner is a separate infra task; see `progress.md` Phase 11 deferrals.
+**CI note**: integration_test is **not** wired into GitHub Actions yet. Running the full stack on a Mac runner is a separate infra task; see `docs/progress.md` Phase 11 deferrals.
 
 #### Phase 11 manual smoke (display flow)
 
@@ -467,7 +467,7 @@ Tests are idempotent — each one calls `/api/test/reset-tenant` + `/api/test/fl
 - **Actual TestFlight upload** — requires an Apple Developer account with a provisioning profile. Documentation above covers the steps; the upload itself is operator-driven.
 - **Actual signed APK release** — requires a real keystore. Same rationale.
 - **Cross-surface push timing acceptance** — "seat action on the web host surfaces to the Flutter guest as a push within 3 seconds on both iOS and Android" requires Firebase provisioned + physical iOS and Android devices.
-- **CI wiring for integration_test** — requires a Mac runner able to host the full dev stack (Postgres + Redis + MinIO + Next.js). Tracked in progress.md.
+- **CI wiring for integration_test** — requires a Mac runner able to host the full dev stack (Postgres + Redis + MinIO + Next.js). Tracked in docs/progress.md.
 
 ---
 
