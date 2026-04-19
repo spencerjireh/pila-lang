@@ -2,8 +2,8 @@ import { NextRequest } from "next/server";
 import { eq, sql } from "drizzle-orm";
 
 import { requireAdminApi } from "@/lib/auth/admin-guard";
-import { getDb } from "@/lib/db/client";
-import { tenants } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { tenants } from "@pila/db/schema";
 import { generateInitialPassword, hashPassword } from "@/lib/auth/password";
 import { log } from "@/lib/log/logger";
 

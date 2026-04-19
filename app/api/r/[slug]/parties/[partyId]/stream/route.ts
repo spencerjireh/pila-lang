@@ -12,7 +12,7 @@ import {
 import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
 import { log } from "@/lib/log/logger";
 import { computePosition } from "@/lib/parties/position";
-import type { PartyStatus } from "@/lib/db/schema";
+import type { PartyStatus } from "@pila/db/schema";
 import {
   buildGuestSnapshot,
   isTerminalStatus,

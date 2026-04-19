@@ -1,4 +1,4 @@
-import type { PartyStatus } from "@/lib/db/schema";
+import type { PartyStatus } from "@pila/db/schema";
 
 export interface GuestSnapshotEvent {
   type: "snapshot";

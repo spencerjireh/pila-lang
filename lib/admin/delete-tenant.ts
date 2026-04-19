@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
-import { getDb } from "@/lib/db/client";
-import { parties, tenants } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { parties, tenants } from "@pila/db/schema";
 
 export type HardDeleteResult =
   | { ok: true; slug: string; affectedPartyIds: string[] }

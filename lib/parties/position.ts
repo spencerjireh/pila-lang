@@ -1,7 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 
-import { parties } from "@/lib/db/schema";
-import { tenantDb } from "@/lib/db/tenant-scoped";
+import { parties } from "@pila/db/schema";
+import { tenantDb } from "@pila/db/tenant-scoped";
 import { channelForParty, publish } from "@/lib/redis/pubsub";
 
 import type { GuestPositionChangedEvent } from "./stream-events";

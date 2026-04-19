@@ -1,8 +1,8 @@
 import { and, eq, ne } from "drizzle-orm";
 
 import { generateGuestSessionToken } from "@/lib/auth/guest-session";
-import { parties, type Party, type Tenant } from "@/lib/db/schema";
-import { tenantDb } from "@/lib/db/tenant-scoped";
+import { parties, type Party, type Tenant } from "@pila/db/schema";
+import { tenantDb } from "@pila/db/tenant-scoped";
 import { notifier } from "@/lib/notifier";
 import { channelForTenantQueue, publish } from "@/lib/redis/pubsub";
 import { loadTenantBySlug } from "@/lib/tenants/display-token";

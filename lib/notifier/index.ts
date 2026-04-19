@@ -1,4 +1,4 @@
-import type { Party } from "@/lib/db/schema";
+import type { Party } from "@pila/db/schema";
 import { PushNotifier } from "@/lib/push/push-notifier";
 
 export interface Notifier {

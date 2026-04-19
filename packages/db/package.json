@@ -1,0 +1,27 @@
+{
+  "name": "@pila/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts",
+    "./client": "./src/client.ts",
+    "./tenant-scoped": "./src/tenant-scoped.ts"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "studio": "drizzle-kit studio --config=drizzle.config.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.36.4",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@pila/config": "workspace:*",
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.28.1",
+    "typescript": "^5.6.3"
+  }
+}

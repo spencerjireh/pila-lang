@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { Party, PushToken } from "@/lib/db/schema";
+import type { Party, PushToken } from "@pila/db/schema";
 
 import type { SendOutcome } from "./firebase";
 import { PushNotifier, type PushNotifierDeps } from "./push-notifier";

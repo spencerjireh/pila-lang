@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
-import { parties, type Party, type PartyStatus } from "@/lib/db/schema";
-import { tenantDb } from "@/lib/db/tenant-scoped";
+import { parties, type Party, type PartyStatus } from "@pila/db/schema";
+import { tenantDb } from "@pila/db/tenant-scoped";
 import { log } from "@/lib/log/logger";
 import { notifier } from "@/lib/notifier";
 import {

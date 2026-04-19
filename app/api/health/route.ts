@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 
-import { getDb } from "@/lib/db/client";
+import { getDb } from "@pila/db/client";
 import { redis } from "@/lib/redis/client";
 
 export const dynamic = "force-dynamic";

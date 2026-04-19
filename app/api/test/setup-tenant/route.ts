@@ -4,8 +4,8 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import { hashPassword } from "@/lib/auth/password";
-import { getDb } from "@/lib/db/client";
-import { parties, tenants } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { parties, tenants } from "@pila/db/schema";
 import { requireTestEnv } from "@/lib/test-api/guard";
 
 const bodySchema = z.object({

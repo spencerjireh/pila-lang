@@ -1,12 +1,12 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 
-import { getDb } from "@/lib/db/client";
+import { getDb } from "@pila/db/client";
 import {
   pushTokens,
   type PushPlatform,
   type PushScope,
   type PushToken,
-} from "@/lib/db/schema";
+} from "@pila/db/schema";
 
 export interface RegisterInput {
   tenantId: string;

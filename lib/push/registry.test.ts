@@ -2,8 +2,8 @@ import { and, eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { getDb } from "@/lib/db/client";
-import { parties, pushTokens, tenants } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { parties, pushTokens, tenants } from "@pila/db/schema";
 
 import {
   listActivePushTokensForParty,

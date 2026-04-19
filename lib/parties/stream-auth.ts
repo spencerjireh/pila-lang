@@ -1,4 +1,4 @@
-import type { Party, PartyStatus, Tenant } from "@/lib/db/schema";
+import type { Party, PartyStatus, Tenant } from "@pila/db/schema";
 
 import { isTerminalStatus } from "./stream-events";
 

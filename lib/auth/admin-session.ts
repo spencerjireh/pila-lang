@@ -3,8 +3,8 @@ import Resend from "next-auth/providers/resend";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 
 import { env } from "@/lib/config/env";
-import { getDb } from "@/lib/db/client";
-import { accounts, sessions, users, verificationTokens } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { accounts, sessions, users, verificationTokens } from "@pila/db/schema";
 import { log } from "@/lib/log/logger";
 import { sendMagicLink } from "@/lib/email/resend";
 import { captureMagicLink } from "@/lib/auth/test-magic-link-store";

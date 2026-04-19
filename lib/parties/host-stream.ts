@@ -5,8 +5,8 @@ import {
   type Party,
   type PartyStatus,
   type Tenant,
-} from "@/lib/db/schema";
-import { tenantDb } from "@/lib/db/tenant-scoped";
+} from "@pila/db/schema";
+import { tenantDb } from "@pila/db/tenant-scoped";
 
 import type {
   TenantPartyJoined,

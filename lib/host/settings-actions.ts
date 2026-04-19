@@ -1,7 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 
-import { getDb } from "@/lib/db/client";
-import { tenants, type Tenant } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { tenants, type Tenant } from "@pila/db/schema";
 import {
   publishTenantOpenClose,
   publishTenantUpdated,

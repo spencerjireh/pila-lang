@@ -2,8 +2,8 @@ import { NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 
 import { requireAdminApi } from "@/lib/auth/admin-guard";
-import { getDb } from "@/lib/db/client";
-import { tenants } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { tenants } from "@pila/db/schema";
 import { validateAccentColor } from "@/lib/validators/contrast";
 import { isValidTimezone } from "@/lib/timezones";
 import { updateTenantSchema } from "@/lib/admin/tenant-schema";

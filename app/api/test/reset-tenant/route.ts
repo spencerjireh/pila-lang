@@ -2,8 +2,8 @@ import { NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { getDb } from "@/lib/db/client";
-import { tenants } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { tenants } from "@pila/db/schema";
 import { requireTestEnv } from "@/lib/test-api/guard";
 
 const bodySchema = z.object({ slug: z.string().min(1) });

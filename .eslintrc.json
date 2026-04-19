@@ -19,7 +19,7 @@
     "coverage",
     "test-results",
     "playwright-report",
-    "drizzle/migrations",
+    "packages/db/migrations",
     "next-env.d.ts"
   ]
 }

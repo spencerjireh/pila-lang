@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
-import { parties, type Party } from "@/lib/db/schema";
-import { tenantDb } from "@/lib/db/tenant-scoped";
+import { parties, type Party } from "@pila/db/schema";
+import { tenantDb } from "@pila/db/tenant-scoped";
 
 export async function findWaitingPartyBySession(
   tenantId: string,

@@ -1,8 +1,8 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
-import { getDb } from "@/lib/db/client";
-import { notifications, parties, tenants } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { notifications, parties, tenants } from "@pila/db/schema";
 
 export const DEMO_WAITING = [
   { name: "Priya Sharma", partySize: 2, minutesAgo: 12 },

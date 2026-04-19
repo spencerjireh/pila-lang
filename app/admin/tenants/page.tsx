@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { desc } from "drizzle-orm";
-import { getDb } from "@/lib/db/client";
-import { tenants } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { tenants } from "@pila/db/schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";

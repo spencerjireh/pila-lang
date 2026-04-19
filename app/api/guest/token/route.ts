@@ -7,8 +7,8 @@ import {
   GUEST_TOKEN_TTL_SECONDS,
   signGuestToken,
 } from "@/lib/auth/guest-token";
-import { parties } from "@/lib/db/schema";
-import { getDb } from "@/lib/db/client";
+import { parties } from "@pila/db/schema";
+import { getDb } from "@pila/db/client";
 import { clientIp, rateLimitResponse } from "@/lib/http/client-ip";
 import { log } from "@/lib/log/logger";
 import { RateLimitError, consume } from "@/lib/ratelimit";

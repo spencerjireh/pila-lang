@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
-import { getDb } from "@/lib/db/client";
-import { tenants, type Tenant } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { tenants, type Tenant } from "@pila/db/schema";
 import {
   QR_TOKEN_ROTATE_AFTER_MS,
   QR_TOKEN_TTL_MS,

@@ -1,6 +1,5 @@
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import { env } from "@/lib/config/env";
 import * as schema from "./schema";
 
 declare global {
@@ -8,9 +7,17 @@ declare global {
   var __db: NodePgDatabase<typeof schema> | undefined;
 }
 
+function requireDatabaseUrl(): string {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error("DATABASE_URL is not set");
+  }
+  return url;
+}
+
 function getPool(): Pool {
   if (!globalThis.__pgPool) {
-    globalThis.__pgPool = new Pool({ connectionString: env().DATABASE_URL });
+    globalThis.__pgPool = new Pool({ connectionString: requireDatabaseUrl() });
   }
   return globalThis.__pgPool;
 }

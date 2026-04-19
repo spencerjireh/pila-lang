@@ -21,7 +21,7 @@ import {
   resetDemoFixture,
 } from "@/lib/admin/demo-fixture";
 import { generateInitialPassword, hashPassword } from "@/lib/auth/password";
-import { getDb } from "@/lib/db/client";
+import { getDb } from "@pila/db/client";
 import {
   accounts,
   admins,
@@ -31,7 +31,7 @@ import {
   tenants,
   users,
   verificationTokens,
-} from "@/lib/db/schema";
+} from "@pila/db/schema";
 import { validateSlug } from "@/lib/validators/slug";
 
 interface Args {

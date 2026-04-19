@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { Party } from "@/lib/db/schema";
+import type { Party } from "@pila/db/schema";
 
 import { hostActionPublishPlan, undoPublishPlan } from "./host-actions";
 

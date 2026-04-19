@@ -6,8 +6,8 @@ import {
   guardHostRequest,
   unauthorizedJson,
 } from "@/lib/auth/host-guard";
-import { parties, type Party } from "@/lib/db/schema";
-import { tenantDb } from "@/lib/db/tenant-scoped";
+import { parties, type Party } from "@pila/db/schema";
+import { tenantDb } from "@pila/db/tenant-scoped";
 import { log } from "@/lib/log/logger";
 import { undoPublishPlan } from "@/lib/parties/host-actions";
 import { publishPositionUpdates } from "@/lib/parties/position";

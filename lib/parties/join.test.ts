@@ -1,8 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { parties } from "@/lib/db/schema";
-import { tenantDb } from "@/lib/db/tenant-scoped";
+import { parties } from "@pila/db/schema";
+import { tenantDb } from "@pila/db/tenant-scoped";
 import { isPartyPhoneConflict, shouldSetWelcomeBack, waitUrlFor } from "./join";
 
 const TENANT = "00000000-0000-0000-0000-000000000001";

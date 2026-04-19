@@ -3,8 +3,8 @@ import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
-import { getDb } from "@/lib/db/client";
-import { sessions, users } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { sessions, users } from "@pila/db/schema";
 import { requireTestEnv } from "@/lib/test-api/guard";
 import { isAdminEmail } from "@/lib/validators/admin-allow-list";
 

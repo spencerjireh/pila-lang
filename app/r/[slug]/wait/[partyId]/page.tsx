@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { GUEST_COOKIE_NAME } from "@/lib/auth/guest-session";
-import type { PartyStatus } from "@/lib/db/schema";
+import type { PartyStatus } from "@pila/db/schema";
 import { findPartyById } from "@/lib/parties/lookup";
 import { computePosition } from "@/lib/parties/position";
 import { loadTenantBySlug } from "@/lib/tenants/display-token";

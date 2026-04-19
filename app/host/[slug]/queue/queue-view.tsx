@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { TenantHeader } from "@/components/tenant-branding";
 import { Button } from "@/components/ui/button";
-import type { PartyStatus } from "@/lib/db/schema";
+import type { PartyStatus } from "@pila/db/schema";
 import type {
   HostRecentlyResolvedRow,
   HostSnapshotEvent,

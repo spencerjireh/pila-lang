@@ -1,5 +1,5 @@
-import { getDb } from "@/lib/db/client";
-import { notifications, type Party } from "@/lib/db/schema";
+import { getDb } from "@pila/db/client";
+import { notifications, type Party } from "@pila/db/schema";
 import { log } from "@/lib/log/logger";
 import type { Notifier } from "@/lib/notifier";
 

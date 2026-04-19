@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-import type { Tenant } from "@/lib/db/schema";
+import type { Tenant } from "@pila/db/schema";
 import { loadTenantBySlug } from "@/lib/tenants/display-token";
 
 import { parseBearer } from "./bearer";

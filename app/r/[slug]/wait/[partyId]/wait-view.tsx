@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { TenantHeader } from "@/components/tenant-branding";
 import { Button } from "@/components/ui/button";
-import type { PartyStatus } from "@/lib/db/schema";
+import type { PartyStatus } from "@pila/db/schema";
 import type { GuestStreamEvent } from "@/lib/parties/stream-events";
 
 interface InitialTenant {

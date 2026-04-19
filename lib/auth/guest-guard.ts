@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-import type { Party, Tenant } from "@/lib/db/schema";
+import type { Party, Tenant } from "@pila/db/schema";
 import { findPartyById } from "@/lib/parties/lookup";
 import { loadTenantBySlug } from "@/lib/tenants/display-token";
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/db/client", () => {
+vi.mock("@pila/db/client", () => {
   const updates: Array<{ set: Record<string, unknown> }> = [];
   const selects: Array<{ table: string }> = [];
   return {

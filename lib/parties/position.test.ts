@@ -1,8 +1,8 @@
 import { asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { parties } from "@/lib/db/schema";
-import { tenantDb } from "@/lib/db/tenant-scoped";
+import { parties } from "@pila/db/schema";
+import { tenantDb } from "@pila/db/tenant-scoped";
 
 import { positionEventsFor, rankOf } from "./position";
 
