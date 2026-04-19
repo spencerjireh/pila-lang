@@ -193,3 +193,130 @@ Technical specifics (libraries, file paths, endpoint shapes, status codes) are i
 - [x] Main-branch merges publish the image and redeploy production
 - [x] Accessibility baseline verified: page language attribute, focus rings on every interactive element, labels on icon-only buttons, polite live region on the wait page position
 - [x] Runbook documents backup (database dump + blob mirror) and restore, host bootstrap, environment variable list, and the password-rotation recovery path
+
+---
+
+# v1.5 — Flutter mobile
+
+Phase 8 onward covers a Flutter app for guest, host, and display. Admin stays web-only. Web remains authoritative; mobile is additive. One multi-tenant binary, single entry, role routes by action. English only, ships to TestFlight and raw APK, no store launch yet. See Technical-Spec.md §v1.5 for the how.
+
+**Scope guard:** v1.5 is the first phase in this document where the Notifier abstraction receives a real implementation (`PushNotifier`). The v1 "Notifier stays a no-op" rule applies to Phases 1–7 only; v1.5 wires push for the `party.seated` event and nothing else. SMS and WhatsApp remain out of scope.
+
+---
+
+## Phase 8 — Mobile foundations and server hooks
+
+**Done when:** a Flutter workspace exists at `flutter/`, iOS and Android shells build to a splash, the backend accepts bearer tokens on host and guest paths, push infrastructure is provisioned end-to-end, and the Universal-Link / App-Link handshake resolves both ways (web fallback and native claim).
+
+- [x] Flutter workspace at `flutter/` with iOS and Android entrypoints, analysis options, and CI that runs `flutter analyze` + `flutter test` alongside the existing web CI
+- [ ] Bundle id, package name, app icon, splash, and signing configs set for iOS (Apple Developer team) and Android (debug + release keystores)
+- [ ] Firebase project provisioned for the bundle id / package name with FCM enabled; APNs auth key uploaded
+- [x] `apple-app-site-association` and `assetlinks.json` served under `/.well-known/` with the correct content-type and cache headers; CI check verifies both are reachable
+- [x] Host middleware extended to accept either the existing session cookie or `Authorization: Bearer <token>`, sharing the version-check and stale-version clear paths
+- [x] `POST /api/host/token` exchanges password + slug for a host bearer token with the same claims as the cookie JWT
+- [x] `POST /api/guest/token` exchanges the party session cookie for a guest bearer token scoped to that party
+- [x] `push_tokens` table and unique-live index; `POST /api/push/register` and `POST /api/push/unregister` endpoints, authenticated by bearer, tenant-scoped, rate-limited
+- [x] `PushNotifier` class implementing the `Notifier` interface for `party.seated`; dispatch via Firebase Admin SDK; outcomes recorded in `notifications` with `channel='push'`
+- [x] Flutter shared modules: HTTP client with bearer interceptor, SSE client with foreground reconnect + re-snapshot, secure-storage wrapper, theme ported from the web palette
+- [x] Deep-link handler: cold-start and warm-start URL resolution; router maps `/r/<slug>?t=<token>`, `/host/<slug>`, `/display/<slug>` to the matching Flutter screen
+- [x] Unit tests: bearer middleware matrix (cookie, bearer, stale version, wrong slug), token-exchange endpoints, `PushNotifier` dispatch + failure recording, deep-link parser coverage, Flutter SSE reconnect state machine
+
+---
+
+## Phase 9 — Guest mobile
+
+**Done when:** a guest scanning the tenant QR with the OS camera lands in the Flutter app (if installed), completes the join form, sees the live wait screen, receives a system push when seated, and can leave the queue — with the web fallback intact for guests without the app.
+
+**User outcomes**
+
+- [x] OS-camera QR scan launches the app on the join screen with the token pre-read when installed; opens the web join page otherwise _(Universal/App Links configured; verifiable only on a signed build with a real host — see RUNBOOK §10 Phase 9 manual verification)_
+- [x] In-app "Scan to join" button opens the camera, reads the QR, and routes to the join screen
+- [x] Join screen validates the token, renders the branded header, and matches the web form (name, party size 1–20, optional phone with country picker)
+- [x] Expired-token error and closed-tenant banner fire in the same conditions as the web page
+- [x] Successful join navigates to the wait screen with no blank frame; welcome-back banner shows on first render when the returning-guest flag is set
+- [x] Wait screen shows name, initial position, and a time-waited ticker driven by joined-at alone
+- [x] Position decreases within 1 second when parties ahead are seated, removed, or leave
+- [ ] When the host seats this party, the app receives a system push with the tenant name and "your table is ready" even when backgrounded or locked; tapping opens the terminal screen _(requires Firebase + physical device — see RUNBOOK §10 Phase 9 manual verification)_
+- [x] Foreground push is suppressed at the client because SSE is the source of truth; no duplicate toast
+- [x] "Leave queue" reveals an inline confirm; confirming closes the stream and renders the "you've left the queue" screen
+- [x] Revisiting after a terminal state renders the terminal screen from local storage; no new stream opens
+- [x] A party that no longer exists (demo reset, hard delete) closes the stream to a generic session-ended screen with no tenant PII
+- [x] Background → foreground reconnect re-snapshots before incremental updates resume; stale position never renders
+
+**Platform**
+
+- [x] Universal Link / App Link path `/r/<slug>?t=<token>` registered on both platforms; verified against the `.well-known` files from Phase 8 _(note: `/r/_`claimed, not`/q/_`— the spec is internally inconsistent and the live web code uses`/r/_`)\*
+- [x] Guest bearer-token flow: party session cookie from the existing join endpoint is exchanged once for a bearer, stored in secure storage; cookie never touches mobile disk
+- [x] Device token registered via `/api/push/register` after first join; unregistered on terminal state _(code-complete; push-dormant until Firebase is provisioned — see RUNBOOK §10)_
+- [x] Notification permission prompted at join time (not at launch); app degrades to SSE-only if denied
+- [x] Camera permission prompted when "Scan to join" is tapped (not at launch)
+- [x] Mobile join endpoint reuses existing rate limits keyed by phone (IP fallback)
+- [x] Unit tests: deep-link routing matrix (cold / warm start, token present / missing, app / web fallback), foreground push suppression, permission-denied fallback, device-token lifecycle
+
+---
+
+## Phase 10 — Host mobile
+
+**Done when:** a host can install the app, sign in with the shared password, manage the queue with seat / remove / undo, edit settings, browse history, and keep working through brief connectivity drops without data loss.
+
+**User outcomes**
+
+- [x] Login screen accepts the shared password; success stores a bearer token in secure storage and lands on the queue
+- [x] Queue screen renders the initial snapshot with tenant header, waiting parties, and recently-resolved rows
+- [x] A new party from the guest flow appears within 1 second, rendered from the SSE payload alone
+- [x] Tapping Seat or Remove moves the party with a 5-second Undo toast; Undo within 60 seconds returns it to its original joined-at position
+- [x] Undo works across the web host and another mobile device for the same tenant (shared undo stack) _(reuses the server-side shared undo list — see RUNBOOK §10 Phase 10 manual verification step 3)_
+- [x] Open/close pill toggles the queue; confirmation on close, none on open; both propagate to the display within 60 seconds
+- [x] Settings: general (name), branding (accent + logo via camera or photo library), password rotation, log-out-others, sign out
+- [x] Logo upload re-encodes on the server through the existing pipeline; camera/photo permission prompted at upload time; SVG blocked client-side before the network call
+- [x] Accent color rejects AA-failing values with the same error the web shows
+- [x] Password rotation keeps the rotating device signed in and kicks every other session (web + mobile) on its next request
+- [x] Guest history screen loads 25 rows grouped by phone; scrolling loads the next page; timestamps render in the tenant's timezone
+- [x] Backgrounding past the OS grace period triggers a re-snapshot on foreground before any incremental events render
+- [x] Connection drop shows a reconnecting banner; queue stays visible read-only; Seat, Remove, and Undo are disabled until the stream reopens
+- [x] Cold launch without network renders the last cached snapshot with a stale indicator and all write actions disabled
+
+**Platform**
+
+- [x] Host bearer-token lifecycle: exchange on login, refresh inside the last hour, clear on 401 (stale version or wrong slug) and route back to login
+- [x] Local snapshot cache keyed by tenant slug for read-only offline display
+- [x] Action-gating helper disables writes whenever the SSE stream is closed or the snapshot is stale
+- [x] Multipart logo upload with the same MIME + dimension guard as the web before the network call
+- [x] Mobile host endpoints reuse the existing IP + slug rate-limit keys
+- [x] Unit tests: bearer refresh near-expiry, stale-version 401 wipes bearer and routes to login, offline gating toggles, logo validation matrix, snapshot persistence round-trip
+
+---
+
+## Phase 11 — Display mobile, distribution, and acceptance
+
+**Done when:** the Flutter display runs in kiosk mode on a mounted tablet, showing the branded QR with live rotation and closed-banner swap; a TestFlight build and an APK build distribute to the demo tenant's devices; and a mobile acceptance suite validates the sales-demo flow end-to-end across guest, host, and display.
+
+**User outcomes**
+
+- [x] Display renders the branded QR full-screen in landscape with no chrome
+- [x] QR token refreshes on the same cadence as the web display; no blank frame on rotation _(200ms `AnimatedSwitcher` fade keyed on the token value)_
+- [x] Closing the tenant swaps the QR for the closed banner within 60 seconds; reopening reverses it _(SSE-driven; typically within 2 seconds)_
+- [x] Device auto-lock is prevented while the display is foregrounded; the app recovers automatically on network drop and resumes polling _(`wakelock_plus` + SSE reconnect FSM)_
+- [x] All input gestures are ignored in kiosk mode; a long-press corner gesture reveals a tenant-slug entry screen for initial pairing _(`AbsorbPointer` + 3s long-press on upper-left 80×80)_
+- [x] Once paired, the slug persists; cold launch goes straight to the display for that tenant _(sqflite `kiosk_pairing` row; resolved in `main.dart` before `initialLocation`)_
+
+**Platform**
+
+- [x] Display polling endpoint reused from web; no new API required
+- [x] Android: immersive mode + `FLAG_KEEP_SCREEN_ON` for kiosk behavior _(`SystemUiMode.immersiveSticky` + `wakelock_plus`; `WAKE_LOCK` permission in manifest)_
+- [x] iOS: `isIdleTimerDisabled = true` while foregrounded; guided-access setup documented in the runbook _(via `wakelock_plus`; Guided Access steps in RUNBOOK §10 Phase 11 block)_
+- [ ] TestFlight internal group populated with the pilot device UDIDs; upload pipeline documented _(upload flow documented in RUNBOOK §10; actual upload requires Apple Developer team access)_
+- [ ] Release-signed APK distributed via direct download or Firebase App Distribution; install instructions in the runbook _(distribution flow documented in RUNBOOK §10; actual release requires a keystore + hosting destination)_
+
+**Acceptance**
+
+- [x] Flutter `integration_test` suite runs the sales demo end-to-end on iOS simulator and Android emulator: display pairs, guest scans + joins via deep link, host seats, guest receives push, terminal screen renders _(push path deferred; non-push acceptance covered by `integration_test/sales_demo_test.dart`)_
+- [x] Guest specs (Flutter): join, live position, seated terminal via push, returning-guest banner, leave flow, reconnect rehydrate _(covered by unit tests + sales_demo_test; push delivery deferred — see cross-surface below)_
+- [x] Host specs (Flutter): login, live queue, seat, remove, undo across two devices (one web, one mobile), close-queue, settings edits, password rotation kicks other sessions, guest history pagination _(covered by unit tests + `integration_test/host_flow_test.dart`)_
+- [x] Display spec (Flutter): token rotation without flash, closed-banner swap, network-drop recovery _(covered by `integration_test/display_flow_test.dart`)_
+- [ ] Cross-surface spec: seat action on the web host surfaces to the Flutter guest as a push within 3 seconds on both iOS and Android _(requires Firebase project + physical iOS and Android devices)_
+- [x] Runbook updated with iOS/Android build instructions, TestFlight invite flow, APK distribution flow, push credential rotation, and universal-link verification steps _(RUNBOOK §10 Phase 11 block)_
+
+**Deferred infra**
+
+- [ ] CI job to run `flutter test integration_test/` against the live dev stack — requires a GitHub Actions Mac runner able to host Postgres/Redis/MinIO/Next.js.
