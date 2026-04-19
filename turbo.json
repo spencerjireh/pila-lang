@@ -1,6 +1,32 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
+  "globalPassThroughEnv": [
+    "NODE_ENV",
+    "CI",
+    "ENABLE_TEST_ROUTES",
+    "E2E_BASE_URL",
+    "E2E_ADMIN_EMAIL",
+    "E2E_EXTERNAL_SERVER",
+    "DATABASE_URL",
+    "REDIS_URL",
+    "S3_ENDPOINT",
+    "S3_BUCKET",
+    "S3_ACCESS_KEY",
+    "S3_SECRET_KEY",
+    "S3_PUBLIC_URL_BASE",
+    "QR_TOKEN_SECRET",
+    "HOST_JWT_SECRET",
+    "GUEST_JWT_SECRET",
+    "ADMIN_EMAILS",
+    "NEXTAUTH_SECRET",
+    "NEXTAUTH_URL",
+    "RESEND_API_KEY",
+    "FIREBASE_SERVICE_ACCOUNT_JSON",
+    "APP_IOS_BUNDLE_ID",
+    "APP_ANDROID_PACKAGE_NAME",
+    "APP_ANDROID_SHA256_FINGERPRINTS"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
