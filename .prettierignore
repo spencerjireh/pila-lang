@@ -12,5 +12,5 @@ drizzle/migrations
 next-env.d.ts
 .env
 .env.*
-flutter
+apps/mobile
 public/.well-known
