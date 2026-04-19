@@ -28,19 +28,24 @@ services:
       timeout: 3s
       retries: 20
 
+  # S3-compatible object storage. RustFS replaces MinIO (v1.0.0-alpha) —
+  # Bitnami deprecated the free minio image and MinIO CE kept stripping
+  # features. Service keeps the \"minio\" name for backward compat with
+  # existing S3_ENDPOINT=http://minio:9000 refs in this file.
   minio:
-    image: minio/minio:latest
-    command: ["server", "/data", "--console-address", ":9001"]
+    image: rustfs/rustfs:1.0.0-alpha.95
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      RUSTFS_ACCESS_KEY: minioadmin
+      RUSTFS_SECRET_KEY: minioadmin
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
     volumes:
       - minio-data:/data
     ports:
       - "9000:9000"
       - "9001:9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
       interval: 5s
       timeout: 3s
       retries: 20

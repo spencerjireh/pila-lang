@@ -1,33 +1,29 @@
-import { Client } from "minio";
+import {
+  S3Client,
+  HeadBucketCommand,
+  CreateBucketCommand,
+  PutBucketPolicyCommand,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 
 import { env } from "../config/env";
 
 declare global {
-  var __s3Client: Client | undefined;
+  var __s3Client: S3Client | undefined;
 }
 
-function parseEndpoint(url: string): {
-  endPoint: string;
-  port: number;
-  useSSL: boolean;
-} {
-  const parsed = new URL(url);
-  const useSSL = parsed.protocol === "https:";
-  const defaultPort = useSSL ? 443 : 80;
-  const port = parsed.port ? Number(parsed.port) : defaultPort;
-  return { endPoint: parsed.hostname, port, useSSL };
-}
-
-export function s3(): Client {
+export function s3(): S3Client {
   if (globalThis.__s3Client) return globalThis.__s3Client;
   const e = env();
-  const { endPoint, port, useSSL } = parseEndpoint(e.S3_ENDPOINT);
-  globalThis.__s3Client = new Client({
-    endPoint,
-    port,
-    useSSL,
-    accessKey: e.S3_ACCESS_KEY,
-    secretKey: e.S3_SECRET_KEY,
+  globalThis.__s3Client = new S3Client({
+    endpoint: e.S3_ENDPOINT,
+    forcePathStyle: true,
+    region: "us-east-1",
+    credentials: {
+      accessKeyId: e.S3_ACCESS_KEY,
+      secretAccessKey: e.S3_SECRET_KEY,
+    },
   });
   return globalThis.__s3Client;
 }
@@ -44,13 +40,18 @@ export function publicUrlFor(key: string): string {
   return `${base.replace(/\/$/, "")}/${key}`;
 }
 
+function isMissingBucket(err: unknown): boolean {
+  const e = err as { name?: string; $metadata?: { httpStatusCode?: number } };
+  return e.name === "NotFound" || e.$metadata?.httpStatusCode === 404;
+}
+
 export async function ensureBucket(): Promise<void> {
   const b = bucket();
-  const exists = await s3()
-    .bucketExists(b)
-    .catch(() => false);
-  if (!exists) {
-    await s3().makeBucket(b, "us-east-1");
+  try {
+    await s3().send(new HeadBucketCommand({ Bucket: b }));
+  } catch (err) {
+    if (!isMissingBucket(err)) throw err;
+    await s3().send(new CreateBucketCommand({ Bucket: b }));
   }
   const policy = {
     Version: "2012-10-17",
@@ -64,22 +65,33 @@ export async function ensureBucket(): Promise<void> {
     ],
   };
   try {
-    await s3().setBucketPolicy(b, JSON.stringify(policy));
+    await s3().send(
+      new PutBucketPolicyCommand({
+        Bucket: b,
+        Policy: JSON.stringify(policy),
+      }),
+    );
   } catch {
-    // policy may already be set; ignore
+    // Policy may already be set; RustFS alpha may also reject — the bucket is
+    // already usable either way, so downstream GETs are served via direct URL.
   }
 }
 
 export async function putLogo(key: string, buf: Buffer): Promise<void> {
   await ensureBucket();
-  await s3().putObject(bucket(), key, buf, buf.length, {
-    "Content-Type": "image/png",
-    "Cache-Control": "public, max-age=31536000, immutable",
-  });
+  await s3().send(
+    new PutObjectCommand({
+      Bucket: bucket(),
+      Key: key,
+      Body: buf,
+      ContentType: "image/png",
+      CacheControl: "public, max-age=31536000, immutable",
+    }),
+  );
 }
 
 export async function deleteLogo(key: string): Promise<void> {
-  await s3().removeObject(bucket(), key);
+  await s3().send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }));
 }
 
 export function objectKeyFromUrl(url: string | null): string | null {
