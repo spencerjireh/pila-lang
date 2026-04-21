@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { Button } from "@/components/ui/button";
 import { en } from "@/lib/i18n/en";
 
@@ -27,12 +29,14 @@ export function Hero() {
           </div>
         </div>
         <figure className="relative aspect-[4/5] w-full overflow-hidden rounded-lg border border-border bg-muted">
-          <figcaption className="absolute inset-0 flex items-end p-6">
-            <span className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-              --sref TBD &middot; landing hero &middot; warm interior, host
-              stand
-            </span>
-          </figcaption>
+          <Image
+            src="/images/landing/landing-hero-primary.svg"
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 40vw, 100vw"
+            priority
+            className="object-cover"
+          />
         </figure>
       </div>
     </section>

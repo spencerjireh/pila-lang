@@ -14,6 +14,20 @@ export const metadata: Metadata = {
     title: en.app.name,
     description: en.app.tagline,
     type: "website",
+    images: [
+      {
+        url: "/images/landing/landing-og.svg",
+        width: 1200,
+        height: 630,
+        alt: en.app.name,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: en.app.name,
+    description: en.app.tagline,
+    images: ["/images/landing/landing-og.svg"],
   },
 };
 

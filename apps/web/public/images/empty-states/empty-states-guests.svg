@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="No guests logged">
+  <rect x="40" y="70" width="120" height="80" fill="none" stroke="#6B7747" stroke-width="2" rx="3"/>
+  <line x1="56" y1="96" x2="144" y2="96" stroke="#6B7747" stroke-width="1" stroke-dasharray="3 4"/>
+  <line x1="56" y1="114" x2="144" y2="114" stroke="#6B7747" stroke-width="1" stroke-dasharray="3 4"/>
+  <line x1="56" y1="132" x2="110" y2="132" stroke="#6B7747" stroke-width="1" stroke-dasharray="3 4"/>
+</svg>

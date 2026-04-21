@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -102,9 +103,16 @@ export function GuestsView({ slug, tenantName, timezone, initial }: Props) {
       </header>
 
       {rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          {t.empty}
-        </p>
+        <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-border p-8 text-center">
+          <Image
+            src="/images/empty-states/empty-states-guests.svg"
+            alt=""
+            width={80}
+            height={80}
+            aria-hidden="true"
+          />
+          <p className="text-sm text-muted-foreground">{t.empty}</p>
+        </div>
       ) : (
         <ul className="flex flex-col gap-2">
           {formatted.map((row) => (

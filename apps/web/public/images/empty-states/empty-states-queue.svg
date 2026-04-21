@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Empty queue">
+  <circle cx="100" cy="100" r="80" fill="none" stroke="#6B7747" stroke-width="2"/>
+  <circle cx="100" cy="100" r="62" fill="none" stroke="#6B7747" stroke-width="1" stroke-dasharray="2 4"/>
+</svg>
