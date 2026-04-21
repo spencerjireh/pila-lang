@@ -178,6 +178,8 @@ export const en = {
     },
     queue: {
       title: "Queue",
+      waitingHeading: "Waiting",
+      resolvedHeading: "Recently resolved",
       empty: "No parties waiting.",
       open: "Open for guests",
       closed: "Closed to new guests",

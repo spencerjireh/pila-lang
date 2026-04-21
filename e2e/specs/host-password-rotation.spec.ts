@@ -20,6 +20,7 @@ test.describe("host password rotation", () => {
 
     // Rotate on A.
     await pageA.goto(`/host/${slug}/settings`);
+    await pageA.getByRole("tab", { name: /password/i }).click();
     await pageA.getByLabel(/^new password$/i).fill("new-strong-pw-123");
     await pageA.getByLabel(/confirm new password/i).fill("new-strong-pw-123");
     await pageA.getByRole("button", { name: /change password/i }).click();
@@ -51,6 +52,7 @@ test.describe("host password rotation", () => {
     const bCookie = await hostLoginViaApi(request, slug, password);
 
     await pageA.goto(`/host/${slug}/settings`);
+    await pageA.getByRole("tab", { name: /password/i }).click();
     await pageA
       .getByRole("button", { name: /sign out other devices/i })
       .click();

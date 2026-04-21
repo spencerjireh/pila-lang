@@ -341,10 +341,7 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
 
       <section className="flex flex-col gap-3">
         <h2 className="font-display text-2xl font-semibold text-foreground">
-          {t.title}{" "}
-          <span className="font-mono text-sm text-muted-foreground">
-            ({waiting.length})
-          </span>
+          {t.waitingHeading} ({waiting.length})
         </h2>
         {waiting.length === 0 ? (
           <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
@@ -402,10 +399,7 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
 
       <section className="flex flex-col gap-3">
         <h2 className="font-display text-2xl font-semibold text-foreground">
-          Recently resolved{" "}
-          <span className="font-mono text-sm text-muted-foreground">
-            ({visibleResolved.length})
-          </span>
+          {t.resolvedHeading} ({visibleResolved.length})
         </h2>
         {visibleResolved.length === 0 ? (
           <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">

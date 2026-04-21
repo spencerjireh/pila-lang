@@ -52,7 +52,7 @@ test.describe("guest wait page", () => {
     expect(seatRes.ok()).toBeTruthy();
 
     await expect(positionLocator).toContainText("1", { timeout: 5000 });
-    await expect(page.getByText(/you're next/i)).toBeVisible();
+    await expect(page.getByText(/you.re next/i)).toBeVisible();
   });
 
   test("transitions to seated terminal when seated", async ({
@@ -96,11 +96,9 @@ test.describe("guest wait page", () => {
     });
 
     await page.goto(me.waitUrl);
-    await page.getByRole("button", { name: /leave queue/i }).click();
-    await page.getByRole("button", { name: /yes, leave/i }).click();
+    await page.getByRole("button", { name: /leave the queue/i }).click();
+    await page.getByRole("button", { name: /^leave queue$/i }).click();
 
-    await expect(
-      page.getByRole("heading", { name: /you've left the queue/i }),
-    ).toBeVisible();
+    await expect(page.getByText(/see you soon/i)).toBeVisible();
   });
 });

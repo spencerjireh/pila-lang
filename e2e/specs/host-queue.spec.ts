@@ -48,7 +48,7 @@ test.describe("host queue", () => {
       timeout: 15_000,
     });
     // Waiting empty message appears; party is no longer in any waiting row.
-    await expect(page.getByText(/no one waiting right now/i)).toBeVisible({
+    await expect(page.getByText(/no parties waiting/i)).toBeVisible({
       timeout: 15_000,
     });
   });
@@ -88,14 +88,15 @@ test.describe("host queue", () => {
     await displayPage.goto(`/display/${slug}`);
     await expect(displayPage.getByLabel(/QR code to join/i)).toBeVisible();
 
-    await page.getByRole("button", { name: /close queue/i }).click();
-    await page.getByRole("button", { name: /yes, close/i }).click();
+    // Toggle pill labelled "Open for guests" when open; click to open close-confirm.
+    await page.getByRole("button", { name: /open for guests/i }).click();
+    await page.getByRole("button", { name: /^close queue$/i }).click();
 
     await expect(
-      page.getByRole("button", { name: /open queue/i }),
+      page.getByRole("button", { name: /closed to new guests/i }),
     ).toBeVisible();
-    await expect(
-      displayPage.getByRole("heading", { name: /not accepting guests/i }),
-    ).toBeVisible({ timeout: 70_000 });
+    await expect(displayPage.getByText(/not accepting guests/i)).toBeVisible({
+      timeout: 70_000,
+    });
   });
 });

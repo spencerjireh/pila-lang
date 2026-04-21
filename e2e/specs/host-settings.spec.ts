@@ -31,6 +31,7 @@ test.describe("host settings", () => {
     await hostLogin(page, slug, password);
     await page.goto(`/host/${slug}/settings`);
 
+    await page.getByRole("tab", { name: /branding/i }).click();
     await page.getByLabel(/accent color/i).fill("not-a-hex");
     await page.getByRole("button", { name: /^save$/i }).click();
 
