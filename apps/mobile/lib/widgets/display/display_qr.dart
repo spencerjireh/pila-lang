@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-/// The QR card rendered centered on the display screen. The white ring
-/// keeps contrast high against the black kiosk backdrop. The token value
-/// is used as the `AnimatedSwitcher` key so rotation fades rather than
-/// snapping between frames.
+import '../../theme/palette.dart';
+
+/// The QR card rendered centered on the display screen. The popover-bg
+/// ring keeps contrast high against the cream kiosk backdrop. The token
+/// value is used as the `AnimatedSwitcher` key so rotation fades rather
+/// than snapping between frames.
 class DisplayQr extends StatelessWidget {
   const DisplayQr({
     super.key,
@@ -25,20 +27,22 @@ class DisplayQr extends StatelessWidget {
         key: ValueKey<String>(token),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x33000000),
-              blurRadius: 32,
-              offset: Offset(0, 12),
-            ),
-          ],
+          color: PilaPalette.popover,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: PilaPalette.border),
         ),
         child: QrImageView(
           data: joinUrl,
           size: size,
-          backgroundColor: Colors.white,
+          backgroundColor: PilaPalette.popover,
+          eyeStyle: const QrEyeStyle(
+            eyeShape: QrEyeShape.square,
+            color: PilaPalette.foreground,
+          ),
+          dataModuleStyle: const QrDataModuleStyle(
+            dataModuleShape: QrDataModuleShape.square,
+            color: PilaPalette.foreground,
+          ),
           errorCorrectionLevel: QrErrorCorrectLevel.M,
           semanticsLabel: 'QR code to join the queue',
         ),

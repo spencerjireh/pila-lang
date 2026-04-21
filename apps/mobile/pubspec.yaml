@@ -56,6 +56,9 @@ dependencies:
   # Kiosk mode — screen-on / immersive for the display surface
   wakelock_plus: ^1.2.8
 
+  # Design system fonts (Fraunces / Inter / JetBrains Mono)
+  google_fonts: ^6.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
