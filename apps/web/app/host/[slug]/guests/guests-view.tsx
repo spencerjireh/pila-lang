@@ -146,7 +146,7 @@ export function GuestsView({ slug, tenantName, timezone, initial }: Props) {
           className="text-center text-sm text-muted-foreground"
           aria-live="polite"
         >
-          Loading\u2026
+          Loading{"\u2026"}
         </p>
       ) : null}
     </main>
