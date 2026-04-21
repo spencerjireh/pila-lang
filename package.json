@@ -7,7 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "pnpm --filter @pila/web dev",
+    "dev": "dotenv -e .env -- pnpm --filter @pila/web dev",
     "build": "turbo run build",
     "start": "pnpm --filter @pila/web start",
     "lint": "turbo run lint",
@@ -46,6 +46,7 @@
     "@types/node": "^22.9.3",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
     "@typescript-eslint/parser": "^8.15.0",
+    "dotenv-cli": "^7.4.4",
     "drizzle-kit": "^0.28.1",
     "eslint": "^8.57.1",
     "husky": "^9.1.7",
