@@ -5,6 +5,12 @@ const config = {
   experimental: {
     serverComponentsExternalPackages: ["bcrypt", "sharp", "pg", "ioredis"],
   },
+  images: {
+    remotePatterns: [
+      { protocol: "http", hostname: "**" },
+      { protocol: "https", hostname: "**" },
+    ],
+  },
   webpack: (webpackConfig, { isServer }) => {
     if (isServer) {
       // bcrypt reaches for @mapbox/node-pre-gyp which in turn \`require()\`s

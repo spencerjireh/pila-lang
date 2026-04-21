@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { pickForeground } from "@pila/shared/validators/contrast";
 
 export function tenantInitials(name: string): string {
@@ -30,11 +31,15 @@ export function TenantHeader({
   return (
     <div className="flex items-center gap-4">
       {logoUrl ? (
-        <img
-          src={logoUrl}
-          alt={`${name} logo`}
-          className={`${boxClass} rounded-full object-cover`}
-        />
+        <div className={`${boxClass} relative overflow-hidden rounded-full`}>
+          <Image
+            src={logoUrl}
+            alt={`${name} logo`}
+            fill
+            sizes="96px"
+            className="object-cover"
+          />
+        </div>
       ) : (
         <div
           className={`${boxClass} flex items-center justify-center rounded-full font-semibold tracking-wide`}
@@ -47,7 +52,7 @@ export function TenantHeader({
       <div className="flex flex-col">
         <span className={textClass}>{name}</span>
         {subtitle ? (
-          <span className="text-sm text-slate-600">{subtitle}</span>
+          <span className="text-sm text-muted-foreground">{subtitle}</span>
         ) : null}
       </div>
     </div>
