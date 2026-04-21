@@ -5,20 +5,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { en } from "@/lib/i18n/en";
 
 export default function CheckEmailPage() {
+  const t = en.admin.checkEmail;
   return (
     <div className="mx-auto max-w-md">
       <Card>
         <CardHeader>
-          <CardTitle>Check your email</CardTitle>
-          <CardDescription>
-            If your address is on the allow list, a sign-in link is on its way.
-            The link expires in 24 hours.
-          </CardDescription>
+          <CardTitle className="font-display text-2xl">{t.title}</CardTitle>
+          <CardDescription>{t.body}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-slate-500">You can close this tab.</p>
+          <p className="text-sm text-muted-foreground">{t.didntGet}</p>
         </CardContent>
       </Card>
     </div>
