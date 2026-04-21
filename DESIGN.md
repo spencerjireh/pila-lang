@@ -14,21 +14,25 @@ This doc exists so that every surface (landing, guest wait, host console, kiosk 
 
 ## Palette
 
-Light mode only in v1. Olive / sage + warm neutrals. Exact hex codes finalized after Midjourney mood lock — fill in the TBDs then port to `tailwind.config.ts` and shadcn `:root` CSS variables.
+Light mode only in v1. Olive / sage + warm neutrals.
 
-| Token                | Use                       | Direction                               | Hex (TBD) |
-| -------------------- | ------------------------- | --------------------------------------- | --------- |
-| `background`         | App background            | Warm cream / off-white                  | `TBD`     |
-| `foreground`         | Body text                 | Deep warm brown (near-black, not black) | `TBD`     |
-| `primary`            | Primary actions, brand    | Olive / sage green                      | `TBD`     |
-| `primary-foreground` | Text on primary           | Warm cream                              | `TBD`     |
-| `muted`              | Subdued surfaces, cards   | Pale sage / cream-gray                  | `TBD`     |
-| `muted-foreground`   | Secondary text            | Warm mid-brown                          | `TBD`     |
-| `accent`             | Hover / selection         | Lighter sage                            | `TBD`     |
-| `border`             | Dividers, input outlines  | Warm pale                               | `TBD`     |
-| `success`            | Seated, confirmed         | Deeper olive                            | `TBD`     |
-| `warning`            | Soft alerts               | Ochre / mustard                         | `TBD`     |
-| `destructive`        | Leave queue, remove party | Warm brick (not fire-red)               | `TBD`     |
+> **Provisional — pending MJ mood lock.** The hex codes below are a v1 starting point. They live in `apps/web/app/globals.css` as HSL-split CSS variables and in `apps/web/tailwind.config.ts` as Tailwind colors. Final values lock after Midjourney `--sref` exploration; swapping them is a one-file change because every component consumes tokens, not literals.
+
+| Token                | Use                       | Direction                               | HSL (v1)     | Hex (v1)  |
+| -------------------- | ------------------------- | --------------------------------------- | ------------ | --------- |
+| `background`         | App background            | Warm cream / off-white                  | `36 33% 97%` | `#F9F5EE` |
+| `foreground`         | Body text                 | Deep warm brown (near-black, not black) | `25 25% 18%` | `#3A2F25` |
+| `primary`            | Primary actions, brand    | Olive / sage green                      | `82 22% 38%` | `#6B7747` |
+| `primary-foreground` | Text on primary           | Warm cream                              | `36 40% 98%` | `#FAF7F0` |
+| `muted`              | Subdued surfaces, cards   | Pale sage / cream-gray                  | `60 20% 92%` | `#EAE9DD` |
+| `muted-foreground`   | Secondary text            | Warm mid-brown                          | `28 12% 42%` | `#78695A` |
+| `accent`             | Hover / selection         | Lighter sage                            | `82 25% 80%` | `#C7CFAE` |
+| `border`             | Dividers, input outlines  | Warm pale                               | `36 20% 85%` | `#DAD3C4` |
+| `success`            | Seated, confirmed         | Deeper olive                            | `82 28% 32%` | `#545F36` |
+| `warning`            | Soft alerts               | Ochre / mustard                         | `38 65% 52%` | `#D59B35` |
+| `destructive`        | Leave queue, remove party | Warm brick (not fire-red)               | `10 55% 42%` | `#A8513A` |
+
+The full token set in code also includes `secondary` / `secondary-foreground`, `card` / `card-foreground`, `popover` / `popover-foreground`, `input`, `ring`, and every foreground pair for semantic tokens. See `apps/web/app/globals.css` for the canonical list.
 
 **No dark mode in v1.** shadcn's `:root.dark` block should be stubbed but not actively themed — leave it as-is (or mirror light values) until v1.5.
 
@@ -107,6 +111,21 @@ The design system only holds if it's load-bearing in code.
 3. Imagery lives in `public/images/`, organized by surface (`public/images/landing/`, `public/images/onboarding/`, `public/images/empty-states/`, `public/images/kiosk/`). File names: `{surface}-{asset}-{variant}.{ext}`.
 4. PR review checklist for visual changes: _Does this defer to tokens? Does it respect one of the two `--sref` aesthetics? Is there a reason to deviate from shadcn default?_ If no to any, push back or justify in the PR description.
 
+## Implementation
+
+The living version of this system renders at `/design-system` in the web app. That route is the authoritative visual inventory — it catalogs every token, type ramp, spacing step, radius, shadow, voice sample, imagery slot, and shadcn primitive the product ships today.
+
+- Source: `apps/web/app/design-system/`
+- Tokens: `apps/web/app/globals.css` (`:root` HSL-split CSS variables, `.dark` mirrors light in v1)
+- Tailwind mapping: `apps/web/tailwind.config.ts` (`theme.extend`)
+- Fonts: `apps/web/app/layout.tsx` (`next/font/google` — Fraunces, Inter, JetBrains Mono)
+- Voice strings: `apps/web/lib/i18n/en.ts` (`designSystem.voice`)
+- Imagery scaffold: `apps/web/public/images/` (surface subdirs + filename convention in README)
+
+The route is `noindex, nofollow` — it's not public marketing. Share the URL with collaborators directly; don't link it from the landing page.
+
+Flutter consumes the same tokens via a `PilaTheme` class in a follow-up pass. The tokens (palette, fonts, radii, spacing) port cleanly to Dart; layout and widget composition are Flutter's concern, not the styleguide's.
+
 ## Logo
 
 Pre-pilot, the logo is typographic: the wordmark "Pila Lang" set in Fraunces Bold, paired with a single olive accent (a dot, a short horizontal bar, or a small chevron). Do **not** ship a Midjourney-generated mark as the logo. Favicon and OG mark derive from the wordmark.
@@ -119,8 +138,9 @@ Track brand-lock progress here. Move the system from "declared" to "applied" by 
 
 - [ ] Photo `--sref` URL locked (filled into the Imagery table above)
 - [ ] Illustration `--sref` URL locked
+- [x] Provisional hex codes ported to code (pending MJ lock)
 - [ ] Exact hex codes finalized (TBDs replaced in the Palette table)
-- [ ] Fonts loaded in `app/layout.tsx` via `next/font/google`
-- [ ] Tokens ported to `tailwind.config.ts` + `app/globals.css` shadcn variables
+- [x] Fonts loaded in `app/layout.tsx` via `next/font/google`
+- [x] Tokens ported to `tailwind.config.ts` + `app/globals.css` shadcn variables
 - [ ] First surface (landing hero) actually using the new system end-to-end
-- [ ] DESIGN.md referenced from `CLAUDE.md` and `README.md` so it's discoverable
+- [x] DESIGN.md referenced from `CLAUDE.md` and `README.md` so it's discoverable

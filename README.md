@@ -45,6 +45,10 @@ pnpm seed --tenant=<slug> [--with-waiters=N]
 - SSE for live updates, signed JWT cookies for host sessions, signed QR tokens for the display. Bearer-token acceptance on the same endpoints for the Flutter client.
 - Admin sign-in via NextAuth magic link (Resend).
 
+## Design
+
+Visual identity, tokens, type ramp, voice, and imagery conventions live in [`DESIGN.md`](DESIGN.md). A living styleguide renders at `/design-system` when the web app is running (noindex, internal-only). Palette values are provisional until Midjourney style references are locked.
+
 ## Testing
 
 - Vitest unit tests live next to the modules they cover (`packages/**/src/**/*.test.ts`, `apps/web/**/*.test.ts`).
