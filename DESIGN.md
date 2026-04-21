@@ -142,5 +142,9 @@ Track brand-lock progress here. Move the system from "declared" to "applied" by 
 - [ ] Exact hex codes finalized (TBDs replaced in the Palette table)
 - [x] Fonts loaded in `app/layout.tsx` via `next/font/google`
 - [x] Tokens ported to `tailwind.config.ts` + `app/globals.css` shadcn variables
-- [ ] First surface (landing hero) actually using the new system end-to-end
+- [x] First surface (landing hero) actually using the new system end-to-end
+- [x] All five web surfaces (landing / guest / host / display / admin) on tokens
+- [x] shadcn primitives (button, badge, card, alert, dialog, input, textarea, select, tabs, tooltip, skeleton, separator, accordion) on tokens
+- [x] Magic-link email template warmed up
+- [x] Flutter `PilaTheme` ported (palette + Fraunces/Inter via `google_fonts`)
 - [x] DESIGN.md referenced from `CLAUDE.md` and `README.md` so it's discoverable
