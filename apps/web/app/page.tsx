@@ -1,7 +1,31 @@
+import type { Metadata } from "next";
+import { Hero } from "./_landing/hero";
+import { HowItWorks } from "./_landing/how-it-works";
+import { Features } from "./_landing/features";
+import { ForRestaurants } from "./_landing/for-restaurants";
+import { Faq } from "./_landing/faq";
+import { Footer } from "./_landing/footer";
+import { en } from "@/lib/i18n/en";
+
+export const metadata: Metadata = {
+  title: en.app.name,
+  description: en.app.tagline,
+  openGraph: {
+    title: en.app.name,
+    description: en.app.tagline,
+    type: "website",
+  },
+};
+
 export default function HomePage() {
   return (
-    <main className="flex min-h-dvh items-center justify-center p-6">
-      <h1 className="text-xl font-medium">Pila Lang</h1>
+    <main className="mx-auto max-w-5xl space-y-24 px-6 py-12">
+      <Hero />
+      <HowItWorks />
+      <Features />
+      <ForRestaurants />
+      <Faq />
+      <Footer />
     </main>
   );
 }
