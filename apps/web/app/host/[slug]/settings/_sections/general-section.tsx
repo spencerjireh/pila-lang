@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { pickForeground } from "@pila/shared/validators/contrast";
@@ -85,52 +93,56 @@ export function GeneralSection({ slug, name, accentColor, onChange }: Props) {
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-semibold">General</h2>
-      <p className="mb-4 mt-1 text-sm text-slate-600">
-        Updates reach the host queue, wait page, and display within a second.
-      </p>
-      <form className="flex flex-col gap-4" onSubmit={submit}>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="tenant-name">Restaurant name</Label>
-          <Input
-            id="tenant-name"
-            value={nameValue}
-            onChange={(e) => setNameValue(e.target.value)}
-            required
-            maxLength={120}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="accent-color">Accent color</Label>
-          <div className="flex items-center gap-3">
+    <Card>
+      <CardHeader>
+        <CardTitle>General</CardTitle>
+        <CardDescription>
+          Updates reach the host queue, wait page, and display within a second.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form className="flex flex-col gap-4" onSubmit={submit}>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="tenant-name">Restaurant name</Label>
             <Input
-              id="accent-color"
-              value={accentValue}
-              onChange={(e) => setAccentValue(e.target.value)}
-              placeholder="#1F6FEB"
-              className="max-w-[180px] font-mono"
+              id="tenant-name"
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+              required
+              maxLength={120}
             />
-            <span
-              aria-hidden="true"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold"
-              style={{ backgroundColor: accentValue, color: fg }}
-            >
-              Aa
-            </span>
           </div>
-        </div>
-        {error ? (
-          <p className="text-sm text-red-600" role="alert">
-            {error}
-          </p>
-        ) : null}
-        <div>
-          <Button type="submit" disabled={saving}>
-            {saving ? "Saving…" : "Save"}
-          </Button>
-        </div>
-      </form>
-    </section>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="accent-color">Accent color</Label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="accent-color"
+                value={accentValue}
+                onChange={(e) => setAccentValue(e.target.value)}
+                placeholder="#1F6FEB"
+                className="max-w-[180px] font-mono"
+              />
+              <span
+                aria-hidden="true"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold"
+                style={{ backgroundColor: accentValue, color: fg }}
+              >
+                Aa
+              </span>
+            </div>
+          </div>
+          {error ? (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : null}
+          <div>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Saving\u2026" : "Save"}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
