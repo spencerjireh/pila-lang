@@ -60,10 +60,15 @@ export default async function WaitPage({
 
 function SessionEndedScreen() {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 p-6 text-center">
-      <h1 className="text-xl font-semibold">Your session has ended</h1>
-      <p className="text-slate-600">
-        This wait session is no longer active. Scan the QR code again to rejoin.
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-3 p-6 text-center">
+      <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+        Session ended
+      </p>
+      <h1 className="font-display text-3xl font-semibold text-foreground">
+        Your wait session has ended
+      </h1>
+      <p className="text-muted-foreground">
+        Scan the QR at the host stand to rejoin.
       </p>
     </main>
   );
