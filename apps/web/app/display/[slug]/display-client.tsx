@@ -5,6 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 
 import { TenantHeader } from "@/components/tenant-branding";
+import { en } from "@/lib/i18n/en";
 
 interface TokenPayload {
   token: string;
@@ -108,16 +109,22 @@ export function DisplayClient({
       : `${origin}/r/${slug}?t=${encodeURIComponent(data.token)}`;
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col items-center justify-center gap-10 p-8">
-      <TenantHeader
-        name={tenant.name}
-        logoUrl={tenant.logoUrl}
-        accentColor={tenant.accentColor}
-        size="lg"
-      />
+    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col items-center justify-center gap-12 p-10 text-center">
+      <header className="flex flex-col items-center gap-4">
+        <TenantHeader
+          name={tenant.name}
+          logoUrl={tenant.logoUrl}
+          accentColor={tenant.accentColor}
+          size="lg"
+        />
+        <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+          {en.display.eyebrow}
+        </p>
+      </header>
+
       {isOpen ? (
-        <section className="flex flex-col items-center gap-4">
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <section className="flex flex-col items-center gap-6">
+          <div className="rounded-lg border border-border bg-popover p-8">
             <QRCodeSVG
               value={joinUrl}
               size={320}
@@ -126,27 +133,33 @@ export function DisplayClient({
               aria-label={`QR code to join the queue at ${tenant.name}`}
             />
           </div>
-          <p className="text-center text-lg text-slate-700">
-            Scan to join the queue
+          <h1 className="font-display text-5xl font-semibold text-foreground">
+            {en.display.title}
+          </h1>
+          <p className="max-w-md text-lg text-muted-foreground">
+            {en.display.body}
           </p>
         </section>
       ) : (
-        <ClosedBanner name={tenant.name} />
+        <ClosedBanner />
       )}
     </main>
   );
 }
 
-function ClosedBanner({ name }: { name: string }) {
+function ClosedBanner() {
   return (
     <section
-      className="flex w-full max-w-md flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-10 text-center"
       role="status"
+      className="flex w-full max-w-md flex-col items-center gap-3 rounded-lg border border-border bg-muted/40 p-10 text-center"
     >
-      <h2 className="text-2xl font-semibold">Not accepting guests right now</h2>
-      <p className="text-slate-600">
-        {name} is currently closed. Please check back later.
+      <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+        Closed
       </p>
+      <h2 className="font-display text-3xl font-semibold text-foreground">
+        {en.display.closed.title}
+      </h2>
+      <p className="text-muted-foreground">{en.display.closed.body}</p>
     </section>
   );
 }
