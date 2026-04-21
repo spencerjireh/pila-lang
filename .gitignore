@@ -37,3 +37,10 @@ apps/mobile/android/local.properties
 
 # Turbo caches
 .turbo
+
+# Claude Code / Playwright MCP session artifacts
+.claude/
+.playwright-mcp/
+
+# Ad-hoc screenshots from local browser sessions
+/*.png
