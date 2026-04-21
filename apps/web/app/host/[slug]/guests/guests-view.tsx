@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { en } from "@/lib/i18n/en";
 import type {
   GuestHistoryPage,
   GuestHistoryRow,
@@ -18,6 +27,7 @@ interface Props {
 }
 
 export function GuestsView({ slug, tenantName, timezone, initial }: Props) {
+  const t = en.host.guests;
   const [rows, setRows] = useState<GuestHistoryRow[]>(initial.rows);
   const [cursor, setCursor] = useState<string | null>(initial.nextCursor);
   const [loading, setLoading] = useState(false);
@@ -34,7 +44,7 @@ export function GuestsView({ slug, tenantName, timezone, initial }: Props) {
         { cache: "no-store" },
       );
       if (!res.ok) {
-        setError("Could not load more.");
+        setError("Couldn\u2019t load more.");
         return;
       }
       const body = (await res.json()) as GuestHistoryPage;
@@ -45,7 +55,7 @@ export function GuestsView({ slug, tenantName, timezone, initial }: Props) {
       });
       setCursor(body.nextCursor);
     } catch {
-      setError("Network error.");
+      setError("Network hiccup.");
     } finally {
       setLoading(false);
     }
@@ -71,59 +81,72 @@ export function GuestsView({ slug, tenantName, timezone, initial }: Props) {
   );
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-6 p-6">
-      <header className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Guests</h1>
-          <p className="text-sm text-slate-600">
-            Phone-grouped history for {tenantName}
+    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-8 p-6 py-10">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+            {tenantName}
+          </p>
+          <h1 className="font-display text-3xl font-semibold text-foreground">
+            {t.title}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Phone-grouped history. Repeat guests show their visit count.
           </p>
         </div>
-        <Button variant="outline" asChild>
+        <Button variant="ghost" size="sm" asChild>
           <Link href={`/host/${encodeURIComponent(slug)}/queue`}>
-            Back to queue
+            &larr; Back to queue
           </Link>
         </Button>
       </header>
 
       {rows.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
-          No guests with a phone number on file yet.
+        <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+          {t.empty}
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
           {formatted.map((row) => (
-            <li
-              key={row.phone}
-              className="flex flex-col gap-1 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div>
-                <p className="font-medium">{row.lastName}</p>
-                <p className="text-sm text-slate-500">{row.phone}</p>
-              </div>
-              <div className="text-sm text-slate-600 sm:text-right">
-                <p>
-                  {row.visitCount} {row.visitCount === 1 ? "visit" : "visits"}
-                </p>
-                <p className="text-xs text-slate-500">
-                  last seen {row.lastVisitLabel}
-                </p>
-              </div>
+            <li key={row.phone}>
+              <Card>
+                <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+                  <div className="space-y-1">
+                    <CardTitle className="text-base">{row.lastName}</CardTitle>
+                    <CardDescription className="font-mono text-xs">
+                      {row.phone}
+                    </CardDescription>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-foreground">
+                      {row.visitCount}{" "}
+                      {row.visitCount === 1 ? "visit" : "visits"}
+                    </p>
+                    <p className="font-mono text-xs text-muted-foreground">
+                      last seen {row.lastVisitLabel}
+                    </p>
+                  </div>
+                </CardHeader>
+                <CardContent />
+              </Card>
             </li>
           ))}
         </ul>
       )}
 
       {error ? (
-        <p className="text-sm text-red-600" role="alert">
-          {error}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       ) : null}
 
       <div ref={sentinelRef} className="h-8" aria-hidden="true" />
       {loading ? (
-        <p className="text-center text-sm text-slate-500" aria-live="polite">
-          Loading…
+        <p
+          className="text-center text-sm text-muted-foreground"
+          aria-live="polite"
+        >
+          Loading\u2026
         </p>
       ) : null}
     </main>

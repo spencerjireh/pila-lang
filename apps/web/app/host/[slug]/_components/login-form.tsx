@@ -3,9 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { en } from "@/lib/i18n/en";
 
 interface LoginFormProps {
   slug: string;
@@ -15,6 +17,7 @@ type Status = "idle" | "submitting" | "error";
 
 export function LoginForm({ slug }: LoginFormProps) {
   const router = useRouter();
+  const t = en.host.login;
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +27,7 @@ export function LoginForm({ slug }: LoginFormProps) {
     if (status === "submitting") return;
     if (!password) {
       setStatus("error");
-      setError("Enter the shared host password.");
+      setError(t.passwordHelper);
       return;
     }
     setStatus("submitting");
@@ -51,42 +54,54 @@ export function LoginForm({ slug }: LoginFormProps) {
       }
       if (res.status === 401) {
         setStatus("error");
-        setError("Wrong password. Check with your manager.");
+        setError(t.wrongPassword);
         return;
       }
       setStatus("error");
-      setError("Could not sign in. Please try again.");
+      setError("Couldn\u2019t sign in. Try again.");
     } catch {
       setStatus("error");
-      setError("Network error. Please try again.");
+      setError("Network hiccup. Try again.");
     }
   }
 
   return (
-    <form className="space-y-4" onSubmit={onSubmit}>
-      <div className="space-y-1.5">
-        <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-      </div>
-      {error ? (
-        <p className="text-sm text-red-600" role="alert">
-          {error}
+    <div className="space-y-6">
+      <header className="space-y-2">
+        <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+          {t.eyebrow}
         </p>
-      ) : null}
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={status === "submitting"}
-      >
-        {status === "submitting" ? "Signing in…" : "Sign in"}
-      </Button>
-    </form>
+        <h1 className="font-display text-3xl font-semibold text-foreground">
+          {t.title}
+        </h1>
+      </header>
+      <form className="space-y-4" onSubmit={onSubmit}>
+        <div className="space-y-1.5">
+          <Label htmlFor="password">{t.passwordLabel}</Label>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <p className="text-xs text-muted-foreground">{t.passwordHelper}</p>
+        </div>
+        {error ? (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : null}
+        <Button
+          type="submit"
+          className="w-full"
+          size="lg"
+          disabled={status === "submitting"}
+        >
+          {status === "submitting" ? "Signing in\u2026" : t.submit}
+        </Button>
+      </form>
+    </div>
   );
 }
