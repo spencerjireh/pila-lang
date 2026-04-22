@@ -43,6 +43,9 @@ export function SignInForm() {
   if (status === "sent") {
     return (
       <div className="space-y-2">
+        <h2 className="font-display text-xl font-semibold text-foreground">
+          {tCheck.title}
+        </h2>
         <p className="text-sm text-foreground">{tCheck.body}</p>
         <p className="text-sm text-muted-foreground">{tCheck.didntGet}</p>
       </div>

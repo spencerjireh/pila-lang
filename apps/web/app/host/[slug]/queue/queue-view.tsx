@@ -308,9 +308,6 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
             size="sm"
             disabled={toggleBusy}
             onClick={onToggleClick}
-            aria-label={
-              tenantInfo.isOpen ? t.closeConfirm.title : t.openConfirm.title
-            }
           >
             {tenantInfo.isOpen ? t.open : t.closed}
           </Button>

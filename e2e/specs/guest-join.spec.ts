@@ -17,7 +17,7 @@ test.describe("guest join", () => {
   }) => {
     const { slug } = await tenantFactory({ name: "Invalid Token Diner" });
     await page.goto(`/r/${slug}?t=not-a-real-token`);
-    await expect(page.getByText(/QR is.t valid/i)).toBeVisible();
+    await expect(page.getByText(/QR isn.t valid/i)).toBeVisible();
   });
 
   test("shows closed banner when tenant is closed", async ({
@@ -44,7 +44,7 @@ test.describe("guest join", () => {
     await page.goto(`/r/${slug}?t=${token}`);
 
     await page.getByLabel(/your name/i).fill("Priya");
-    await page.getByRole("combobox").click();
+    await page.getByRole("combobox", { name: /party size/i }).click();
     await page.getByRole("option", { name: "2", exact: true }).click();
     await page.getByRole("button", { name: /join the queue/i }).click();
 
@@ -63,7 +63,7 @@ test.describe("guest join", () => {
 
     await page.goto(`/r/${slug}?t=${token}`);
     await page.getByLabel(/your name/i).fill("Rahul");
-    await page.getByRole("combobox").click();
+    await page.getByRole("combobox", { name: /party size/i }).click();
     await page.getByRole("option", { name: "3", exact: true }).click();
     await page.getByRole("button", { name: /join the queue/i }).click();
     await page.waitForURL(new RegExp(`/r/${slug}/wait/`));

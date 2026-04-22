@@ -22,7 +22,7 @@ test.describe("sales demo", () => {
     const token = await mintQrToken(request, slug);
     await guest.goto(`/r/${slug}?t=${token}`);
     await guest.getByLabel(/your name/i).fill("Sales Demo Guest");
-    await guest.getByRole("combobox").click();
+    await guest.getByRole("combobox", { name: /party size/i }).click();
     await guest.getByRole("option", { name: "2", exact: true }).click();
     await guest.getByRole("button", { name: /join the queue/i }).click();
     await guest.waitForURL(new RegExp(`/r/${slug}/wait/`));
