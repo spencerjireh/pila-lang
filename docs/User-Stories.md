@@ -431,6 +431,32 @@ This doc is the bridge between PRD (what we're building and why) and tests (proo
 
 ---
 
+## Post-v1.5 follow-ups
+
+Surfaced during local testing after the v1.5 mobile cut landed. Real user-visible gaps, not net-new features — promoted here so they graduate out of the progress-tracker.
+
+### M1. Guest can launch the app cold and still reach the scanner
+
+- **Role:** Guest · **Priority:** P1
+- **Given** the guest has the Pila app installed from a previous visit and opens it from the home screen (no Universal Link, no active deep link)
+- **When** the app cold-starts
+- **Then** the landing screen shows a prominent "Scan QR" action that routes to the existing `/scan` camera screen; the screen never sits on an indefinite spinner
+- **Notes:** Today `apps/mobile/lib/screens/splash_screen.dart` renders an infinite `CircularProgressIndicator` at `/` whenever there is no deep-link bootstrap and no paired display. Re-uses the existing `ScanScreen` and `DeepLinkParser` — no new routing. Scanner must continue to accept guest (`/r/<slug>?t=<token>`), host (`/host/<slug>`), and display (`/display/<slug>`) payloads so one button covers every printed QR we might ever ship.
+- **Test spec:** `apps/mobile/test/screens/landing_screen_test.dart` (+ extend `integration_test/sales_demo_test.dart` to exercise cold-launch → scan)
+- **Refs:** Spec § v1.5 · PRD § Guest flow
+
+### M2. Returning host can sign back in without a deep link
+
+- **Role:** Host · **Priority:** P1
+- **Given** a host who has previously signed into the app on this device (host bearer + snapshot cached) and now cold-launches the app
+- **When** the landing screen renders
+- **Then** a secondary "Sign back in to <tenant name>" action appears next to the Scan button and routes to `/host/<slug>` using the remembered slug; the action is hidden when no snapshot exists
+- **Notes:** Mirror the pattern `_kioskInitialLocation` uses for `displayPairingStore.currentSlug()` — introduce an equivalent `latestSlug()` on `HostSnapshotStore` driven by the existing sqflite rows. First-time hosts have no resume path by design: slugs are never user-facing strings (Spec § v1.5), so initial sign-in remains via the admin-issued Universal Link. On bearer expiry the existing auth redirect already lands the user on `/host/<slug>` login; no new error handling needed.
+- **Test spec:** `apps/mobile/test/screens/landing_screen_test.dart` (visibility matrix: no snapshot, one snapshot, stale bearer)
+- **Refs:** Spec § v1.5 · Spec § Host session
+
+---
+
 ## Open questions / not yet stories
 
 Tracked here so they don't get lost; promote to a real story when the PRD or Spec grows to cover them:

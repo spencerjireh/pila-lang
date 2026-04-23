@@ -320,3 +320,9 @@ Phase 8 onward covers a Flutter app for guest, host, and display. Admin stays we
 **Deferred infra**
 
 - [ ] CI job to run `flutter test integration_test/` against the live dev stack — requires a GitHub Actions Mac runner able to host Postgres/Redis/MinIO/Next.js.
+
+---
+
+## Known gaps / follow-ups (post-v1.5)
+
+- [ ] **Mobile root screen has no way forward without a deep link.** `apps/mobile/lib/screens/splash_screen.dart` renders an infinite spinner at `/`, and the app is only usable if launched via Universal Link, a previously paired display, or `flutter run --route=...`. Replace the splash with a landing screen that exposes a large "Scan QR" button (routes to `/scan`) and a conditional "Sign back in" affordance driven by a new `HostSnapshotStore.latestSlug()` (mirrors how `DisplayPairingStore.currentSlug()` drives kiosk cold-start). Fresh installs stay scan-first — first host sign-in remains via admin-issued Universal Link so slugs never leak into the UI. Stories: User-Stories.md § M1 (guest scan) and § M2 (host resume). Surfaced during local sim testing 2026-04-21.
