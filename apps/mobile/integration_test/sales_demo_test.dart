@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:pila/app.dart';
 import 'package:pila/auth/bearer_storage.dart';
@@ -40,9 +41,22 @@ void main() {
               .overrideWithValue(InMemoryDisplayPairingStore()),
           bearerStorageProvider.overrideWithValue(InMemoryBearerStorage()),
         ],
-        child: PilaApp(initialLocation: joinUrl),
+        // Cold-launch on the landing screen (the M1 regression guard);
+        // a manual Scan tap would open the camera, so the test then
+        // navigates to the join URL the way a scanned QR would.
+        child: const PilaApp(initialLocation: '/'),
       ),
     );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('landing.scan')),
+      findsOneWidget,
+      reason: 'cold launch must land on the scan-first landing screen',
+    );
+
+    final scanElement = tester.element(find.byKey(const Key('landing.scan')));
+    GoRouter.of(scanElement).go(joinUrl);
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField).first, 'Integration Guest');

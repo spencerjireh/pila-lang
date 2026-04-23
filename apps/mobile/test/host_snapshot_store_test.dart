@@ -72,6 +72,34 @@ void main() {
       expect(await store.load('demo'), isNull);
       expect(await store.load('other'), isNotNull);
     });
+
+    test('latestSlug returns null when empty', () async {
+      final store = InMemoryHostSnapshotStore();
+      expect(await store.latestSlug(), isNull);
+    });
+
+    test('latestSlug returns the only slug when one snapshot exists',
+        () async {
+      final store = InMemoryHostSnapshotStore();
+      await store.save('demo', _snapshot());
+      expect(await store.latestSlug(), 'demo');
+    });
+
+    test('latestSlug returns the slug with the highest updatedAt',
+        () async {
+      final store = InMemoryHostSnapshotStore();
+      await store.save(
+        'alpha',
+        _snapshot(slug: 'alpha'),
+        updatedAt: DateTime.utc(2026, 4, 19, 11),
+      );
+      await store.save(
+        'beta',
+        _snapshot(slug: 'beta'),
+        updatedAt: DateTime.utc(2026, 4, 19, 12),
+      );
+      expect(await store.latestSlug(), 'beta');
+    });
   });
 
   group('isHostSnapshotStale', () {

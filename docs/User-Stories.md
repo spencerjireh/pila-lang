@@ -441,8 +441,8 @@ Surfaced during local testing after the v1.5 mobile cut landed. Real user-visibl
 - **Given** the guest has the Pila app installed from a previous visit and opens it from the home screen (no Universal Link, no active deep link)
 - **When** the app cold-starts
 - **Then** the landing screen shows a prominent "Scan QR" action that routes to the existing `/scan` camera screen; the screen never sits on an indefinite spinner
-- **Notes:** Today `apps/mobile/lib/screens/splash_screen.dart` renders an infinite `CircularProgressIndicator` at `/` whenever there is no deep-link bootstrap and no paired display. Re-uses the existing `ScanScreen` and `DeepLinkParser` — no new routing. Scanner must continue to accept guest (`/r/<slug>?t=<token>`), host (`/host/<slug>`), and display (`/display/<slug>`) payloads so one button covers every printed QR we might ever ship.
-- **Test spec:** `apps/mobile/test/screens/landing_screen_test.dart` (+ extend `integration_test/sales_demo_test.dart` to exercise cold-launch → scan)
+- **Notes:** The `/` route now renders `LandingScreen` (not the legacy splash spinner). Re-uses the existing `ScanScreen` and `DeepLinkParser`. The scanner accepts guest (`/r/<slug>?t=<token>`), host (`/host/<slug>`), and display (`/display/<slug>`) payloads so one button covers every printed QR we might ever ship; a non-Pila code triggers an inline toast and keeps the scanner live. Tenant name for the new M3 row is captured on join from `GuestInfoResponse.brand.name` and persisted on `GuestPartyRecord.tenantName` (schema v4).
+- **Test spec:** `apps/mobile/test/landing_screen_test.dart` + `apps/mobile/test/scan_screen_test.dart`; cold-launch path exercised by `apps/mobile/integration_test/sales_demo_test.dart`.
 - **Refs:** Spec § v1.5 · PRD § Guest flow
 
 ### M2. Returning host can sign back in without a deep link
@@ -450,10 +450,20 @@ Surfaced during local testing after the v1.5 mobile cut landed. Real user-visibl
 - **Role:** Host · **Priority:** P1
 - **Given** a host who has previously signed into the app on this device (host bearer + snapshot cached) and now cold-launches the app
 - **When** the landing screen renders
-- **Then** a secondary "Sign back in to <tenant name>" action appears next to the Scan button and routes to `/host/<slug>` using the remembered slug; the action is hidden when no snapshot exists
-- **Notes:** Mirror the pattern `_kioskInitialLocation` uses for `displayPairingStore.currentSlug()` — introduce an equivalent `latestSlug()` on `HostSnapshotStore` driven by the existing sqflite rows. First-time hosts have no resume path by design: slugs are never user-facing strings (Spec § v1.5), so initial sign-in remains via the admin-issued Universal Link. On bearer expiry the existing auth redirect already lands the user on `/host/<slug>` login; no new error handling needed.
-- **Test spec:** `apps/mobile/test/screens/landing_screen_test.dart` (visibility matrix: no snapshot, one snapshot, stale bearer)
+- **Then** a secondary "Sign back in to <tenant name>" action appears below the Scan button and routes to `/host/<slug>` using the remembered slug; the action is hidden when no snapshot exists
+- **Notes:** Mirrors the pattern `_kioskInitialLocation` uses for `displayPairingStore.currentSlug()` — `HostSnapshotStore.latestSlug()` returns the slug of the most-recently-updated snapshot row, and the landing screen loads that snapshot to source the tenant name for the button label. First-time hosts have no resume path by design: slugs are never user-facing strings (Spec § v1.5), so initial sign-in remains via the admin-issued Universal Link. On bearer expiry the existing auth redirect lands the user on `/host/<slug>` login; no new error handling needed.
+- **Test spec:** `apps/mobile/test/landing_screen_test.dart` (visibility matrix: no snapshot, one snapshot, stale bearer)
 - **Refs:** Spec § v1.5 · Spec § Host session
+
+### M3. Waiting guest can resume without a deep link
+
+- **Role:** Guest · **Priority:** P1
+- **Given** a guest who is currently waiting in a queue (local `GuestPartyRecord` with `status = waiting`) and cold-launches the app
+- **When** the landing screen renders
+- **Then** a prominent "Return to `<tenant name>`" action appears above the Scan button and routes to `/r/<slug>/wait/<partyId>`; the action is hidden when no non-terminal party exists locally
+- **Notes:** `PartyStore.latestWaiting()` returns the newest non-terminal `GuestPartyRecord` across every slug (covers the rare two-tenant case by surfacing the most-recently-updated one). Tenant name is sourced from `GuestPartyRecord.tenantName`, which `JoinScreen._submit` now captures from the already-loaded `GuestInfoResponse.brand.name` at join time. If the server has since reset or hard-deleted the party, navigating to the wait URL closes the stream with 204 and the existing session-ended screen handles it. Schema v4 adds the `tenant_name` column via drop-and-recreate; pre-pilot the mid-queue-upgrade risk is accepted.
+- **Test spec:** `apps/mobile/test/landing_screen_test.dart` (visibility matrix + tap-to-route)
+- **Refs:** Spec § v1.5 · Spec § Guest session
 
 ---
 
