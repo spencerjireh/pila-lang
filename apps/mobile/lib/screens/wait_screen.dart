@@ -151,6 +151,7 @@ class _WaitScreenState extends ConsumerState<WaitScreen>
         GuestPartyRecord(
           slug: widget.slug,
           partyId: widget.partyId,
+          tenantName: _brand?.name ?? '',
           name: wait.name,
           partySize: 0,
           joinedAt: wait.joinedAt,

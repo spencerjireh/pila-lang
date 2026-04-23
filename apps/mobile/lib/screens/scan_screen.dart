@@ -3,7 +3,18 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../deeplink/parser.dart';
+import '../deeplink/router.dart';
 import '../theme/palette.dart';
+
+/// Pure routing decision for a scanned QR payload. Returns a go_router
+/// location string on success, or null if the payload is not a
+/// recognized Pila link. Exposed at module level so tests can exercise
+/// it without standing up MobileScanner's platform channel.
+String? resolveScanLocation(String raw, {DeepLinkParser parser = const DeepLinkParser()}) {
+  final link = parser.parse(raw);
+  if (link is UnknownLink) return null;
+  return deepLinkToLocation(link);
+}
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -14,8 +25,8 @@ class ScanScreen extends StatefulWidget {
 
 class _ScanScreenState extends State<ScanScreen> {
   final MobileScannerController _controller = MobileScannerController();
-  final DeepLinkParser _parser = const DeepLinkParser();
   bool _handled = false;
+  DateTime? _lastUnknownAt;
 
   @override
   void dispose() {
@@ -27,11 +38,29 @@ class _ScanScreenState extends State<ScanScreen> {
     if (_handled) return;
     final value = capture.barcodes.firstOrNull?.rawValue;
     if (value == null) return;
-    final link = _parser.parse(value);
-    if (link is GuestJoinLink) {
+    final location = resolveScanLocation(value);
+    if (location != null) {
       _handled = true;
-      context.go('/r/${link.slug}?t=${link.token}');
+      context.go(location);
+      return;
     }
+    // Unknown payload: show an inline toast and keep the scanner live.
+    // Throttle so a camera pointed at a non-Pila code doesn't spam.
+    final now = DateTime.now();
+    if (_lastUnknownAt != null &&
+        now.difference(_lastUnknownAt!) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastUnknownAt = now;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    messenger?.hideCurrentSnackBar();
+    messenger?.showSnackBar(
+      const SnackBar(
+        content: Text("That's not a Pila QR code."),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override

@@ -5,6 +5,7 @@ import 'package:pila/persistence/party_store.dart';
 GuestPartyRecord _sample({
   String slug = 'demo',
   String partyId = 'p-1',
+  String tenantName = 'Demo Diner',
   PartyStatus status = PartyStatus.waiting,
   DateTime? updatedAt,
   DateTime? resolvedAt,
@@ -13,6 +14,7 @@ GuestPartyRecord _sample({
   return GuestPartyRecord(
     slug: slug,
     partyId: partyId,
+    tenantName: tenantName,
     name: 'Alice',
     partySize: 2,
     joinedAt: now,
@@ -91,5 +93,54 @@ void main() {
     await store.clear();
     final found = await store.latestForSlug('demo');
     expect(found, isNull);
+  });
+
+  test('upsert round-trips tenantName', () async {
+    await store.upsert(_sample(tenantName: 'Garden Table'));
+    final found = await store.findByParty('demo', 'p-1');
+    expect(found!.tenantName, 'Garden Table');
+  });
+
+  group('latestWaiting', () {
+    test('returns null when the store is empty', () async {
+      expect(await store.latestWaiting(), isNull);
+    });
+
+    test('returns null when every row is terminal', () async {
+      await store.upsert(_sample(status: PartyStatus.seated));
+      await store.upsert(
+        _sample(partyId: 'p-2', status: PartyStatus.left),
+      );
+      expect(await store.latestWaiting(), isNull);
+    });
+
+    test('ignores terminal rows and returns the waiting one', () async {
+      await store.upsert(_sample(status: PartyStatus.seated));
+      await store.upsert(
+        _sample(partyId: 'p-2', status: PartyStatus.waiting),
+      );
+      final found = await store.latestWaiting();
+      expect(found!.partyId, 'p-2');
+    });
+
+    test('returns the most recently updated waiting row across slugs',
+        () async {
+      await store.upsert(
+        _sample(
+          slug: 'alpha',
+          partyId: 'p-1',
+          updatedAt: DateTime.utc(2026, 4, 19, 12, 0),
+        ),
+      );
+      await store.upsert(
+        _sample(
+          slug: 'beta',
+          partyId: 'p-2',
+          updatedAt: DateTime.utc(2026, 4, 19, 12, 10),
+        ),
+      );
+      final found = await store.latestWaiting();
+      expect(found!.slug, 'beta');
+    });
   });
 }

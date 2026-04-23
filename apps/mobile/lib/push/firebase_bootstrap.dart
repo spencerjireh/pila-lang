@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 
+import '../firebase_options.dart';
+
 /// Global gate for push features. `false` when Firebase config files are
 /// missing (local dev without `flutterfire configure`, test environments),
 /// so the coordinator and UI can short-circuit without spurious errors.
@@ -14,7 +16,9 @@ Future<bool> ensureFirebase() async {
       _pushEnabled = true;
       return true;
     }
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     _pushEnabled = true;
     return true;
   } catch (_) {

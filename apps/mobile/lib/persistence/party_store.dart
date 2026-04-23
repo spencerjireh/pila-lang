@@ -11,6 +11,7 @@ class GuestPartyRecord {
   const GuestPartyRecord({
     required this.slug,
     required this.partyId,
+    required this.tenantName,
     required this.name,
     required this.partySize,
     required this.joinedAt,
@@ -21,6 +22,7 @@ class GuestPartyRecord {
 
   final String slug;
   final String partyId;
+  final String tenantName;
   final String name;
   final int partySize;
   final DateTime joinedAt;
@@ -29,6 +31,7 @@ class GuestPartyRecord {
   final DateTime updatedAt;
 
   GuestPartyRecord copyWith({
+    String? tenantName,
     PartyStatus? status,
     DateTime? resolvedAt,
     DateTime? updatedAt,
@@ -36,6 +39,7 @@ class GuestPartyRecord {
     return GuestPartyRecord(
       slug: slug,
       partyId: partyId,
+      tenantName: tenantName ?? this.tenantName,
       name: name,
       partySize: partySize,
       joinedAt: joinedAt,
@@ -48,6 +52,7 @@ class GuestPartyRecord {
   Map<String, dynamic> toRow() => <String, dynamic>{
         'slug': slug,
         'party_id': partyId,
+        'tenant_name': tenantName,
         'name': name,
         'party_size': partySize,
         'joined_at': joinedAt.millisecondsSinceEpoch,
@@ -60,6 +65,7 @@ class GuestPartyRecord {
     return GuestPartyRecord(
       slug: row['slug']! as String,
       partyId: row['party_id']! as String,
+      tenantName: row['tenant_name']! as String,
       name: row['name']! as String,
       partySize: (row['party_size']! as int),
       joinedAt:
@@ -78,6 +84,12 @@ abstract class PartyStore {
   Future<void> upsert(GuestPartyRecord record);
   Future<GuestPartyRecord?> findByParty(String slug, String partyId);
   Future<GuestPartyRecord?> latestForSlug(String slug);
+
+  /// Most recently updated record across all slugs whose status is still
+  /// [PartyStatus.waiting]. Drives the landing-screen "Return to your wait"
+  /// row — see User-Stories § M3.
+  Future<GuestPartyRecord?> latestWaiting();
+
   Future<void> delete(String slug, String partyId);
   Future<void> clear();
 }
@@ -105,6 +117,15 @@ class InMemoryPartyStore implements PartyStore {
   }
 
   @override
+  Future<GuestPartyRecord?> latestWaiting() async {
+    final matches = _rows.values
+        .where((r) => r.status == PartyStatus.waiting)
+        .toList()
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return matches.isEmpty ? null : matches.first;
+  }
+
+  @override
   Future<void> delete(String slug, String partyId) async {
     _rows.remove(_key(slug, partyId));
   }
@@ -122,7 +143,7 @@ class MobileDatabase {
 
   final Database db;
 
-  static const int schemaVersion = 3;
+  static const int schemaVersion = 4;
 
   static Future<MobileDatabase> open() async {
     final dir = await getApplicationDocumentsDirectory();
@@ -142,6 +163,13 @@ class MobileDatabase {
         if (oldVersion < 3) {
           await _createKioskTable(db);
         }
+        if (oldVersion < 4) {
+          // v4 adds the tenant_name column to guest_parties. A drop-and-
+          // recreate is acceptable pre-pilot: the server-side party row is
+          // untouched, so any mid-queue upgrader just re-enters via the QR.
+          await db.execute('DROP TABLE IF EXISTS guest_parties');
+          await _createGuestTable(db);
+        }
       },
     );
     return MobileDatabase._(database);
@@ -152,6 +180,7 @@ class MobileDatabase {
       CREATE TABLE IF NOT EXISTS guest_parties (
         slug TEXT NOT NULL,
         party_id TEXT NOT NULL,
+        tenant_name TEXT NOT NULL,
         name TEXT NOT NULL,
         party_size INTEGER NOT NULL,
         joined_at INTEGER NOT NULL,
@@ -164,6 +193,10 @@ class MobileDatabase {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_guest_parties_slug_updated '
       'ON guest_parties(slug, updated_at DESC)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_guest_parties_status_updated '
+      'ON guest_parties(status, updated_at DESC)',
     );
   }
 
@@ -231,6 +264,19 @@ class SqflitePartyStore implements PartyStore {
       'guest_parties',
       where: 'slug = ?',
       whereArgs: <Object>[slug],
+      orderBy: 'updated_at DESC',
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return GuestPartyRecord.fromRow(rows.first);
+  }
+
+  @override
+  Future<GuestPartyRecord?> latestWaiting() async {
+    final rows = await _db.query(
+      'guest_parties',
+      where: 'status = ?',
+      whereArgs: <Object>[PartyStatus.waiting.wire],
       orderBy: 'updated_at DESC',
       limit: 1,
     );

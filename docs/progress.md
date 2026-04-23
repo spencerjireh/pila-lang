@@ -320,3 +320,9 @@ Phase 8 onward covers a Flutter app for guest, host, and display. Admin stays we
 **Deferred infra**
 
 - [ ] CI job to run `flutter test integration_test/` against the live dev stack — requires a GitHub Actions Mac runner able to host Postgres/Redis/MinIO/Next.js.
+
+---
+
+## Known gaps / follow-ups (post-v1.5)
+
+- [x] **Mobile landing screen shipped.** Cold launch at `/` now renders `apps/mobile/lib/screens/landing_screen.dart` with up to three ordered actions: "Return to `<tenant>`" (driven by `PartyStore.latestWaiting()`), "Scan QR" (always visible, routes to the existing `/scan` camera), and "Sign back in to `<tenant>`" (driven by new `HostSnapshotStore.latestSlug()`). The in-app scanner now also routes host and display QRs, with an inline toast on non-Pila codes. `guest_parties` schema bumped to v4 to carry `tenant_name` (drop-and-recreate migration, acceptable pre-pilot). First host sign-in still flows through an admin-issued Universal Link so slugs never leak into the UI. Stories: User-Stories.md § M1, § M2, § M3. Surfaced during local sim testing 2026-04-21; landed 2026-04-23.

@@ -88,6 +88,7 @@ class _JoinScreenState extends ConsumerState<JoinScreen> {
         GuestPartyRecord(
           slug: widget.slug,
           partyId: result.partyId,
+          tenantName: _info!.brand.name,
           name: _name.text.trim(),
           partySize: _partySize,
           joinedAt: DateTime.now(),

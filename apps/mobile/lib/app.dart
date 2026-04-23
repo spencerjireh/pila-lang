@@ -10,8 +10,8 @@ import 'screens/host/host_login_screen.dart';
 import 'screens/host/host_queue_screen.dart';
 import 'screens/host/host_settings_screen.dart';
 import 'screens/join_screen.dart';
+import 'screens/landing_screen.dart';
 import 'screens/scan_screen.dart';
-import 'screens/splash_screen.dart';
 import 'screens/wait_screen.dart';
 import 'state/host_providers.dart';
 import 'theme/pila_theme.dart';
@@ -61,7 +61,7 @@ class _PilaAppState extends ConsumerState<PilaApp> {
       routes: <RouteBase>[
         GoRoute(
           path: '/',
-          builder: (_, __) => const SplashScreen(),
+          builder: (_, __) => const LandingScreen(),
         ),
         GoRoute(
           path: '/scan',
