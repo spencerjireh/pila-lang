@@ -4,6 +4,8 @@
 .pub-cache/
 .pub/
 build/
+.flutter-plugins
+.flutter-plugins-dependencies
 
 # Platform build artifacts
 ios/Pods/
@@ -18,7 +20,8 @@ android/local.properties
 android/gradlew
 android/gradlew.bat
 
-# Secrets (never commit)
+# Firebase config (never commit — run `flutterfire configure` locally)
+lib/firebase_options.dart
 ios/Runner/GoogleService-Info.plist
 android/app/google-services.json
 

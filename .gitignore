@@ -31,7 +31,8 @@ apps/mobile/android/app/profile
 apps/mobile/android/app/release
 apps/mobile/android/local.properties
 
-# Mobile push-notification credentials (never commit)
+# Firebase config (never commit — run `flutterfire configure` locally)
+apps/mobile/lib/firebase_options.dart
 **/GoogleService-Info.plist
 **/google-services.json
 

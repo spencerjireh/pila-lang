@@ -211,6 +211,40 @@ void main() {
     expect(find.byKey(const Key('landing.resumeWait')), findsNothing);
   });
 
+  testWidgets('blank host tenant name hides the sign-back-in row',
+      (tester) async {
+    final hostStore = InMemoryHostSnapshotStore();
+    await hostStore.save('demo', _snapshot(name: '   '));
+
+    await _pumpLanding(
+      tester,
+      partyStore: InMemoryPartyStore(),
+      hostSnapshotStore: hostStore,
+    );
+
+    expect(find.byKey(const Key('landing.hostResume')), findsNothing);
+    expect(find.byKey(const Key('landing.scan')), findsOneWidget);
+  });
+
+  testWidgets('store throw does not strand the spinner', (tester) async {
+    // Swallow the intentional error so the test runner doesn't mark it
+    // as a failure — FlutterError.reportError is what our bootstrap uses.
+    final originalOnError = FlutterError.onError;
+    FlutterError.onError = (_) {};
+    addTearDown(() => FlutterError.onError = originalOnError);
+
+    await _pumpLanding(
+      tester,
+      partyStore: _ThrowingPartyStore(),
+      hostSnapshotStore: InMemoryHostSnapshotStore(),
+    );
+
+    expect(find.byKey(const Key('landing.scan')), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byKey(const Key('landing.resumeWait')), findsNothing);
+    expect(find.byKey(const Key('landing.hostResume')), findsNothing);
+  });
+
   testWidgets('tap Scan routes to /scan', (tester) async {
     String? routed;
     await tester.pumpWidget(
@@ -280,4 +314,21 @@ void main() {
     await tester.pumpAndSettle();
     expect(routed, '/host/demo');
   });
+}
+
+class _ThrowingPartyStore implements PartyStore {
+  @override
+  Future<void> upsert(GuestPartyRecord record) async {}
+  @override
+  Future<GuestPartyRecord?> findByParty(String slug, String partyId) async =>
+      null;
+  @override
+  Future<GuestPartyRecord?> latestForSlug(String slug) async => null;
+  @override
+  Future<GuestPartyRecord?> latestWaiting() async =>
+      throw StateError('simulated sqflite failure');
+  @override
+  Future<void> delete(String slug, String partyId) async {}
+  @override
+  Future<void> clear() async {}
 }

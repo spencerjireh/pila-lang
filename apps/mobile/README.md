@@ -51,5 +51,11 @@ Screens and navigation land in later phases.
 
 ## Push notification credentials
 
-- `ios/Runner/GoogleService-Info.plist` and `android/app/google-services.json` are **gitignored**. Pull them from the Firebase console for the `com.pila.app` bundle.
+- `lib/firebase_options.dart`, `ios/Runner/GoogleService-Info.plist`, and `android/app/google-services.json` are **gitignored**. Generate them locally with:
+  ```
+  dart pub global activate flutterfire_cli
+  flutterfire configure --project=pilalang
+  ```
+  This writes all three from the Firebase console. CI falls back to `lib/firebase_options.example.dart` for `flutter analyze` — tests don't initialize Firebase.
+- API keys are restricted in GCP Console (Android package + SHA-1, iOS bundle ID, allow-listed APIs), so the values are inert outside the signed app.
 - Rotation / revocation procedure lives in `../docs/RUNBOOK.md` §10.

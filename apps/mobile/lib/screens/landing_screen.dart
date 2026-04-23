@@ -37,25 +37,43 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
   }
 
   Future<void> _bootstrap() async {
-    final partyStore = ref.read(partyStoreProvider);
-    final hostSnapshotStore = ref.read(hostSnapshotStoreProvider);
-    final waiting = await partyStore.latestWaiting();
-    final hostSlug = await hostSnapshotStore.latestSlug();
+    GuestPartyRecord? waiting;
+    String? hostSlug;
     String? hostTenantName;
-    if (hostSlug != null) {
-      final stored = await hostSnapshotStore.load(hostSlug);
-      hostTenantName = stored?.snapshot.tenant.name;
+    try {
+      final partyStore = ref.read(partyStoreProvider);
+      final hostSnapshotStore = ref.read(hostSnapshotStoreProvider);
+      waiting = await partyStore.latestWaiting();
+      hostSlug = await hostSnapshotStore.latestSlug();
+      if (hostSlug != null) {
+        final stored = await hostSnapshotStore.load(hostSlug);
+        hostTenantName = stored?.snapshot.tenant.name;
+      }
+    } catch (error, stack) {
+      // A store read shouldn't strand the user on the spinner forever.
+      // Report and fall through with null rows — the Scan button is
+      // always-visible and enough to move forward.
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stack,
+          library: 'landing_screen',
+          context: ErrorDescription('while bootstrapping landing screen'),
+        ),
+      );
     }
     if (!mounted) return;
+    final hasHostName =
+        hostTenantName != null && hostTenantName.trim().isNotEmpty;
     setState(() {
       // Legacy rows predating the v4 schema migration are dropped on open,
       // so a non-null record always carries tenantName. Belt and braces:
       // hide the row if tenantName is blank.
-      _waiting = (waiting != null && waiting.tenantName.isNotEmpty)
+      _waiting = (waiting != null && waiting.tenantName.trim().isNotEmpty)
           ? waiting
           : null;
-      _hostSlug = hostSlug;
-      _hostTenantName = hostTenantName;
+      _hostSlug = hasHostName ? hostSlug : null;
+      _hostTenantName = hasHostName ? hostTenantName : null;
       _loading = false;
     });
   }

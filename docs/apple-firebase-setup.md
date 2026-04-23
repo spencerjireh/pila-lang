@@ -1,6 +1,6 @@
 # Pila Lang — Apple + Firebase setup checklist
 
-Living checklist for Apple Developer enrollment, Firebase provisioning, and mobile push wiring. Tick items as you go; commits on `setup/apple-firebase` land each change.
+Living checklist for Apple Developer enrollment, Firebase provisioning, and mobile push wiring. Tick items as you go; commits on this setup branch land each change.
 
 Bundle ID used everywhere: **`com.pilalang.app`**
 
@@ -10,15 +10,15 @@ Bundle ID used everywhere: **`com.pilalang.app`**
 
 - [ ] **Apple Developer enrollment** ($99/yr, Individual) — `developer.apple.com/programs/enroll`. Needs Apple ID with 2FA on. Takes 24-48h to approve.
 - [x] **Create Firebase project** — `console.firebase.google.com` → Add project → display name **"PilaLang"** (grab project ID `pilalang` if available, else accept the `pilalang-xxxxx` suffix — ID is permanent). Skip Analytics.
-- [x] **Register Android app in Firebase** — package name `com.pilalang.app`. Download `google-services.json`. Save locally; don't commit yet.
-- [x] **Register iOS app in Firebase** — bundle ID `com.pilalang.app`. Download `GoogleService-Info.plist`. Save locally; don't commit yet.
+- [x] **Register Android app in Firebase** — package name `com.pilalang.app`. `flutterfire configure` will drop `google-services.json` into `apps/mobile/android/app/`. The file is gitignored; every checkout regenerates it locally.
+- [x] **Register iOS app in Firebase** — bundle ID `com.pilalang.app`. `flutterfire configure` drops `GoogleService-Info.plist` into `apps/mobile/ios/Runner/`. Same gitignored, regenerate-locally treatment as Android.
 
 ## Day 1-2 — wire Firebase into the Flutter app (no Apple needed)
 
 - [x] **Install FlutterFire CLI** — `dart pub global activate flutterfire_cli` (also required: `npm install -g firebase-tools` and `gem install xcodeproj` via homebrew Ruby)
 - [x] **Run `flutterfire configure`** from `apps/mobile/` — links both apps, generates `lib/firebase_options.dart`, places `google-services.json` + `GoogleService-Info.plist` in the right spots
 - [x] (I do) **Update `apps/mobile/lib/push/firebase_bootstrap.dart`** to pass `options: DefaultFirebaseOptions.currentPlatform` into `Firebase.initializeApp()`
-- [x] (I do) **Add the two Firebase config files to `.gitignore`** (per-environment, not secret but shouldn't be in git) — already gitignored at root
+- [x] (I do) **Commit the two Firebase config files** — `apps/mobile/android/app/google-services.json` and `apps/mobile/ios/Runner/GoogleService-Info.plist`. Not secrets per Firebase docs; committing unblocks fresh checkouts + CI. Real security controls live in Google Cloud Console and App Check — see §Post-v1.5 Firebase hardening.
 - [ ] **Smoke test on Android** — physical device or emulator; run the app, verify FCM token registers via `/api/guest/push/register`. Android push works without Apple.
 
 ## Day 1-2 — server-side Firebase (parallel track)
@@ -69,6 +69,25 @@ Bundle ID used everywhere: **`com.pilalang.app`**
 - **I (Claude) do:** any repo edit — `firebase_bootstrap.dart` changes, `.gitignore` entries, `.env.example` tweaks, Android signing config, committing entitlement files you generate.
 
 Ping me when a checkbox needs code and I'll do it in the same branch.
+
+---
+
+## Post-v1.5 Firebase hardening
+
+Tracked follow-ups after the v1.5 mobile push cut. None are pre-pilot blockers; all are prerequisites for production push rollout.
+
+- [ ] **API key application restrictions** — in Google Cloud Console (`console.cloud.google.com/apis/credentials` for project `pilalang`), restrict the Android key to package `com.pilalang.app` + the signing SHA-1, and the iOS key to bundle `com.pilalang.app`. Allow-list only the Firebase APIs we use (`firebase.googleapis.com`, `identitytoolkit.googleapis.com`, `fcm.googleapis.com`). Per Firebase docs these keys identify the project and belong in app code — application restrictions + App Check are the real controls.
+- [ ] **Firebase App Check** — integrate `firebase_app_check` in `apps/mobile/lib/push/firebase_bootstrap.dart` with Play Integrity (Android) + App Attest (iOS). Roll out with the debug provider locally, monitor the ≥90% valid-token threshold in the Firebase Console App Check dashboard, then enable enforcement per service. We only use FCM today, so enforcement starts and ends there for v1.5.
+- [ ] **iOS entitlements split** — `Runner-Debug.entitlements` (aps-environment=development) vs `Runner-Release.entitlements` (aps-environment=production), wired per Xcode build configuration. Required for TestFlight and App Store push delivery to work.
+
+## iOS entitlements split (one-time)
+
+Today `apps/mobile/ios/Runner/Runner.entitlements` hardcodes `aps-environment=development` for every build configuration. TestFlight and App Store builds need `production`. When this lands:
+
+1. Rename the current file to `Runner-Debug.entitlements` (value unchanged).
+2. Create `Runner-Release.entitlements` with `aps-environment=production`.
+3. In `apps/mobile/ios/Runner.xcodeproj/project.pbxproj`, set `CODE_SIGN_ENTITLEMENTS` per `XCBuildConfiguration` — Debug → `Runner/Runner-Debug.entitlements`, Release + Profile → `Runner/Runner-Release.entitlements`.
+4. Verify via `xcodebuild -showBuildSettings -configuration Release` that `CODE_SIGN_ENTITLEMENTS` resolves to the Release file.
 
 ---
 

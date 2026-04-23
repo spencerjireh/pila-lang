@@ -171,6 +171,10 @@ jobs:
         run: flutter pub get
         working-directory: apps/mobile
 
+      - name: Bootstrap firebase_options.dart
+        run: cp lib/firebase_options.example.dart lib/firebase_options.dart
+        working-directory: apps/mobile
+
       - name: Analyze
         run: flutter analyze
         working-directory: apps/mobile
