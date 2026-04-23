@@ -5,9 +5,18 @@ import { useState, type FormEvent } from "react";
 import PhoneInput, { type Value as PhoneValue } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { en } from "@/lib/i18n/en";
 
 interface JoinFormProps {
   slug: string;
@@ -20,6 +29,7 @@ const PARTY_SIZES = Array.from({ length: 20 }, (_, i) => i + 1);
 
 export function JoinForm({ slug, token }: JoinFormProps) {
   const router = useRouter();
+  const t = en.guest.join;
   const [name, setName] = useState("");
   const [partySize, setPartySize] = useState<number>(2);
   const [phone, setPhone] = useState<PhoneValue | undefined>();
@@ -35,7 +45,7 @@ export function JoinForm({ slug, token }: JoinFormProps) {
     const trimmedName = name.trim();
     if (!trimmedName) {
       setStatus("error");
-      setError("Please enter a name.");
+      setError("Add a name so the host knows who you are.");
       return;
     }
 
@@ -78,56 +88,59 @@ export function JoinForm({ slug, token }: JoinFormProps) {
         };
         const wait = data.retryAfterSec ?? 60;
         setStatus("error");
-        setError(`Too many requests — try again in ${wait} seconds.`);
+        setError(`Too many requests. Try again in ${wait} seconds.`);
         return;
       }
 
       if (res.status === 401) {
         setStatus("error");
-        setError("The QR code has expired. Please scan it again.");
+        setError("The QR has expired. Scan it again.");
         return;
       }
 
       setStatus("error");
-      setError("Something went wrong. Please try again.");
+      setError("Something went wrong. Try again.");
     } catch {
       setStatus("error");
-      setError("Network error. Please try again.");
+      setError("Network hiccup. Try again.");
     }
   }
 
   return (
     <form className="space-y-5" onSubmit={onSubmit} noValidate>
       <div className="space-y-1.5">
-        <Label htmlFor="name">Name</Label>
+        <Label htmlFor="name">{t.nameLabel}</Label>
         <Input
           id="name"
           required
           autoComplete="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Your name"
+          placeholder={t.namePlaceholder}
         />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="partySize">Party size</Label>
-        <select
-          id="partySize"
-          value={partySize}
-          onChange={(e) => setPartySize(Number(e.target.value))}
-          className="flex h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+        <Label htmlFor="partySize">{t.partySizeLabel}</Label>
+        <Select
+          value={String(partySize)}
+          onValueChange={(v) => setPartySize(Number(v))}
         >
-          {PARTY_SIZES.map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id="partySize">
+            <SelectValue placeholder={t.partySizePlaceholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {PARTY_SIZES.map((n) => (
+              <SelectItem key={n} value={String(n)}>
+                {n}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="phone">Phone (optional)</Label>
+        <Label htmlFor="phone">{t.phoneLabel}</Label>
         <PhoneInput
           id="phone"
           international
@@ -137,23 +150,22 @@ export function JoinForm({ slug, token }: JoinFormProps) {
           autoComplete="tel"
           className="phone-input"
         />
-        <p className="text-xs text-slate-500">
-          Used to remember you if you come back.
-        </p>
+        <p className="text-xs text-muted-foreground">{t.phoneHelper}</p>
       </div>
 
       {error ? (
-        <p className="text-sm text-red-600" role="alert">
-          {error}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       ) : null}
 
       <Button
         type="submit"
         className="w-full"
+        size="lg"
         disabled={status === "submitting"}
       >
-        {status === "submitting" ? "Joining…" : "Join the queue"}
+        {status === "submitting" ? "Joining\u2026" : t.submit}
       </Button>
     </form>
   );

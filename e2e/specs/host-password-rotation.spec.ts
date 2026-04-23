@@ -20,9 +20,16 @@ test.describe("host password rotation", () => {
 
     // Rotate on A.
     await pageA.goto(`/host/${slug}/settings`);
+    await pageA.getByRole("tab", { name: /password/i }).click();
     await pageA.getByLabel(/^new password$/i).fill("new-strong-pw-123");
     await pageA.getByLabel(/confirm new password/i).fill("new-strong-pw-123");
+    const rotateRes = pageA.waitForResponse(
+      (res) =>
+        res.url().includes(`/api/host/${slug}/settings/password`) &&
+        res.request().method() === "POST",
+    );
     await pageA.getByRole("button", { name: /change password/i }).click();
+    await rotateRes;
 
     // A is still authenticated.
     await pageA.goto(`/host/${slug}/queue`);
@@ -51,10 +58,17 @@ test.describe("host password rotation", () => {
     const bCookie = await hostLoginViaApi(request, slug, password);
 
     await pageA.goto(`/host/${slug}/settings`);
+    await pageA.getByRole("tab", { name: /password/i }).click();
     await pageA
       .getByRole("button", { name: /sign out other devices/i })
       .click();
+    const kickRes = pageA.waitForResponse(
+      (res) =>
+        res.url().includes(`/api/host/${slug}/settings/password`) &&
+        res.request().method() === "POST",
+    );
     await pageA.getByRole("button", { name: /yes, sign out others/i }).click();
+    await kickRes;
 
     const res = await request.post(`/api/host/${slug}/open`, {
       headers: { cookie: bCookie },

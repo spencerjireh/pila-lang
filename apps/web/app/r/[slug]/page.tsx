@@ -2,6 +2,8 @@ import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 import { TenantHeader } from "@/components/tenant-branding";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { en } from "@/lib/i18n/en";
 import { GUEST_COOKIE_NAME } from "@pila/shared/auth/guest-session";
 import { clientIp } from "@pila/shared/http/client-ip";
 import { log } from "@pila/shared/log/logger";
@@ -59,7 +61,7 @@ export default async function JoinPage({
   if (!tenant.isOpen) {
     return (
       <PageShell tenant={tenant}>
-        <Banner kind="closed" tenantName={tenant.name} />
+        <Banner kind="closed" />
       </PageShell>
     );
   }
@@ -68,7 +70,7 @@ export default async function JoinPage({
   if (!rawToken) {
     return (
       <PageShell tenant={tenant}>
-        <Banner kind="missing_token" tenantName={tenant.name} />
+        <Banner kind="missing_token" />
       </PageShell>
     );
   }
@@ -80,7 +82,6 @@ export default async function JoinPage({
           kind={
             verdict.reason === "expired" ? "expired_token" : "invalid_token"
           }
-          tenantName={tenant.name}
         />
       </PageShell>
     );
@@ -88,6 +89,15 @@ export default async function JoinPage({
 
   return (
     <PageShell tenant={tenant}>
+      <header className="space-y-2">
+        <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+          {en.designSystem.voice.welcome}
+        </p>
+        <h1 className="font-display text-4xl font-semibold text-foreground">
+          {en.guest.join.title}
+        </h1>
+        <p className="text-muted-foreground">{en.guest.join.lede}</p>
+      </header>
       <JoinForm slug={tenant.slug} token={rawToken} />
     </PageShell>
   );
@@ -112,59 +122,37 @@ function PageShell({
   );
 }
 
-function Banner({
-  kind,
-  tenantName,
-}: {
-  kind: BannerKind;
-  tenantName: string;
-}) {
-  const content = messageFor(kind, tenantName);
+function Banner({ kind }: { kind: BannerKind }) {
+  const content = messageFor(kind);
   return (
-    <section
-      role="status"
-      className="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center"
-    >
-      <h2 className="mb-2 text-xl font-semibold">{content.title}</h2>
-      <p className="text-slate-600">{content.body}</p>
-    </section>
+    <Alert variant="warning">
+      <AlertTitle>{content.title}</AlertTitle>
+      <AlertDescription>{content.body}</AlertDescription>
+    </Alert>
   );
 }
 
-function messageFor(
-  kind: BannerKind,
-  tenantName: string,
-): { title: string; body: string } {
+function messageFor(kind: BannerKind): { title: string; body: string } {
   switch (kind) {
     case "closed":
-      return {
-        title: "Not accepting guests right now",
-        body: `${tenantName} is currently closed. Please check back later.`,
-      };
+      return en.guest.join.closed;
     case "expired_token":
-      return {
-        title: "This QR code has expired",
-        body: "Please scan the code on the display again to join the queue.",
-      };
+      return en.guest.join.expired;
     case "invalid_token":
-      return {
-        title: "This QR code isn't valid",
-        body: "Please scan the code on the display to join the queue.",
-      };
+      return en.guest.join.invalid;
     case "missing_token":
-      return {
-        title: "Scan the QR code to join",
-        body: "Open your camera and scan the code shown at the entrance.",
-      };
+      return en.guest.join.mustScan;
   }
 }
 
 function RateLimitedNotice({ retryAfterSec }: { retryAfterSec: number }) {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center p-6 text-center">
-      <h1 className="mb-2 text-xl font-semibold">Too many requests</h1>
-      <p className="text-slate-600">
-        Please try again in {retryAfterSec} seconds.
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-3 p-6 text-center">
+      <h1 className="font-display text-3xl font-semibold text-foreground">
+        Too many requests
+      </h1>
+      <p className="text-muted-foreground">
+        Try again in {retryAfterSec} seconds.
       </p>
     </main>
   );

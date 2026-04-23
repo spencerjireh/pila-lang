@@ -65,7 +65,6 @@ class _DisplayScreenState extends ConsumerState<DisplayScreen>
     final tenant = state.tenant;
     final joinUrl = state.joinUrl;
     return Scaffold(
-      backgroundColor: Colors.black,
       body: SafeArea(
         child: Stack(
           children: [
@@ -138,7 +137,7 @@ class _OpenBody extends StatelessWidget {
         const Text(
           'Scan to join the queue',
           style: TextStyle(
-            color: Colors.white,
+            color: PilaPalette.foreground,
             fontSize: 22,
             fontWeight: FontWeight.w500,
           ),
@@ -153,7 +152,7 @@ class _DisplayLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CircularProgressIndicator(color: Colors.white);
+    return const CircularProgressIndicator(color: PilaPalette.primary);
   }
 }
 
@@ -209,7 +208,7 @@ class _DisplayTenantHeader extends StatelessWidget {
             name,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: Colors.white,
+              color: PilaPalette.foreground,
               fontSize: 32,
               fontWeight: FontWeight.w600,
             ),

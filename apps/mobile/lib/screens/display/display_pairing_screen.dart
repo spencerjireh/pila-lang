@@ -58,7 +58,6 @@ class _DisplayPairingScreenState extends ConsumerState<DisplayPairingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -79,7 +78,7 @@ class _DisplayPairingScreenState extends ConsumerState<DisplayPairingScreen> {
                   Text(
                     'Enter the tenant slug to start displaying the QR.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFF475569),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                   ),
                   const SizedBox(height: 24),

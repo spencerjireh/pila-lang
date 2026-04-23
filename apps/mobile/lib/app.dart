@@ -14,7 +14,7 @@ import 'screens/scan_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/wait_screen.dart';
 import 'state/host_providers.dart';
-import 'theme/palette.dart';
+import 'theme/pila_theme.dart';
 
 class PilaApp extends ConsumerStatefulWidget {
   const PilaApp({super.key, this.initialLocation});
@@ -126,12 +126,9 @@ class _PilaAppState extends ConsumerState<PilaApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Pila',
+      title: 'Pila Lang',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: PilaPalette.defaultAccent),
-        useMaterial3: true,
-      ),
+      theme: buildPilaTheme(),
       routerConfig: _router,
     );
   }

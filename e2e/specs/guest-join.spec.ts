@@ -8,9 +8,7 @@ test.describe("guest join", () => {
   }) => {
     const { slug } = await tenantFactory({ name: "No Token Diner" });
     await page.goto(`/r/${slug}`);
-    await expect(
-      page.getByRole("heading", { name: /scan the QR code to join/i }),
-    ).toBeVisible();
+    await expect(page.getByText(/scan the QR to join/i)).toBeVisible();
   });
 
   test("rejects invalid token with invalid banner", async ({
@@ -19,9 +17,7 @@ test.describe("guest join", () => {
   }) => {
     const { slug } = await tenantFactory({ name: "Invalid Token Diner" });
     await page.goto(`/r/${slug}?t=not-a-real-token`);
-    await expect(
-      page.getByRole("heading", { name: /isn't valid/i }),
-    ).toBeVisible();
+    await expect(page.getByText(/QR isn.t valid/i)).toBeVisible();
   });
 
   test("shows closed banner when tenant is closed", async ({
@@ -35,9 +31,7 @@ test.describe("guest join", () => {
     });
     const token = await mintQrToken(request, slug).catch(() => "");
     await page.goto(`/r/${slug}${token ? `?t=${token}` : ""}`);
-    await expect(
-      page.getByRole("heading", { name: /not accepting guests/i }),
-    ).toBeVisible();
+    await expect(page.getByText(/not accepting guests/i)).toBeVisible();
   });
 
   test("successful join lands on wait page with position 1", async ({
@@ -49,13 +43,14 @@ test.describe("guest join", () => {
     const token = await mintQrToken(request, slug);
     await page.goto(`/r/${slug}?t=${token}`);
 
-    await page.getByLabel(/^name$/i).fill("Priya");
-    await page.getByLabel(/party size/i).selectOption("2");
+    await page.getByLabel(/your name/i).fill("Priya");
+    await page.getByRole("combobox", { name: /party size/i }).click();
+    await page.getByRole("option", { name: "2", exact: true }).click();
     await page.getByRole("button", { name: /join the queue/i }).click();
 
     await page.waitForURL(new RegExp(`/r/${slug}/wait/`));
     await expect(page.getByText(/hi priya/i)).toBeVisible();
-    await expect(page.getByText(/you're next/i)).toBeVisible();
+    await expect(page.getByText(/you.re next/i)).toBeVisible();
   });
 
   test("same-device revisit while waiting redirects to wait page", async ({
@@ -67,8 +62,9 @@ test.describe("guest join", () => {
     const token = await mintQrToken(page.request, slug);
 
     await page.goto(`/r/${slug}?t=${token}`);
-    await page.getByLabel(/^name$/i).fill("Rahul");
-    await page.getByLabel(/party size/i).selectOption("3");
+    await page.getByLabel(/your name/i).fill("Rahul");
+    await page.getByRole("combobox", { name: /party size/i }).click();
+    await page.getByRole("option", { name: "3", exact: true }).click();
     await page.getByRole("button", { name: /join the queue/i }).click();
     await page.waitForURL(new RegExp(`/r/${slug}/wait/`));
 

@@ -3,7 +3,24 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { TenantHeader } from "@/components/tenant-branding";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { en } from "@/lib/i18n/en";
 import type { PartyStatus } from "@pila/db/schema";
 import type { GuestStreamEvent } from "@pila/shared/parties/stream-events";
 
@@ -37,6 +54,7 @@ export function WaitView({
   initialPosition,
   joinedAt,
 }: WaitViewProps) {
+  const t = en.guest.wait;
   const [tenant, setTenant] = useState<InitialTenant>(initialTenant);
   const [position, setPosition] = useState(initialPosition);
   const [terminal, setTerminal] = useState<Terminal | null>(
@@ -83,17 +101,17 @@ export function WaitView({
       }
       if (ev.type === "snapshot") {
         setPosition(ev.position);
-        const t = terminalFromStatus(ev.status);
-        if (t) {
-          setTerminal(t);
+        const term = terminalFromStatus(ev.status);
+        if (term) {
+          setTerminal(term);
           es.close();
         }
       } else if (ev.type === "position_changed") {
         setPosition(ev.position);
       } else if (ev.type === "status_changed") {
-        const t = terminalFromStatus(ev.status);
-        if (t) {
-          setTerminal(t);
+        const term = terminalFromStatus(ev.status);
+        if (term) {
+          setTerminal(term);
           es.close();
         }
       } else if (ev.type === "tenant:updated") {
@@ -133,11 +151,12 @@ export function WaitView({
       if (res.ok || res.status === 409) {
         setTerminal("left");
         esRef.current?.close();
+        setConfirmLeave(false);
         return;
       }
-      setLeaveError("Could not leave right now. Please try again.");
+      setLeaveError("Couldn\u2019t leave right now. Try again.");
     } catch {
-      setLeaveError("Network error. Please try again.");
+      setLeaveError("Network hiccup. Try again.");
     } finally {
       setLeaving(false);
     }
@@ -147,9 +166,9 @@ export function WaitView({
     return (
       <WaitShell tenant={tenant}>
         <TerminalCard
-          title="Your table is ready"
-          body={`Head to the host at ${tenant.name}.`}
-          tone="success"
+          eyebrow={en.designSystem.voice.seated}
+          title={t.tableReady}
+          body={t.tableReadyBody.replace("the host stand", `${tenant.name}`)}
         />
       </WaitShell>
     );
@@ -158,9 +177,9 @@ export function WaitView({
     return (
       <WaitShell tenant={tenant}>
         <TerminalCard
-          title="You've left the queue"
-          body="You can scan the QR code again if you change your mind."
-          tone="neutral"
+          eyebrow="Left the queue"
+          title={en.designSystem.voice.seeYouSoon}
+          body="Scan the QR again any time you change your mind."
         />
       </WaitShell>
     );
@@ -169,9 +188,9 @@ export function WaitView({
     return (
       <WaitShell tenant={tenant}>
         <TerminalCard
-          title="Your session has ended"
-          body="This wait session is no longer active."
-          tone="neutral"
+          eyebrow="Session ended"
+          title={t.removed.title}
+          body={t.removed.body}
         />
       </WaitShell>
     );
@@ -180,53 +199,78 @@ export function WaitView({
   return (
     <WaitShell tenant={tenant}>
       {welcomeBack ? (
-        <div
-          role="status"
-          aria-live="polite"
-          className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm"
-        >
-          Welcome back, {partyName}.
-        </div>
+        <Alert>
+          <AlertTitle>Welcome back, {partyName}.</AlertTitle>
+          <AlertDescription>
+            We held your spot. Position updates live below.
+          </AlertDescription>
+        </Alert>
       ) : null}
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-sm text-slate-500">Hi {partyName}</p>
-        <p className="mt-1 text-sm text-slate-500">
-          Party of {partySize} &middot; waiting {waitedLabel}
-        </p>
-        <div
-          className="mt-5 flex items-baseline gap-2"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          <span className="text-5xl font-semibold tabular-nums">
-            {position}
-          </span>
-          <span className="text-slate-600">
-            {position === 1 ? "you're next" : "in line"}
-          </span>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardDescription className="font-mono text-xs uppercase tracking-wide">
+            {t.eyebrow}
+          </CardDescription>
+          <CardTitle className="font-display text-2xl">
+            Hi {partyName}
+          </CardTitle>
+          <CardDescription>
+            Party of {partySize} &middot; waiting {waitedLabel}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div
+            className="flex items-baseline gap-3"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span className="font-display text-7xl font-semibold tabular-nums text-foreground">
+              {position}
+            </span>
+            <span className="text-muted-foreground">
+              {position === 1 ? "you\u2019re next" : "in line"}
+            </span>
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground">{t.waiting}</p>
+        </CardContent>
+      </Card>
 
-      <div
+      <p
         aria-live="polite"
-        className="min-h-[1.25rem] text-sm text-slate-500"
+        className="min-h-[1.25rem] text-sm text-muted-foreground"
       >
-        {reconnecting ? "Reconnecting…" : ""}
-      </div>
+        {reconnecting ? "Reconnecting\u2026" : ""}
+      </p>
 
-      {confirmLeave ? (
-        <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm">Leave the queue?</p>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={leaving}
-              onClick={onConfirmLeave}
-            >
-              {leaving ? "Leaving…" : "Yes, leave"}
-            </Button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => setConfirmLeave(true)}
+      >
+        {t.leaveButton}
+      </Button>
+
+      <Dialog
+        open={confirmLeave}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmLeave(false);
+            setLeaveError(null);
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t.leaveConfirm.title}</DialogTitle>
+            <DialogDescription>{t.leaveConfirm.body}</DialogDescription>
+          </DialogHeader>
+          {leaveError ? (
+            <Alert variant="destructive">
+              <AlertDescription>{leaveError}</AlertDescription>
+            </Alert>
+          ) : null}
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
@@ -236,24 +280,19 @@ export function WaitView({
                 setLeaveError(null);
               }}
             >
-              Stay
+              {t.leaveConfirm.cancel}
             </Button>
-          </div>
-          {leaveError ? (
-            <p className="text-xs text-red-600" role="alert">
-              {leaveError}
-            </p>
-          ) : null}
-        </div>
-      ) : (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setConfirmLeave(true)}
-        >
-          Leave queue
-        </Button>
-      )}
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={leaving}
+              onClick={onConfirmLeave}
+            >
+              {leaving ? "Leaving\u2026" : t.leaveConfirm.confirm}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </WaitShell>
   );
 }
@@ -278,27 +317,26 @@ function WaitShell({
 }
 
 function TerminalCard({
+  eyebrow,
   title,
   body,
-  tone,
 }: {
+  eyebrow: string;
   title: string;
   body: string;
-  tone: "success" | "neutral";
 }) {
-  const toneClass =
-    tone === "success"
-      ? "border-emerald-200 bg-emerald-50"
-      : "border-slate-200 bg-slate-50";
   return (
-    <section
-      role="status"
-      aria-live="polite"
-      className={`rounded-2xl border p-8 text-center ${toneClass}`}
-    >
-      <h2 className="mb-2 text-xl font-semibold">{title}</h2>
-      <p className="text-slate-600">{body}</p>
-    </section>
+    <Card>
+      <CardHeader>
+        <CardDescription className="font-mono text-xs uppercase tracking-wide">
+          {eyebrow}
+        </CardDescription>
+        <CardTitle className="font-display text-3xl">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground">{body}</p>
+      </CardContent>
+    </Card>
   );
 }
 

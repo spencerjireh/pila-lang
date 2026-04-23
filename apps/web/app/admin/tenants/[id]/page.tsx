@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { eq } from "drizzle-orm";
 
 import { getDb } from "@pila/db/client";
 import { tenants } from "@pila/db/schema";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,6 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { en } from "@/lib/i18n/en";
 import { EditTenantForm } from "./edit-tenant-form";
 import { TenantActions } from "./tenant-actions";
 
@@ -37,33 +41,67 @@ export default async function TenantDetailPage({ params }: PageProps) {
 
   if (!tenant) notFound();
 
+  const t = en.admin.tenants.detail;
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold">{tenant.name}</h1>
-        <p className="font-mono text-xs text-slate-500">{tenant.slug}</p>
+    <div className="mx-auto max-w-3xl space-y-8">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+            {tenant.slug}
+          </p>
+          <h1 className="font-display text-4xl font-semibold text-foreground">
+            {tenant.name}
+          </h1>
+        </div>
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/admin/tenants">&larr; All tenants</Link>
+        </Button>
       </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Settings</CardTitle>
-          <CardDescription>
-            Slug and created date are immutable.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <EditTenantForm tenant={tenant} />
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="settings" className="w-full">
+        <TabsList>
+          <TabsTrigger value="settings">{t.tabs.settings}</TabsTrigger>
+          <TabsTrigger value="activity">{t.tabs.activity}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="settings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.tabs.settings}</CardTitle>
+              <CardDescription>{t.slugHelper}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EditTenantForm tenant={tenant} />
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <TenantActions tenant={tenant} />
-        </CardContent>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Actions</CardTitle>
+              <CardDescription>
+                Destructive operations on this tenant.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <TenantActions tenant={tenant} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="activity">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.tabs.activity}</CardTitle>
+              <CardDescription>
+                Recent queue activity for this tenant lands here.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                Activity timeline coming soon.
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

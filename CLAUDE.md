@@ -8,6 +8,8 @@ Pila Lang — a hosted, QR-first waitlist for small restaurants. Next.js 14 web 
 
 Authoritative design docs: `docs/Technical-Spec.md` (the contract — read this before changing queue, SSE, auth, or tenancy behavior), `docs/PRD.md`, `docs/User-Stories.md`, `docs/RUNBOOK.md`.
 
+Visual/brand: `DESIGN.md` (palette, typography, voice, imagery contract). Living styleguide renders at `/design-system` when the web app is running.
+
 ## Layout
 
 pnpm workspace + Turborepo monorepo:

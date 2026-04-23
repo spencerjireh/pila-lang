@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Pila Lang placeholder">
+  <rect width="300" height="400" fill="#F9F5EE"/>
+  <rect x="10" y="10" width="280" height="380" fill="none" stroke="#DAD3C4" stroke-width="1" rx="6"/>
+  <circle cx="150" cy="170" r="5" fill="#6B7747"/>
+  <text x="150" y="208" text-anchor="middle" fill="#3A2F25" font-family="Fraunces, Georgia, 'Times New Roman', serif" font-size="26" font-weight="700">Pila Lang</text>
+  <text x="150" y="238" text-anchor="middle" fill="#78695A" font-family="Inter, system-ui, sans-serif" font-size="9" letter-spacing="3">IMAGERY PENDING</text>
+</svg>

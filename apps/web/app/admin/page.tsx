@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@pila/shared/auth/admin-session";
 import { isAdminEmail } from "@pila/shared/validators/admin-allow-list";
-import { SignInForm } from "./_components/sign-in-form";
 import {
   Card,
   CardContent,
@@ -9,6 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { en } from "@/lib/i18n/en";
+import { SignInForm } from "./_components/sign-in-form";
 
 export default async function AdminLoginPage() {
   const session = await auth();
@@ -16,15 +17,16 @@ export default async function AdminLoginPage() {
     redirect("/admin/tenants");
   }
 
+  const t = en.admin.signIn;
   return (
     <div className="mx-auto max-w-md">
       <Card>
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
-          <CardDescription>
-            We&apos;ll email you a magic link. Only allow-listed addresses can
-            sign in.
+          <CardDescription className="font-mono text-xs uppercase tracking-wide">
+            {t.eyebrow}
           </CardDescription>
+          <CardTitle className="font-display text-3xl">{t.title}</CardTitle>
+          <CardDescription>{t.lede}</CardDescription>
         </CardHeader>
         <CardContent>
           <SignInForm />

@@ -1,12 +1,29 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { TenantHeader } from "@/components/tenant-branding";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { en } from "@/lib/i18n/en";
 import type { PartyStatus } from "@pila/db/schema";
 import type {
   HostRecentlyResolvedRow,
@@ -26,6 +43,7 @@ const UNDO_TOAST_DURATION_MS = 5_000;
 
 export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
   const router = useRouter();
+  const t = en.host.queue;
   const [tenantInfo, setTenantInfo] = useState(initialSnapshot.tenant);
   const [waiting, setWaiting] = useState<HostWaitingRow[]>(
     initialSnapshot.waiting,
@@ -132,17 +150,17 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
           });
           return;
         case "tenant:opened":
-          setTenantInfo((t) => ({ ...t, isOpen: true }));
+          setTenantInfo((info) => ({ ...info, isOpen: true }));
           return;
         case "tenant:closed":
-          setTenantInfo((t) => ({ ...t, isOpen: false }));
+          setTenantInfo((info) => ({ ...info, isOpen: false }));
           return;
         case "tenant:reset":
           router.refresh();
           return;
         case "tenant:updated":
-          setTenantInfo((t) => ({
-            ...t,
+          setTenantInfo((info) => ({
+            ...info,
             ...(ev.name !== undefined ? { name: ev.name } : {}),
             ...(ev.logoUrl !== undefined ? { logoUrl: ev.logoUrl } : {}),
             ...(ev.accentColor !== undefined
@@ -181,11 +199,11 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
           },
         );
         if (res.ok) {
-          const label = action === "seat" ? "Seated" : "Removed";
+          const label = action === "seat" ? t.seated : t.removed;
           toast.success(label, {
             duration: UNDO_TOAST_DURATION_MS,
             action: {
-              label: "Undo",
+              label: t.undo,
               onClick: () => {
                 void undoLatest(slug);
               },
@@ -199,12 +217,12 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
           toast.error("Something went wrong. Try again.");
         }
       } catch {
-        toast.error("Network error. Try again.");
+        toast.error("Network hiccup. Try again.");
       } finally {
         setActingOn(null);
       }
     },
-    [actingOn, slug, router],
+    [actingOn, slug, router, t.seated, t.removed, t.undo],
   );
 
   const handleLogout = useCallback(async () => {
@@ -236,12 +254,12 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
           return;
         }
         if (!res.ok) {
-          toast.error("Could not update queue state.");
+          toast.error("Couldn\u2019t update queue state.");
           return;
         }
         toast.success(next ? "Queue opened." : "Queue closed.");
       } catch {
-        toast.error("Network error.");
+        toast.error("Network hiccup.");
       } finally {
         setToggleBusy(false);
         setCloseConfirmOpen(false);
@@ -275,140 +293,108 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
   return (
     <main
       lang="en"
-      className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-6 p-6"
+      className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-8 p-6 py-10"
     >
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-center gap-3">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
           <TenantHeader
             name={tenantInfo.name}
             logoUrl={tenantInfo.logoUrl}
             accentColor={tenantInfo.accentColor}
           />
-          <button
+          <Button
             type="button"
+            variant={tenantInfo.isOpen ? "outline" : "default"}
+            size="sm"
             disabled={toggleBusy}
             onClick={onToggleClick}
-            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
-              tenantInfo.isOpen
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                : "border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
-            aria-label={tenantInfo.isOpen ? "Close queue" : "Open queue"}
           >
-            {tenantInfo.isOpen ? "Accepting guests" : "Closed"}
-          </button>
+            {tenantInfo.isOpen ? t.open : t.closed}
+          </Button>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
+        <nav className="flex gap-2">
+          <Button variant="ghost" size="sm" asChild>
             <Link href={`/host/${encodeURIComponent(slug)}/guests`}>
-              Guests
+              {en.host.nav.guests}
             </Link>
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="ghost" size="sm" asChild>
             <Link href={`/host/${encodeURIComponent(slug)}/settings`}>
-              Settings
+              {en.host.nav.settings}
             </Link>
           </Button>
-          <Button variant="outline" onClick={handleLogout}>
-            Sign out
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
+            {en.host.nav.signOut}
           </Button>
-        </div>
+        </nav>
       </header>
 
-      {closeConfirmOpen ? (
-        <div
-          role="alertdialog"
-          aria-label="Close queue?"
-          className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4"
-        >
-          <div>
-            <p className="text-sm font-medium">Close the queue?</p>
-            <p className="text-xs text-slate-600">
-              New guests will see a closed banner. Waiting parties are not
-              affected.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={toggleBusy}
-              onClick={() => void performToggle(false)}
-            >
-              {toggleBusy ? "Closing…" : "Yes, close"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={toggleBusy}
-              onClick={() => setCloseConfirmOpen(false)}
-            >
-              Keep open
-            </Button>
-          </div>
-        </div>
-      ) : null}
-
-      <div
+      <p
         aria-live="polite"
-        className="min-h-[1.25rem] text-sm text-slate-500"
+        className="min-h-[1.25rem] text-sm text-muted-foreground"
       >
-        {reconnecting ? "Reconnecting…" : ""}
-      </div>
+        {reconnecting ? "Reconnecting\u2026" : ""}
+      </p>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Waiting ({waiting.length})</h2>
+        <h2 className="font-display text-2xl font-semibold text-foreground">
+          {t.waitingHeading} ({waiting.length})
+        </h2>
         {waiting.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-            No one waiting right now.
-          </p>
+          <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-border p-8 text-center">
+            <Image
+              src="/images/empty-states/empty-states-queue.svg"
+              alt=""
+              width={80}
+              height={80}
+              aria-hidden="true"
+            />
+            <p className="text-sm text-muted-foreground">{t.empty}</p>
+          </div>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-3">
             {waiting.map((party, i) => (
-              <li
-                key={party.id}
-                className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-400 tabular-nums">
-                      {i + 1}
-                    </span>
-                    <span className="font-medium">{party.name}</span>
-                    <span className="text-sm text-slate-500">
-                      &middot; party of {party.partySize}
-                    </span>
-                    {party.phone ? (
-                      <span
-                        className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
-                        aria-label="phone on file"
+              <li key={party.id}>
+                <Card>
+                  <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <CardTitle className="text-lg">{party.name}</CardTitle>
+                        {party.phone ? (
+                          <Badge variant="secondary">phone</Badge>
+                        ) : null}
+                      </div>
+                      <CardDescription>
+                        Party of {party.partySize} &middot; waiting{" "}
+                        {formatElapsed(
+                          now - new Date(party.joinedAt).getTime(),
+                        )}
+                      </CardDescription>
+                    </div>
+                    <div className="flex shrink-0 gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={actingOn === party.id}
+                        onClick={() => void actOn(party.id, "seat")}
                       >
-                        phone
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="text-xs text-slate-500">
-                    waited{" "}
-                    {formatElapsed(now - new Date(party.joinedAt).getTime())}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    disabled={actingOn === party.id}
-                    onClick={() => void actOn(party.id, "seat")}
-                  >
-                    Seat
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={actingOn === party.id}
-                    onClick={() => void actOn(party.id, "remove")}
-                  >
-                    Remove
-                  </Button>
-                </div>
+                        {t.seat}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={actingOn === party.id}
+                        onClick={() => void actOn(party.id, "remove")}
+                      >
+                        {t.remove}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                </Card>
               </li>
             ))}
           </ul>
@@ -416,11 +402,11 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">
-          Recently resolved ({visibleResolved.length})
+        <h2 className="font-display text-2xl font-semibold text-foreground">
+          {t.resolvedHeading} ({visibleResolved.length})
         </h2>
         {visibleResolved.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+          <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
             Nothing resolved in the last 30 minutes.
           </p>
         ) : (
@@ -429,39 +415,72 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
               const elapsed = now - new Date(row.resolvedAt).getTime();
               const undoOpen = elapsed < 60_000;
               return (
-                <li
-                  key={row.id}
-                  className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{row.name}</span>
-                      <span className="text-sm text-slate-500">
-                        &middot; party of {row.partySize}
-                      </span>
-                      <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-700">
-                        {labelForStatus(row.status)}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500">
-                      {formatElapsed(elapsed)} ago
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={!undoOpen}
-                    onClick={() => void handleUndoFromResolved(row.id)}
-                  >
-                    Undo
-                  </Button>
+                <li key={row.id}>
+                  <Card className="bg-muted/40">
+                    <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-base">
+                            {row.name}
+                          </CardTitle>
+                          <Badge variant={badgeVariantForStatus(row.status)}>
+                            {labelForStatus(row.status)}
+                          </Badge>
+                        </div>
+                        <CardDescription>
+                          Party of {row.partySize} &middot;{" "}
+                          {formatElapsed(elapsed)} ago
+                        </CardDescription>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={!undoOpen}
+                        onClick={() => void handleUndoFromResolved(row.id)}
+                      >
+                        {t.undo}
+                      </Button>
+                    </CardHeader>
+                  </Card>
                 </li>
               );
             })}
           </ul>
         )}
       </section>
+
+      <Dialog
+        open={closeConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open) setCloseConfirmOpen(false);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t.closeConfirm.title}</DialogTitle>
+            <DialogDescription>{t.closeConfirm.body}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={toggleBusy}
+              onClick={() => setCloseConfirmOpen(false)}
+            >
+              {t.closeConfirm.cancel}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={toggleBusy}
+              onClick={() => void performToggle(false)}
+            >
+              {toggleBusy ? "Closing\u2026" : t.closeConfirm.confirm}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
@@ -473,16 +492,16 @@ async function undoLatest(slug: string) {
       headers: { "Content-Type": "application/json" },
     });
     if (res.ok) {
-      toast.success("Undone.");
+      toast.success(en.host.queue.undone);
     } else if (res.status === 409) {
       toast.error("Too late to undo.");
     } else if (res.status === 401) {
-      toast.error("Session expired. Please sign in again.");
+      toast.error("Session expired. Sign in again.");
     } else {
-      toast.error("Could not undo.");
+      toast.error("Couldn\u2019t undo.");
     }
   } catch {
-    toast.error("Network error.");
+    toast.error("Network hiccup.");
   }
 }
 
@@ -497,6 +516,14 @@ function dedupeResolved(
     out.push(row);
   }
   return out;
+}
+
+function badgeVariantForStatus(
+  status: PartyStatus,
+): "success" | "warning" | "secondary" {
+  if (status === "seated") return "success";
+  if (status === "no_show") return "warning";
+  return "secondary";
 }
 
 function labelForStatus(status: PartyStatus): string {

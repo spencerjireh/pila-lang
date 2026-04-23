@@ -31,6 +31,7 @@ test.describe("host settings", () => {
     await hostLogin(page, slug, password);
     await page.goto(`/host/${slug}/settings`);
 
+    // Accent color lives on the General tab (the default tab). No click needed.
     await page.getByLabel(/accent color/i).fill("not-a-hex");
     await page.getByRole("button", { name: /^save$/i }).click();
 

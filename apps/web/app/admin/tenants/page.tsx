@@ -5,10 +5,12 @@ import { tenants } from "@pila/db/schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { en } from "@/lib/i18n/en";
 
 export const dynamic = "force-dynamic";
 
 export default async function TenantsListPage() {
+  const t = en.admin.tenants;
   const rows = await getDb()
     .select({
       id: tenants.id,
@@ -22,22 +24,29 @@ export default async function TenantsListPage() {
     .orderBy(desc(tenants.createdAt));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Tenants</h1>
+    <div className="space-y-8">
+      <header className="flex items-end justify-between">
+        <div className="space-y-2">
+          <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+            {en.admin.nav.tenants}
+          </p>
+          <h1 className="font-display text-4xl font-semibold text-foreground">
+            {t.title}
+          </h1>
+        </div>
         <Button asChild>
-          <Link href="/admin/tenants/new">Create tenant</Link>
+          <Link href="/admin/tenants/new">{t.createCta}</Link>
         </Button>
-      </div>
+      </header>
 
       {rows.length === 0 ? (
-        <Card className="p-8 text-center text-slate-500">
-          No tenants yet. Create the first one to get started.
+        <Card className="p-10 text-center text-muted-foreground">
+          {t.empty}
         </Card>
       ) : (
         <Card className="overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left">
+            <thead className="bg-muted/40 text-left font-mono text-xs uppercase tracking-wide text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Slug</th>
@@ -46,34 +55,34 @@ export default async function TenantsListPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((t) => (
+              {rows.map((row) => (
                 <tr
-                  key={t.id}
-                  className="border-t border-slate-200 hover:bg-slate-50"
+                  key={row.id}
+                  className="border-t border-border hover:bg-muted/30"
                 >
                   <td className="px-4 py-3">
                     <Link
-                      className="font-medium hover:underline"
-                      href={`/admin/tenants/${t.id}`}
+                      className="font-medium text-foreground hover:underline"
+                      href={`/admin/tenants/${row.id}`}
                     >
-                      {t.name}
+                      {row.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-600">
-                    {t.slug}
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                    {row.slug}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <Badge variant={t.isOpen ? "success" : "warning"}>
-                        {t.isOpen ? "Open" : "Closed"}
+                      <Badge variant={row.isOpen ? "success" : "warning"}>
+                        {row.isOpen ? "Open" : "Closed"}
                       </Badge>
-                      {t.isDemo ? (
+                      {row.isDemo ? (
                         <Badge variant="secondary">Demo</Badge>
                       ) : null}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {new Date(t.createdAt).toLocaleDateString()}
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                    {new Date(row.createdAt).toLocaleDateString()}
                   </td>
                 </tr>
               ))}

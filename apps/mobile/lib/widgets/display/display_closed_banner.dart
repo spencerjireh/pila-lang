@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/palette.dart';
+
 class DisplayClosedBanner extends StatelessWidget {
   const DisplayClosedBanner({super.key, required this.tenantName});
 
@@ -11,9 +13,9 @@ class DisplayClosedBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
       constraints: const BoxConstraints(maxWidth: 560),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: PilaPalette.muted,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: PilaPalette.border),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -27,9 +29,9 @@ class DisplayClosedBanner extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            '$tenantName is currently closed. Please check back later.',
+            '$tenantName has paused the queue.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: const Color(0xFF475569),
+                  color: PilaPalette.mutedForeground,
                 ),
             textAlign: TextAlign.center,
           ),
