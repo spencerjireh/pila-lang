@@ -42,5 +42,3 @@ apps/mobile/android/local.properties
 .claude/
 .playwright-mcp/
 
-# Ad-hoc screenshots from local browser sessions
-/*.png
