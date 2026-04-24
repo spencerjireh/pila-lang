@@ -11,7 +11,7 @@ import '../config/env.dart';
 import '../persistence/host_snapshot_store.dart';
 import '../sse/sse_client.dart';
 import '../state/guest_providers.dart' show bearerStorageProvider;
-import 'host_reducer.dart';
+import '../domain/host/host_reducer.dart';
 
 final hostSnapshotStoreProvider = Provider<HostSnapshotStore>((ref) {
   throw UnimplementedError(

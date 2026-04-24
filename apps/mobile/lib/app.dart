@@ -9,10 +9,10 @@ import 'screens/host/host_history_screen.dart';
 import 'screens/host/host_login_screen.dart';
 import 'screens/host/host_queue_screen.dart';
 import 'screens/host/host_settings_screen.dart';
-import 'screens/join_screen.dart';
-import 'screens/landing_screen.dart';
-import 'screens/scan_screen.dart';
-import 'screens/wait_screen.dart';
+import 'screens/guest/join_screen.dart';
+import 'screens/entry/landing_screen.dart';
+import 'screens/guest/scan_screen.dart';
+import 'screens/guest/wait_screen.dart';
 import 'state/host_providers.dart';
 import 'theme/pila_theme.dart';
 

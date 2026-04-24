@@ -1,11 +1,14 @@
 import { NextRequest } from "next/server";
 
-import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
-import { log } from "@pila/shared/log/logger";
-import { RateLimitError, consume } from "@pila/shared/ratelimit";
-import { channelForTenantQueue, subscribe } from "@pila/shared/redis/pubsub";
+import { clientIp } from "@pila/shared/infra/http/client-ip";
+import { log } from "@pila/shared/infra/log/logger";
+import { enforceRateLimit } from "@pila/shared/infra/ratelimit/enforce";
+import {
+  channelForTenantQueue,
+  subscribe,
+} from "@pila/shared/infra/redis/pubsub";
 import { sseStream } from "@/lib/sse/stream";
-import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
+import { loadTenantBySlug } from "@pila/shared/domain/tenants/lookup";
 
 export const dynamic = "force-dynamic";
 
@@ -13,14 +16,10 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { slug: string } },
 ) {
-  const ip = clientIp(req.headers);
-  try {
-    await consume("displayRequestsPerIp", ip);
-  } catch (err) {
-    if (err instanceof RateLimitError)
-      return rateLimitResponse(err.retryAfterSec);
-    throw err;
-  }
+  const limited = await enforceRateLimit([
+    { bucket: "displayRequestsPerIp", key: clientIp(req.headers) },
+  ]);
+  if (limited) return limited;
 
   const lookup = await loadTenantBySlug(params.slug);
   if (!lookup.ok) return new Response(null, { status: 404 });

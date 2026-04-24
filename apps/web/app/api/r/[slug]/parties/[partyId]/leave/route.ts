@@ -4,9 +4,10 @@ import {
   applyGuestRefresh,
   guardGuestRequest,
   statusForGuestFailure,
-} from "@pila/shared/auth/guest-guard";
-import { log } from "@pila/shared/log/logger";
-import { leaveQueue } from "@pila/shared/parties/leave";
+} from "@pila/shared/domain/auth/guest-guard";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { log } from "@pila/shared/infra/log/logger";
+import { leaveQueue } from "@pila/shared/domain/parties/leave";
 
 export const dynamic = "force-dynamic";
 
@@ -17,13 +18,11 @@ export async function POST(
   const guard = await guardGuestRequest(req, params.slug, params.partyId);
   if (!guard.ok) {
     const status = statusForGuestFailure(guard.reason, "action");
-    return Response.json({ error: guard.reason }, { status });
+    return errorResponse(status, guard.reason);
   }
 
   const { tenant, party } = guard;
-  if (party.status !== "waiting") {
-    return Response.json({ error: "conflict" }, { status: 409 });
-  }
+  if (party.status !== "waiting") return errorResponse(409, "conflict");
 
   let result;
   try {
@@ -34,12 +33,12 @@ export async function POST(
       partyId: params.partyId,
       err: String(err),
     });
-    return Response.json({ error: "internal" }, { status: 500 });
+    return errorResponse(500, "internal");
   }
 
   if (!result.ok) {
     const status = result.reason === "not_found" ? 404 : 409;
-    return Response.json({ error: result.reason }, { status });
+    return errorResponse(status, result.reason);
   }
 
   log.info("party.left", { slug: params.slug, partyId: params.partyId });

@@ -3,18 +3,21 @@ import { NextRequest } from "next/server";
 import {
   guardHostRequest,
   HOST_REFRESH_HEADER,
-  unauthorizedJson,
-} from "@pila/shared/auth/host-guard";
-import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
-import { log } from "@pila/shared/log/logger";
+  hostGuardErrorResponse,
+} from "@pila/shared/domain/auth/host-guard";
+import { clientIp } from "@pila/shared/infra/http/client-ip";
+import { log } from "@pila/shared/infra/log/logger";
 import {
   buildHostSnapshot,
   loadRecentlyResolved,
   loadWaiting,
   type HostStreamDiff,
-} from "@pila/shared/parties/host-stream";
-import { RateLimitError, consume } from "@pila/shared/ratelimit";
-import { channelForTenantQueue, subscribe } from "@pila/shared/redis/pubsub";
+} from "@pila/shared/domain/parties/host-stream";
+import { enforceRateLimit } from "@pila/shared/infra/ratelimit/enforce";
+import {
+  channelForTenantQueue,
+  subscribe,
+} from "@pila/shared/infra/redis/pubsub";
 import { sseStream } from "@/lib/sse/stream";
 
 export const dynamic = "force-dynamic";
@@ -23,23 +26,16 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { slug: string } },
 ) {
-  const ip = clientIp(req.headers);
-  try {
-    await consume("hostStreamPerIpSlug", `${ip}:${params.slug}`);
-  } catch (err) {
-    if (err instanceof RateLimitError)
-      return rateLimitResponse(err.retryAfterSec);
-    throw err;
-  }
+  const limited = await enforceRateLimit([
+    {
+      bucket: "hostStreamPerIpSlug",
+      key: `${clientIp(req.headers)}:${params.slug}`,
+    },
+  ]);
+  if (limited) return limited;
 
   const guard = await guardHostRequest(req, params.slug);
-  if (!guard.ok) {
-    return unauthorizedJson(
-      guard.status,
-      guard.clearCookie,
-      guardErrorFor(guard.status),
-    );
-  }
+  if (!guard.ok) return hostGuardErrorResponse(guard);
   const { tenant } = guard;
 
   let unsubscribe: (() => Promise<void>) | null = null;
@@ -79,10 +75,4 @@ export async function GET(
       }
     },
   });
-}
-
-function guardErrorFor(status: 401 | 403 | 404): string {
-  if (status === 401) return "unauthorized";
-  if (status === 403) return "forbidden";
-  return "not_found";
 }

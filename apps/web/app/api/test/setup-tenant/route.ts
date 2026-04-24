@@ -3,10 +3,11 @@ import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
-import { hashPassword } from "@pila/shared/auth/password";
+import { hashPassword } from "@pila/shared/domain/auth/password";
 import { getDb } from "@pila/db/client";
 import { parties, tenants } from "@pila/db/schema";
-import { requireTestEnv } from "@pila/shared/test-api/guard";
+import { parseJsonBody } from "@pila/shared/infra/http/parse-json-body";
+import { requireTestEnv } from "@pila/shared/primitives/test-api/guard";
 
 const bodySchema = z.object({
   slug: z.string().min(1),
@@ -32,14 +33,8 @@ export async function POST(req: NextRequest) {
   const guard = requireTestEnv();
   if (guard) return guard;
 
-  const body = await req.json().catch(() => null);
-  const parsed = bodySchema.safeParse(body);
-  if (!parsed.success) {
-    return Response.json(
-      { error: "invalid_body", issues: parsed.error.flatten() },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseJsonBody(req, bodySchema);
+  if (!parsed.ok) return parsed.response;
 
   const {
     slug,

@@ -4,15 +4,18 @@ import { notFound, redirect } from "next/navigation";
 import { TenantHeader } from "@/components/tenant-branding";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { en } from "@/lib/i18n/en";
-import { GUEST_COOKIE_NAME } from "@pila/shared/auth/guest-session";
-import { clientIp } from "@pila/shared/http/client-ip";
-import { log } from "@pila/shared/log/logger";
-import { findWaitingPartyBySession } from "@pila/shared/parties/lookup";
-import { waitUrlFor } from "@pila/shared/parties/join";
-import { verifyQrToken, type QrVerification } from "@pila/shared/qr/token";
-import { RateLimitError, consume } from "@pila/shared/ratelimit";
-import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
-import { JoinForm } from "./join-form";
+import { GUEST_COOKIE_NAME } from "@pila/shared/domain/auth/guest-session";
+import { clientIp } from "@pila/shared/infra/http/client-ip";
+import { log } from "@pila/shared/infra/log/logger";
+import { findWaitingPartyBySession } from "@pila/shared/domain/parties/lookup";
+import { waitUrlFor } from "@pila/shared/domain/parties/join";
+import {
+  verifyQrToken,
+  type QrVerification,
+} from "@pila/shared/primitives/qr/token";
+import { RateLimitError, consume } from "@pila/shared/infra/ratelimit";
+import { loadTenantBySlug } from "@pila/shared/domain/tenants/lookup";
+import { JoinForm } from "./_components/join-form";
 
 export const dynamic = "force-dynamic";
 

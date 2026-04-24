@@ -9,7 +9,7 @@ import '../auth/http_client.dart';
 import '../config/env.dart';
 import '../persistence/party_store.dart';
 import '../sse/sse_client.dart';
-import 'wait_reducer.dart';
+import '../domain/wait/wait_reducer.dart';
 
 /// Bearer storage. Production: secure storage; tests override with in-memory.
 final bearerStorageProvider = Provider<BearerStorage>((ref) {

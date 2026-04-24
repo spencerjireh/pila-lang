@@ -4,6 +4,14 @@ export const en = {
     tagline: "A warmer way to wait for a table.",
   },
 
+  errors: {
+    network: "Network error. Try again.",
+    generic: "Something went wrong. Try again.",
+    sessionExpired: "Session expired. Sign in again.",
+    tooLateUndo: "Too late to undo.",
+    alreadyHandled: "Already handled on another device.",
+  },
+
   designSystem: {
     voice: {
       welcome: "We\u2019re glad you\u2019re here.",

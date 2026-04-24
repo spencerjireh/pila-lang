@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { en } from "@/lib/i18n/en";
-import { EditTenantForm } from "./edit-tenant-form";
-import { TenantActions } from "./tenant-actions";
+import { EditTenantForm } from "./_components/edit-tenant-form";
+import { TenantActions } from "./_components/tenant-actions";
 
 type PageProps = { params: { id: string } };
 

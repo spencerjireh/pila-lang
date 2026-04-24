@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pila/screens/scan_screen.dart';
+import 'package:pila/screens/guest/scan_screen.dart';
 
 void main() {
   group('resolveScanLocation', () {

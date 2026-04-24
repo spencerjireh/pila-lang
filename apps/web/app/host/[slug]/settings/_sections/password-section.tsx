@@ -1,5 +1,7 @@
 "use client";
 
+import { en } from "@/lib/i18n/en";
+
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -24,7 +26,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { MIN_PASSWORD_LENGTH } from "@pila/shared/validators/password";
+import { useJsonMutation } from "@/lib/forms/use-json-mutation";
+import { MIN_PASSWORD_LENGTH } from "@pila/shared/primitives/validators/password";
 
 interface Props {
   slug: string;
@@ -34,80 +37,64 @@ interface Props {
 export function PasswordSection({ slug, onUnauthorized }: Props) {
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [rotating, setRotating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+  const [localError, setLocalError] = useState<string | null>(null);
   const [confirmKickOpen, setConfirmKickOpen] = useState(false);
-  const [kicking, setKicking] = useState(false);
 
-  async function rotate(e: React.FormEvent) {
+  const rotate = useJsonMutation<{ action: "rotate"; newPassword: string }>();
+  const kick = useJsonMutation<{ action: "logout-others" }>();
+
+  async function onRotate(e: React.FormEvent) {
     e.preventDefault();
-    if (rotating) return;
-    setError(null);
+    if (rotate.status === "submitting") return;
+    setLocalError(null);
     if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      setLocalError(
+        `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+      );
       return;
     }
     if (newPassword !== confirm) {
-      setError("Passwords do not match.");
+      setLocalError("Passwords do not match.");
       return;
     }
-    setRotating(true);
-    try {
-      const res = await fetch(
-        `/api/host/${encodeURIComponent(slug)}/settings/password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "rotate", newPassword }),
-        },
-      );
-      if (res.status === 401) {
-        onUnauthorized();
-        return;
-      }
-      if (!res.ok) {
-        setError("Could not rotate password.");
-        return;
-      }
+    const result = await rotate.mutate(
+      `/api/host/${encodeURIComponent(slug)}/settings/password`,
+      { action: "rotate", newPassword },
+      {
+        onUnauthorized,
+        errorMap: () => "Could not rotate password.",
+        networkError: en.errors.network,
+      },
+    );
+    if (result !== null) {
       setNewPassword("");
       setConfirm("");
       toast.success("Password updated. Other devices are signed out.");
-    } catch {
-      setError("Network error.");
-    } finally {
-      setRotating(false);
     }
   }
 
-  async function kickOthers() {
-    if (kicking) return;
-    setKicking(true);
-    try {
-      const res = await fetch(
-        `/api/host/${encodeURIComponent(slug)}/settings/password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "logout-others" }),
+  async function onKickOthers() {
+    const result = await kick.mutate(
+      `/api/host/${encodeURIComponent(slug)}/settings/password`,
+      { action: "logout-others" },
+      {
+        onUnauthorized,
+        errorMap: () => {
+          toast.error("Could not sign out other devices.");
+          return null;
         },
-      );
-      if (res.status === 401) {
-        onUnauthorized();
-        return;
-      }
-      if (!res.ok) {
-        toast.error("Could not sign out other devices.");
-        return;
-      }
+        networkError: en.errors.network,
+      },
+    );
+    if (result !== null) {
       toast.success("Other devices signed out.");
       setConfirmKickOpen(false);
-    } catch {
-      toast.error("Network error.");
-    } finally {
-      setKicking(false);
+    } else if (kick.error) {
+      toast.error(kick.error);
     }
   }
+
+  const rotateError = localError ?? rotate.error;
 
   return (
     <Card>
@@ -118,7 +105,7 @@ export function PasswordSection({ slug, onUnauthorized }: Props) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={rotate} className="flex flex-col gap-4">
+        <form onSubmit={onRotate} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="new-password">New password</Label>
             <Input
@@ -143,14 +130,14 @@ export function PasswordSection({ slug, onUnauthorized }: Props) {
               required
             />
           </div>
-          {error ? (
+          {rotateError ? (
             <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{rotateError}</AlertDescription>
             </Alert>
           ) : null}
           <div>
-            <Button type="submit" disabled={rotating}>
-              {rotating ? "Updating\u2026" : "Change password"}
+            <Button type="submit" disabled={rotate.status === "submitting"}>
+              {rotate.status === "submitting" ? "Updating…" : "Change password"}
             </Button>
           </div>
         </form>
@@ -169,7 +156,7 @@ export function PasswordSection({ slug, onUnauthorized }: Props) {
             <Dialog
               open={confirmKickOpen}
               onOpenChange={(next) => {
-                if (!kicking) setConfirmKickOpen(next);
+                if (kick.status !== "submitting") setConfirmKickOpen(next);
               }}
             >
               <DialogTrigger asChild>
@@ -189,7 +176,7 @@ export function PasswordSection({ slug, onUnauthorized }: Props) {
                   <Button
                     type="button"
                     variant="outline"
-                    disabled={kicking}
+                    disabled={kick.status === "submitting"}
                     onClick={() => setConfirmKickOpen(false)}
                   >
                     Cancel
@@ -197,10 +184,12 @@ export function PasswordSection({ slug, onUnauthorized }: Props) {
                   <Button
                     type="button"
                     variant="destructive"
-                    disabled={kicking}
-                    onClick={() => void kickOthers()}
+                    disabled={kick.status === "submitting"}
+                    onClick={() => void onKickOthers()}
                   >
-                    {kicking ? "Signing out\u2026" : "Yes, sign out others"}
+                    {kick.status === "submitting"
+                      ? "Signing out…"
+                      : "Yes, sign out others"}
                   </Button>
                 </DialogFooter>
               </DialogContent>

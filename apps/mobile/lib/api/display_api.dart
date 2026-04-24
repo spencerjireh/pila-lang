@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import 'display_models.dart';
+import 'error_mapper.dart';
 
 enum DisplayApiError {
   notFound,
@@ -54,41 +55,25 @@ class DisplayApi {
   }
 }
 
+const Map<int, DisplayApiError> _statusToCode = <int, DisplayApiError>{
+  404: DisplayApiError.notFound,
+  429: DisplayApiError.rateLimited,
+};
+
 /// Visible for tests so the 404/429/network branches are asserted
 /// against canonical DioException shapes.
 DisplayApiException mapDisplayApiError(DioException err) {
-  final status = err.response?.statusCode;
-  final data = err.response?.data;
-  final errorCode =
-      data is Map<String, dynamic> ? data['error'] as String? : null;
-  final retryAfter = err.response?.headers.value('retry-after') ??
-      err.response?.headers.value('Retry-After');
-  final retryAfterSec = retryAfter == null ? null : int.tryParse(retryAfter);
-
-  if (status == null) {
+  final f = extractDioError(err);
+  if (f.statusCode == null) {
     return DisplayApiException(
       code: DisplayApiError.network,
-      message: err.message,
-    );
-  }
-  if (status == 404) {
-    return DisplayApiException(
-      code: DisplayApiError.notFound,
-      statusCode: status,
-      message: errorCode,
-    );
-  }
-  if (status == 429) {
-    return DisplayApiException(
-      code: DisplayApiError.rateLimited,
-      statusCode: status,
-      retryAfterSeconds: retryAfterSec,
-      message: errorCode,
+      message: f.networkMessage,
     );
   }
   return DisplayApiException(
-    code: DisplayApiError.unknown,
-    statusCode: status,
-    message: errorCode,
+    code: _statusToCode[f.statusCode!] ?? DisplayApiError.unknown,
+    statusCode: f.statusCode,
+    retryAfterSeconds: f.retryAfterSeconds,
+    message: f.errorCode,
   );
 }

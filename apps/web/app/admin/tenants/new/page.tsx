@@ -1,4 +1,4 @@
-import { CreateTenantForm } from "./create-tenant-form";
+import { CreateTenantForm } from "./_components/create-tenant-form";
 import {
   Card,
   CardContent,

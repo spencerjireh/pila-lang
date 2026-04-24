@@ -1,8 +1,7 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 
 import '../api/models.dart';
+import 'database.dart';
 
 /// A persistent record of the guest's most recent party interaction per
 /// (slug, partyId). Cold-launch reads this to decide whether to render the
@@ -133,91 +132,6 @@ class InMemoryPartyStore implements PartyStore {
   @override
   Future<void> clear() async {
     _rows.clear();
-  }
-}
-
-/// Shared sqflite database for all mobile persistence. Each store opens
-/// the same file and operates on its own table.
-class MobileDatabase {
-  MobileDatabase._(this.db);
-
-  final Database db;
-
-  static const int schemaVersion = 4;
-
-  static Future<MobileDatabase> open() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final path = p.join(dir.path, 'pila_mobile.db');
-    final database = await openDatabase(
-      path,
-      version: schemaVersion,
-      onCreate: (db, version) async {
-        await _createGuestTable(db);
-        await _createHostTable(db);
-        await _createKioskTable(db);
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await _createHostTable(db);
-        }
-        if (oldVersion < 3) {
-          await _createKioskTable(db);
-        }
-        if (oldVersion < 4) {
-          // v4 adds the tenant_name column to guest_parties. A drop-and-
-          // recreate is acceptable pre-pilot: the server-side party row is
-          // untouched, so any mid-queue upgrader just re-enters via the QR.
-          await db.execute('DROP TABLE IF EXISTS guest_parties');
-          await _createGuestTable(db);
-        }
-      },
-    );
-    return MobileDatabase._(database);
-  }
-
-  static Future<void> _createGuestTable(Database db) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS guest_parties (
-        slug TEXT NOT NULL,
-        party_id TEXT NOT NULL,
-        tenant_name TEXT NOT NULL,
-        name TEXT NOT NULL,
-        party_size INTEGER NOT NULL,
-        joined_at INTEGER NOT NULL,
-        status TEXT NOT NULL,
-        resolved_at INTEGER,
-        updated_at INTEGER NOT NULL,
-        PRIMARY KEY (slug, party_id)
-      )
-    ''');
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_guest_parties_slug_updated '
-      'ON guest_parties(slug, updated_at DESC)',
-    );
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_guest_parties_status_updated '
-      'ON guest_parties(status, updated_at DESC)',
-    );
-  }
-
-  static Future<void> _createHostTable(Database db) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS host_snapshots (
-        slug TEXT PRIMARY KEY,
-        snapshot_json TEXT NOT NULL,
-        updated_at INTEGER NOT NULL
-      )
-    ''');
-  }
-
-  static Future<void> _createKioskTable(Database db) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS kiosk_pairing (
-        id INTEGER PRIMARY KEY CHECK (id = 1),
-        slug TEXT NOT NULL,
-        paired_at INTEGER NOT NULL
-      )
-    ''');
   }
 }
 

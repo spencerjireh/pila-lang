@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 
-import 'party_store.dart';
+import 'database.dart';
 
 /// Single-row store that remembers which tenant a kiosk device is paired
 /// with. Used by `main.dart` to resolve the cold-launch initial location

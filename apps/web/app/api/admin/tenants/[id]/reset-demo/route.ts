@@ -1,9 +1,13 @@
 import { NextRequest } from "next/server";
 
-import { requireAdminApi } from "@pila/shared/auth/admin-guard";
-import { resetDemoFixture } from "@pila/shared/admin/demo-fixture";
-import { channelForTenantQueue, publish } from "@pila/shared/redis/pubsub";
-import { log } from "@pila/shared/log/logger";
+import { requireAdminApi } from "@pila/shared/domain/auth/admin-guard";
+import { resetDemoFixture } from "@pila/shared/domain/admin/demo-fixture";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import {
+  channelForTenantQueue,
+  publish,
+} from "@pila/shared/infra/redis/pubsub";
+import { log } from "@pila/shared/infra/log/logger";
 
 type Params = { params: { id: string } };
 
@@ -15,7 +19,7 @@ export async function POST(_req: NextRequest, ctx: Params) {
   const result = await resetDemoFixture(id);
   if (!result.ok) {
     const status = result.reason === "not_found" ? 404 : 403;
-    return Response.json({ error: result.reason }, { status });
+    return errorResponse(status, result.reason);
   }
 
   await publish(channelForTenantQueue(result.slug), { type: "tenant:reset" });

@@ -3,10 +3,11 @@ import { NextRequest } from "next/server";
 import {
   applyHostRefresh,
   guardHostRequest,
-  unauthorizedJson,
-} from "@pila/shared/auth/host-guard";
-import { log } from "@pila/shared/log/logger";
-import { performHostAction } from "@pila/shared/parties/host-actions";
+  hostGuardErrorResponse,
+} from "@pila/shared/domain/auth/host-guard";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { log } from "@pila/shared/infra/log/logger";
+import { performHostAction } from "@pila/shared/domain/parties/host-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,13 +16,7 @@ export async function POST(
   { params }: { params: { slug: string; partyId: string } },
 ) {
   const guard = await guardHostRequest(req, params.slug);
-  if (!guard.ok) {
-    return unauthorizedJson(
-      guard.status,
-      guard.clearCookie,
-      guardError(guard.status),
-    );
-  }
+  if (!guard.ok) return hostGuardErrorResponse(guard);
 
   let result;
   try {
@@ -37,12 +32,12 @@ export async function POST(
       partyId: params.partyId,
       err: String(err),
     });
-    return Response.json({ error: "internal" }, { status: 500 });
+    return errorResponse(500, "internal");
   }
 
   if (!result.ok) {
     const status = result.reason === "not_found" ? 404 : 409;
-    return Response.json({ error: result.reason }, { status });
+    return errorResponse(status, result.reason);
   }
 
   log.info("host.party.seated", { slug: params.slug, partyId: params.partyId });
@@ -50,10 +45,4 @@ export async function POST(
     Response.json({ ok: true, resolvedAt: result.resolvedAt }, { status: 200 }),
     guard,
   );
-}
-
-function guardError(status: 401 | 403 | 404): string {
-  if (status === 401) return "unauthorized";
-  if (status === 403) return "forbidden";
-  return "not_found";
 }

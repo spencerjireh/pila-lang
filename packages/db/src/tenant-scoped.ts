@@ -1,10 +1,11 @@
 import { and, eq, inArray, type SQL } from "drizzle-orm";
+import type { PgTable } from "drizzle-orm/pg-core";
+
 import { getDb } from "./client";
 import {
   notifications,
   parties,
   pushTokens,
-  type NewNotification,
   type NewParty,
   type NewPushToken,
 } from "./schema";
@@ -22,71 +23,78 @@ function assertTenantId(tenantId: unknown): asserts tenantId is string {
   }
 }
 
+type Db = ReturnType<typeof getDb>;
+
+function combineScope(scope: SQL, extra?: SQL): SQL {
+  return extra ? (and(scope, extra) as SQL) : scope;
+}
+
+function scopedCrud<Table extends PgTable, New extends Record<string, unknown>>(
+  db: Db,
+  table: Table,
+  scope: () => SQL,
+  tenantId: string,
+) {
+  return {
+    select(extra?: SQL) {
+      return db.select().from(table).where(combineScope(scope(), extra));
+    },
+    insert(values: Omit<New, "tenantId">) {
+      return db.insert(table).values({ ...values, tenantId } as never);
+    },
+    update(set: Partial<New>, extra?: SQL) {
+      const { tenantId: _drop, ...rest } = set as Partial<New> & {
+        tenantId?: unknown;
+      };
+      void _drop;
+      return db
+        .update(table)
+        .set(rest as never)
+        .where(combineScope(scope(), extra));
+    },
+    delete(extra?: SQL) {
+      return db.delete(table).where(combineScope(scope(), extra));
+    },
+  };
+}
+
 export function tenantDb(tenantId: string) {
   assertTenantId(tenantId);
   const db = getDb();
 
   const scopeParty = () => eq(parties.tenantId, tenantId);
   const scopePushToken = () => eq(pushTokens.tenantId, tenantId);
-  const partyIdsSubquery = () =>
-    db.select({ id: parties.id }).from(parties).where(scopeParty());
+  const notificationsScope = () =>
+    inArray(
+      notifications.partyId,
+      db.select({ id: parties.id }).from(parties).where(scopeParty()),
+    );
 
   return {
     tenantId,
-
-    parties: {
-      select(extra?: SQL) {
-        const where = extra ? and(scopeParty(), extra) : scopeParty();
-        return db.select().from(parties).where(where);
-      },
-      insert(values: Omit<NewParty, "tenantId">) {
-        return db.insert(parties).values({ ...values, tenantId });
-      },
-      update(set: Partial<NewParty>, extra?: SQL) {
-        const sanitized = { ...set };
-        delete (sanitized as { tenantId?: unknown }).tenantId;
-        const where = extra ? and(scopeParty(), extra) : scopeParty();
-        return db.update(parties).set(sanitized).where(where);
-      },
-      delete(extra?: SQL) {
-        const where = extra ? and(scopeParty(), extra) : scopeParty();
-        return db.delete(parties).where(where);
-      },
-    },
-
+    parties: scopedCrud<typeof parties, NewParty>(
+      db,
+      parties,
+      scopeParty,
+      tenantId,
+    ),
+    pushTokens: scopedCrud<typeof pushTokens, NewPushToken>(
+      db,
+      pushTokens,
+      scopePushToken,
+      tenantId,
+    ),
     notifications: {
       select(extra?: SQL) {
-        const scope = inArray(notifications.partyId, partyIdsSubquery());
-        const where = extra ? and(scope, extra) : scope;
-        return db.select().from(notifications).where(where);
-      },
-      insert(values: NewNotification) {
-        return db.insert(notifications).values(values);
+        return db
+          .select()
+          .from(notifications)
+          .where(combineScope(notificationsScope(), extra));
       },
       delete(extra?: SQL) {
-        const scope = inArray(notifications.partyId, partyIdsSubquery());
-        const where = extra ? and(scope, extra) : scope;
-        return db.delete(notifications).where(where);
-      },
-    },
-
-    pushTokens: {
-      select(extra?: SQL) {
-        const where = extra ? and(scopePushToken(), extra) : scopePushToken();
-        return db.select().from(pushTokens).where(where);
-      },
-      insert(values: Omit<NewPushToken, "tenantId">) {
-        return db.insert(pushTokens).values({ ...values, tenantId });
-      },
-      update(set: Partial<NewPushToken>, extra?: SQL) {
-        const sanitized = { ...set };
-        delete (sanitized as { tenantId?: unknown }).tenantId;
-        const where = extra ? and(scopePushToken(), extra) : scopePushToken();
-        return db.update(pushTokens).set(sanitized).where(where);
-      },
-      delete(extra?: SQL) {
-        const where = extra ? and(scopePushToken(), extra) : scopePushToken();
-        return db.delete(pushTokens).where(where);
+        return db
+          .delete(notifications)
+          .where(combineScope(notificationsScope(), extra));
       },
     },
   };

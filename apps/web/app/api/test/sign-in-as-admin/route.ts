@@ -5,8 +5,9 @@ import { z } from "zod";
 
 import { getDb } from "@pila/db/client";
 import { sessions, users } from "@pila/db/schema";
-import { requireTestEnv } from "@pila/shared/test-api/guard";
-import { isAdminEmail } from "@pila/shared/validators/admin-allow-list";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { requireTestEnv } from "@pila/shared/primitives/test-api/guard";
+import { isAdminEmail } from "@pila/shared/primitives/validators/admin-allow-list";
 
 const bodySchema = z.object({ email: z.string().email() });
 
@@ -16,13 +17,9 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null);
   const parsed = bodySchema.safeParse(body);
-  if (!parsed.success) {
-    return Response.json({ error: "invalid_body" }, { status: 400 });
-  }
+  if (!parsed.success) return errorResponse(400, "invalid_body");
   const email = parsed.data.email.trim().toLowerCase();
-  if (!isAdminEmail(email)) {
-    return Response.json({ error: "not_allow_listed" }, { status: 403 });
-  }
+  if (!isAdminEmail(email)) return errorResponse(403, "not_allow_listed");
 
   const db = getDb();
   let [user] = await db

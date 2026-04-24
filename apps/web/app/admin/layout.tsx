@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { auth } from "@pila/shared/auth/admin-session";
-import { isAdminEmail } from "@pila/shared/validators/admin-allow-list";
+import { auth } from "@pila/shared/domain/auth/admin-session";
+import { isAdminEmail } from "@pila/shared/primitives/validators/admin-allow-list";
 import { Separator } from "@/components/ui/separator";
 import { en } from "@/lib/i18n/en";
 import { SignOutButton } from "./_components/sign-out-button";

@@ -1,5 +1,7 @@
 "use client";
 
+import { en } from "@/lib/i18n/en";
+
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -13,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MAX_UPLOAD_BYTES } from "@pila/shared/storage/logo-limits";
+import { MAX_UPLOAD_BYTES } from "@pila/shared/infra/storage/logo-limits";
 
 interface Props {
   slug: string;
@@ -65,7 +67,7 @@ export function BrandingSection({
       onChange({ logoUrl: body.logoUrl });
       toast.success("Logo updated.");
     } catch {
-      setError("Network error.");
+      setError(en.errors.network);
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -92,7 +94,7 @@ export function BrandingSection({
       onChange({ logoUrl: null });
       toast.success("Logo removed.");
     } catch {
-      setError("Network error.");
+      setError(en.errors.network);
     } finally {
       setRemoving(false);
     }
