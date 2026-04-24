@@ -4,7 +4,7 @@ import { z } from "zod";
 import {
   applyHostRefresh,
   guardHostRequest,
-  unauthorizedJson,
+  hostGuardErrorResponse,
 } from "@pila/shared/auth/host-guard";
 import { updateTenantBranding } from "@pila/shared/host/settings-actions";
 import { log } from "@pila/shared/log/logger";
@@ -24,13 +24,7 @@ export async function PATCH(
   { params }: { params: { slug: string } },
 ) {
   const guard = await guardHostRequest(req, params.slug);
-  if (!guard.ok) {
-    return unauthorizedJson(
-      guard.status,
-      guard.clearCookie,
-      guardError(guard.status),
-    );
-  }
+  if (!guard.ok) return hostGuardErrorResponse(guard);
 
   const contentType = req.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().startsWith("application/json")) {
@@ -76,10 +70,4 @@ export async function PATCH(
     Response.json({ tenant: row }, { status: 200 }),
     guard,
   );
-}
-
-function guardError(status: 401 | 403 | 404): string {
-  if (status === 401) return "unauthorized";
-  if (status === 403) return "forbidden";
-  return "not_found";
 }

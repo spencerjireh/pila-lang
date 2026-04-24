@@ -38,10 +38,7 @@ export async function computePosition(
   return rankOf(ids, partyId);
 }
 
-export async function publishPositionUpdates(
-  tenantId: string,
-  _slug: string,
-): Promise<void> {
+export async function publishPositionUpdates(tenantId: string): Promise<void> {
   const ids = await listWaitingIdsInOrder(tenantId);
   for (const { channel, event } of positionEventsFor(ids)) {
     await publish(channel, event);

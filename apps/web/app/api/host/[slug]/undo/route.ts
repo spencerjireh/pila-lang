@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import {
   applyHostRefresh,
   guardHostRequest,
-  unauthorizedJson,
+  hostGuardErrorResponse,
 } from "@pila/shared/auth/host-guard";
 import { parties, type Party } from "@pila/db/schema";
 import { tenantDb } from "@pila/db/tenant-scoped";
@@ -24,13 +24,7 @@ export async function POST(
   { params }: { params: { slug: string } },
 ) {
   const guard = await guardHostRequest(req, params.slug);
-  if (!guard.ok) {
-    return unauthorizedJson(
-      guard.status,
-      guard.clearCookie,
-      guardError(guard.status),
-    );
-  }
+  if (!guard.ok) return hostGuardErrorResponse(guard);
   const { tenant } = guard;
 
   const frame = await popUndoFrame(tenant.id);
@@ -73,7 +67,7 @@ export async function POST(
     })) {
       await publish(channel, event);
     }
-    await publishPositionUpdates(tenant.id, tenant.slug);
+    await publishPositionUpdates(tenant.id);
   } catch (err) {
     log.error("host.undo.publish_failed", {
       slug: params.slug,
@@ -94,10 +88,4 @@ export async function POST(
     ),
     guard,
   );
-}
-
-function guardError(status: 401 | 403 | 404): string {
-  if (status === 401) return "unauthorized";
-  if (status === 403) return "forbidden";
-  return "not_found";
 }

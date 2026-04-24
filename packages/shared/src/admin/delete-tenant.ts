@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "@pila/db/client";
 import { parties, tenants } from "@pila/db/schema";
 
@@ -17,16 +17,14 @@ export async function hardDeleteTenant(
       .limit(1);
     if (!tenant) return { ok: false, reason: "not_found" } as const;
 
-    await tx
-      .update(tenants)
-      .set({ isOpen: false })
-      .where(eq(tenants.id, tenantId));
-
+    // parties.tenant_id FK is ON DELETE CASCADE; we only need the list of
+    // waiting parties for the post-commit Redis fan-out.
     const affected = await tx
-      .update(parties)
-      .set({ status: "no_show", resolvedAt: sql`now()` })
-      .where(and(eq(parties.tenantId, tenantId), eq(parties.status, "waiting")))
-      .returning({ id: parties.id });
+      .select({ id: parties.id })
+      .from(parties)
+      .where(
+        and(eq(parties.tenantId, tenantId), eq(parties.status, "waiting")),
+      );
 
     await tx.delete(tenants).where(eq(tenants.id, tenantId));
 

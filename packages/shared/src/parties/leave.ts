@@ -81,7 +81,7 @@ export async function leaveQueue(
   })) {
     await publish(channel, event);
   }
-  await publishPositionUpdates(tenantId, slug);
+  await publishPositionUpdates(tenantId);
 
   return { ok: true, resolvedAt };
 }

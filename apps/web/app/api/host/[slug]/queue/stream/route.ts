@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import {
   guardHostRequest,
   HOST_REFRESH_HEADER,
-  unauthorizedJson,
+  hostGuardErrorResponse,
 } from "@pila/shared/auth/host-guard";
 import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
 import { log } from "@pila/shared/log/logger";
@@ -33,13 +33,7 @@ export async function GET(
   }
 
   const guard = await guardHostRequest(req, params.slug);
-  if (!guard.ok) {
-    return unauthorizedJson(
-      guard.status,
-      guard.clearCookie,
-      guardErrorFor(guard.status),
-    );
-  }
+  if (!guard.ok) return hostGuardErrorResponse(guard);
   const { tenant } = guard;
 
   let unsubscribe: (() => Promise<void>) | null = null;
@@ -79,10 +73,4 @@ export async function GET(
       }
     },
   });
-}
-
-function guardErrorFor(status: 401 | 403 | 404): string {
-  if (status === 401) return "unauthorized";
-  if (status === 403) return "forbidden";
-  return "not_found";
 }

@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
@@ -7,10 +6,9 @@ import {
   GUEST_TOKEN_TTL_SECONDS,
   signGuestToken,
 } from "@pila/shared/auth/guest-token";
-import { parties } from "@pila/db/schema";
-import { getDb } from "@pila/db/client";
 import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
 import { log } from "@pila/shared/log/logger";
+import { findPartyById } from "@pila/shared/parties/lookup";
 import { RateLimitError, consume } from "@pila/shared/ratelimit";
 import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
 
@@ -48,29 +46,24 @@ export async function POST(req: NextRequest) {
   if (!lookup.ok) return Response.json({ error: "not_found" }, { status: 404 });
   const tenant = lookup.tenant;
 
-  const [row] = await getDb()
-    .select()
-    .from(parties)
-    .where(eq(parties.id, parsed.data.partyId));
-  if (!row) return Response.json({ error: "not_found" }, { status: 404 });
-  if (row.tenantId !== tenant.id)
-    return Response.json({ error: "forbidden" }, { status: 403 });
-  if (row.sessionToken !== cookie)
+  const party = await findPartyById(tenant.id, parsed.data.partyId);
+  if (!party) return Response.json({ error: "not_found" }, { status: 404 });
+  if (party.sessionToken !== cookie)
     return Response.json({ error: "forbidden" }, { status: 403 });
 
   const token = await signGuestToken({
     slug: tenant.slug,
-    partyId: row.id,
+    partyId: party.id,
   });
 
-  log.info("guest.token.issued", { slug: tenant.slug, partyId: row.id });
+  log.info("guest.token.issued", { slug: tenant.slug, partyId: party.id });
   return Response.json(
     {
       token,
       tokenType: "Bearer",
       expiresIn: GUEST_TOKEN_TTL_SECONDS,
       slug: tenant.slug,
-      partyId: row.id,
+      partyId: party.id,
     },
     { status: 200 },
   );

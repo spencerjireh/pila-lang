@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import {
   applyHostRefresh,
   guardHostRequest,
-  unauthorizedJson,
+  hostGuardErrorResponse,
 } from "@pila/shared/auth/host-guard";
 import { swapLogo } from "@pila/shared/host/settings-actions";
 import { log } from "@pila/shared/log/logger";
@@ -25,13 +25,7 @@ export async function POST(
   { params }: { params: { slug: string } },
 ) {
   const guard = await guardHostRequest(req, params.slug);
-  if (!guard.ok) {
-    return unauthorizedJson(
-      guard.status,
-      guard.clearCookie,
-      guardError(guard.status),
-    );
-  }
+  if (!guard.ok) return hostGuardErrorResponse(guard);
 
   const contentType = (req.headers.get("content-type") ?? "").toLowerCase();
 
@@ -128,10 +122,4 @@ async function safeDelete(urlOrKey: string | null): Promise<void> {
       err: String(err),
     });
   }
-}
-
-function guardError(status: 401 | 403 | 404): string {
-  if (status === 401) return "unauthorized";
-  if (status === 403) return "forbidden";
-  return "not_found";
 }

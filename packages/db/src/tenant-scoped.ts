@@ -4,7 +4,6 @@ import {
   notifications,
   parties,
   pushTokens,
-  type NewNotification,
   type NewParty,
   type NewPushToken,
 } from "./schema";
@@ -59,9 +58,6 @@ export function tenantDb(tenantId: string) {
         const scope = inArray(notifications.partyId, partyIdsSubquery());
         const where = extra ? and(scope, extra) : scope;
         return db.select().from(notifications).where(where);
-      },
-      insert(values: NewNotification) {
-        return db.insert(notifications).values(values);
       },
       delete(extra?: SQL) {
         const scope = inArray(notifications.partyId, partyIdsSubquery());

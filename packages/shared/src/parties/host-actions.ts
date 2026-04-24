@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { parties, type Party, type PartyStatus } from "@pila/db/schema";
 import { tenantDb } from "@pila/db/tenant-scoped";
@@ -69,12 +69,6 @@ export async function performHostAction(
   action: HostAction,
 ): Promise<HostActionResult> {
   const scoped = tenantDb(tenantId);
-  const [existing] = await scoped.parties.select(eq(parties.id, partyId));
-  const existingParty = existing as Party | undefined;
-  if (!existingParty) return { ok: false, reason: "not_found" };
-  if (existingParty.status !== "waiting")
-    return { ok: false, reason: "conflict" };
-
   const resolvedAtDate = new Date();
   const update: Partial<typeof parties.$inferInsert> =
     action === "seat"
@@ -86,8 +80,12 @@ export async function performHostAction(
       : { status: "no_show", resolvedAt: resolvedAtDate };
 
   const [updated] = await scoped.parties
-    .update(update, eq(parties.id, partyId))
+    .update(update, and(eq(parties.id, partyId), eq(parties.status, "waiting")))
     .returning();
+  if (!updated) {
+    const [row] = await scoped.parties.select(eq(parties.id, partyId));
+    return { ok: false, reason: row ? "conflict" : "not_found" };
+  }
   const updatedParty = updated as Party;
   const resolvedAt = updatedParty.resolvedAt!.toISOString();
 
@@ -107,7 +105,7 @@ export async function performHostAction(
   })) {
     await publish(channel, event);
   }
-  await publishPositionUpdates(tenantId, slug);
+  await publishPositionUpdates(tenantId);
 
   if (action === "seat") {
     try {

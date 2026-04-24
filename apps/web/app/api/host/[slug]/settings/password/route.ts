@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   guardHostRequest,
   HOST_REFRESH_HEADER,
-  unauthorizedJson,
+  hostGuardErrorResponse,
 } from "@pila/shared/auth/host-guard";
 import {
   hostCookieAttrs,
@@ -22,13 +22,7 @@ export async function POST(
   { params }: { params: { slug: string } },
 ) {
   const guard = await guardHostRequest(req, params.slug);
-  if (!guard.ok) {
-    return unauthorizedJson(
-      guard.status,
-      guard.clearCookie,
-      guardError(guard.status),
-    );
-  }
+  if (!guard.ok) return hostGuardErrorResponse(guard);
 
   const contentType = req.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().startsWith("application/json")) {
@@ -78,10 +72,4 @@ export async function POST(
     newVersion: result.newVersion,
   });
   return res;
-}
-
-function guardError(status: 401 | 403 | 404): string {
-  if (status === 401) return "unauthorized";
-  if (status === 403) return "forbidden";
-  return "not_found";
 }

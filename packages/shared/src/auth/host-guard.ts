@@ -145,6 +145,22 @@ export function unauthorizedJson(
   return Response.json({ error }, { status, headers });
 }
 
+export function hostGuardErrorMessage(status: 401 | 403 | 404): string {
+  if (status === 401) return "unauthorized";
+  if (status === 403) return "forbidden";
+  return "not_found";
+}
+
+export function hostGuardErrorResponse(
+  guard: Extract<HostGuardDecision, { ok: false }>,
+): Response {
+  return unauthorizedJson(
+    guard.status,
+    guard.clearCookie,
+    hostGuardErrorMessage(guard.status),
+  );
+}
+
 export function applyHostRefresh(res: Response, guard: HostGuardOk): Response {
   if (guard.refreshedCookie) {
     res.headers.append("Set-Cookie", guard.refreshedCookie);

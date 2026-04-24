@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import {
   applyHostRefresh,
   guardHostRequest,
-  unauthorizedJson,
+  hostGuardErrorResponse,
 } from "@pila/shared/auth/host-guard";
 import {
   GUEST_HISTORY_DEFAULT_LIMIT,
@@ -20,13 +20,7 @@ export async function GET(
   { params }: { params: { slug: string } },
 ) {
   const guard = await guardHostRequest(req, params.slug);
-  if (!guard.ok) {
-    return unauthorizedJson(
-      guard.status,
-      guard.clearCookie,
-      guardError(guard.status),
-    );
-  }
+  if (!guard.ok) return hostGuardErrorResponse(guard);
 
   const url = new URL(req.url);
   const cursorParam = url.searchParams.get("cursor");
@@ -43,10 +37,4 @@ export async function GET(
     log.error("host.guests.failed", { slug: params.slug, err: String(err) });
     return Response.json({ error: "internal" }, { status: 500 });
   }
-}
-
-function guardError(status: 401 | 403 | 404): string {
-  if (status === 401) return "unauthorized";
-  if (status === 403) return "forbidden";
-  return "not_found";
 }
