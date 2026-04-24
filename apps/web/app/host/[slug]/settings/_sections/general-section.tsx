@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { pickForeground } from "@pila/shared/validators/contrast";
+import { useJsonMutation } from "@/lib/forms/use-json-mutation";
+import { pickForeground } from "@pila/shared/primitives/validators/contrast";
 
 interface Props {
   slug: string;
@@ -23,20 +24,27 @@ interface Props {
   onChange: (patch: { name?: string; accentColor?: string }) => void;
 }
 
+interface GeneralPatch {
+  name?: string;
+  accentColor?: string;
+}
+
+interface UpdateResp {
+  tenant: { name: string; accentColor: string };
+}
+
 export function GeneralSection({ slug, name, accentColor, onChange }: Props) {
   const [nameValue, setNameValue] = useState(name);
   const [accentValue, setAccentValue] = useState(accentColor);
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const { mutate, status, error } = useJsonMutation<GeneralPatch, UpdateResp>();
 
   const fg = pickForeground(accentValue);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (saving) return;
-    setError(null);
+    if (status === "submitting") return;
 
-    const patch: { name?: string; accentColor?: string } = {};
+    const patch: GeneralPatch = {};
     if (nameValue.trim() && nameValue.trim() !== name)
       patch.name = nameValue.trim();
     if (accentValue.trim() && accentValue.trim() !== accentColor) {
@@ -47,48 +55,29 @@ export function GeneralSection({ slug, name, accentColor, onChange }: Props) {
       return;
     }
 
-    setSaving(true);
-    try {
-      const res = await fetch(
-        `/api/host/${encodeURIComponent(slug)}/settings/general`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(patch),
-        },
-      );
-      if (res.status === 422) {
-        const body = (await res.json().catch(() => null)) as {
-          error?: string;
-          reason?: string;
-        } | null;
-        if (body?.error === "invalid_accent_color") {
-          setError(
-            body.reason === "format"
+    const body = await mutate(
+      `/api/host/${encodeURIComponent(slug)}/settings/general`,
+      patch,
+      {
+        method: "PATCH",
+        errorMap: ({ status, error, body }) => {
+          if (status === 422 && error === "invalid_accent_color") {
+            return body?.reason === "format"
               ? "Accent color must be a 6-digit hex code."
-              : "Accent color must pass AA contrast against black or white.",
-          );
-          return;
-        }
-        setError("Validation failed.");
-        return;
-      }
-      if (!res.ok) {
-        setError("Could not save. Try again.");
-        return;
-      }
-      const body = (await res.json()) as {
-        tenant: { name: string; accentColor: string };
-      };
+              : "Accent color must pass AA contrast against black or white.";
+          }
+          if (status === 422) return "Validation failed.";
+          return "Could not save. Try again.";
+        },
+        networkError: "Network error.",
+      },
+    );
+    if (body) {
       onChange({
         name: body.tenant.name,
         accentColor: body.tenant.accentColor,
       });
       toast.success("Saved.");
-    } catch {
-      setError("Network error.");
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -137,8 +126,8 @@ export function GeneralSection({ slug, name, accentColor, onChange }: Props) {
             </Alert>
           ) : null}
           <div>
-            <Button type="submit" disabled={saving}>
-              {saving ? "Saving\u2026" : "Save"}
+            <Button type="submit" disabled={status === "submitting"}>
+              {status === "submitting" ? "Saving…" : "Save"}
             </Button>
           </div>
         </form>

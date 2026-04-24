@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pila/api/host_models.dart';
 import 'package:pila/api/models.dart';
-import 'package:pila/state/host_reducer.dart';
+import 'package:pila/domain/host/host_reducer.dart';
 
 const _reducer = HostReducer();
 

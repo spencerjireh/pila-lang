@@ -4,53 +4,35 @@ import {
   GUEST_REFRESH_HEADER,
   guardGuestRequest,
   statusForGuestFailure,
-} from "@pila/shared/auth/guest-guard";
-import {
-  GUEST_COOKIE_MAX_AGE,
-  GUEST_COOKIE_NAME,
-} from "@pila/shared/auth/guest-session";
-import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
-import { log } from "@pila/shared/log/logger";
-import { computePosition } from "@pila/shared/parties/position";
+} from "@pila/shared/domain/auth/guest-guard";
+import { serializeGuestCookie } from "@pila/shared/domain/auth/guest-session";
+import { clientIp } from "@pila/shared/infra/http/client-ip";
+import { log } from "@pila/shared/infra/log/logger";
+import { computePosition } from "@pila/shared/domain/parties/position";
 import type { PartyStatus } from "@pila/db/schema";
 import {
   buildGuestSnapshot,
   isTerminalStatus,
   type GuestStreamEvent,
-} from "@pila/shared/parties/stream-events";
-import { RateLimitError, consume } from "@pila/shared/ratelimit";
+} from "@pila/shared/domain/parties/stream-events";
+import { enforceRateLimit } from "@pila/shared/infra/ratelimit/enforce";
 import {
   channelForParty,
   channelForTenantQueue,
   subscribe,
-} from "@pila/shared/redis/pubsub";
+} from "@pila/shared/infra/redis/pubsub";
 import { resolvedPartyShortCircuit, sseStream } from "@/lib/sse/stream";
 
 export const dynamic = "force-dynamic";
-
-function refreshedGuestCookie(value: string): string {
-  return [
-    `${GUEST_COOKIE_NAME}=${value}`,
-    `Max-Age=${GUEST_COOKIE_MAX_AGE}`,
-    "Path=/",
-    "HttpOnly",
-    "Secure",
-    "SameSite=Lax",
-  ].join("; ");
-}
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { slug: string; partyId: string } },
 ) {
-  const ip = clientIp(req.headers);
-  try {
-    await consume("guestStreamPerIp", ip);
-  } catch (err) {
-    if (err instanceof RateLimitError)
-      return rateLimitResponse(err.retryAfterSec);
-    throw err;
-  }
+  const limited = await enforceRateLimit([
+    { bucket: "guestStreamPerIp", key: clientIp(req.headers) },
+  ]);
+  if (limited) return limited;
 
   const guard = await guardGuestRequest(req, params.slug, params.partyId);
   if (!guard.ok) {
@@ -65,7 +47,7 @@ export async function GET(
 
   const extraHeaders: Record<string, string> = {};
   if (source === "cookie") {
-    extraHeaders["Set-Cookie"] = refreshedGuestCookie(activeParty.sessionToken);
+    extraHeaders["Set-Cookie"] = serializeGuestCookie(activeParty.sessionToken);
   }
   if (refreshedBearer) {
     extraHeaders[GUEST_REFRESH_HEADER] = refreshedBearer;

@@ -5,17 +5,18 @@ import {
   applyHostRefresh,
   guardHostRequest,
   hostGuardErrorResponse,
-} from "@pila/shared/auth/host-guard";
+} from "@pila/shared/domain/auth/host-guard";
 import { parties, type Party } from "@pila/db/schema";
 import { tenantDb } from "@pila/db/tenant-scoped";
-import { log } from "@pila/shared/log/logger";
-import { undoPublishPlan } from "@pila/shared/parties/host-actions";
-import { publishPositionUpdates } from "@pila/shared/parties/position";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { log } from "@pila/shared/infra/log/logger";
+import { undoPublishPlan } from "@pila/shared/domain/parties/host-actions";
+import { publishPositionUpdates } from "@pila/shared/domain/parties/position";
 import {
   isWithinUndoWindow,
   popUndoFrame,
-} from "@pila/shared/parties/undo-store";
-import { publish } from "@pila/shared/redis/pubsub";
+} from "@pila/shared/domain/parties/undo-store";
+import { publish } from "@pila/shared/infra/redis/pubsub";
 
 export const dynamic = "force-dynamic";
 
@@ -29,16 +30,10 @@ export async function POST(
 
   const frame = await popUndoFrame(tenant.id);
   if (!frame) {
-    return applyHostRefresh(
-      Response.json({ error: "no_action" }, { status: 409 }),
-      guard,
-    );
+    return applyHostRefresh(errorResponse(409, "no_action"), guard);
   }
   if (!isWithinUndoWindow(frame)) {
-    return applyHostRefresh(
-      Response.json({ error: "too_old" }, { status: 409 }),
-      guard,
-    );
+    return applyHostRefresh(errorResponse(409, "too_old"), guard);
   }
 
   const scoped = tenantDb(tenant.id);
@@ -54,10 +49,7 @@ export async function POST(
       slug: params.slug,
       partyId: frame.partyId,
     });
-    return applyHostRefresh(
-      Response.json({ error: "party_missing" }, { status: 409 }),
-      guard,
-    );
+    return applyHostRefresh(errorResponse(409, "party_missing"), guard);
   }
 
   try {

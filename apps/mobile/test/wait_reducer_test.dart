@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pila/api/models.dart';
-import 'package:pila/state/wait_reducer.dart';
+import 'package:pila/domain/wait/wait_reducer.dart';
 
 WaitReducerState _empty() => const WaitReducerState();
 

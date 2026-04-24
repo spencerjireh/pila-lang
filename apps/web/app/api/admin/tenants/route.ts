@@ -1,17 +1,19 @@
 import { NextRequest } from "next/server";
 import { desc } from "drizzle-orm";
 
-import { requireAdminApi } from "@pila/shared/auth/admin-guard";
+import { requireAdminApi } from "@pila/shared/domain/auth/admin-guard";
 import { getDb } from "@pila/db/client";
 import { tenants } from "@pila/db/schema";
-import { validateSlug } from "@pila/shared/validators/slug";
+import { validateSlug } from "@pila/shared/primitives/validators/slug";
 import {
   generateInitialPassword,
   hashPassword,
-} from "@pila/shared/auth/password";
-import { isValidTimezone } from "@pila/shared/timezones";
-import { createTenantSchema } from "@pila/shared/admin/tenant-schema";
-import { log } from "@pila/shared/log/logger";
+} from "@pila/shared/domain/auth/password";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { parseJsonBody } from "@pila/shared/infra/http/parse-json-body";
+import { isValidTimezone } from "@pila/shared/primitives/timezones";
+import { createTenantSchema } from "@pila/shared/domain/admin/tenant-schema";
+import { log } from "@pila/shared/infra/log/logger";
 
 export async function GET() {
   const guard = await requireAdminApi();
@@ -38,25 +40,16 @@ export async function POST(req: NextRequest) {
   const guard = await requireAdminApi();
   if (!guard.ok) return guard.response;
 
-  const body = await req.json().catch(() => null);
-  const parsed = createTenantSchema.safeParse(body);
-  if (!parsed.success) {
-    return Response.json(
-      { error: "invalid_body", issues: parsed.error.flatten() },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseJsonBody(req, createTenantSchema);
+  if (!parsed.ok) return parsed.response;
   const { name, slug, timezone } = parsed.data;
 
   const slugCheck = validateSlug(slug);
   if (!slugCheck.ok) {
-    return Response.json(
-      { error: "invalid_slug", reason: slugCheck.reason },
-      { status: 400 },
-    );
+    return errorResponse(400, "invalid_slug", { reason: slugCheck.reason });
   }
   if (!isValidTimezone(timezone)) {
-    return Response.json({ error: "invalid_timezone" }, { status: 400 });
+    return errorResponse(400, "invalid_timezone");
   }
 
   const initialPassword = generateInitialPassword();
@@ -80,11 +73,9 @@ export async function POST(req: NextRequest) {
     log.info("admin.tenant.created", { tenantId: row!.id, slug });
     return Response.json({ tenant: row, initialPassword }, { status: 201 });
   } catch (err: unknown) {
-    if (isUniqueViolation(err)) {
-      return Response.json({ error: "slug_taken" }, { status: 409 });
-    }
+    if (isUniqueViolation(err)) return errorResponse(409, "slug_taken");
     log.error("admin.tenant.create.failed", { err: String(err) });
-    return Response.json({ error: "internal" }, { status: 500 });
+    return errorResponse(500, "internal");
   }
 }
 

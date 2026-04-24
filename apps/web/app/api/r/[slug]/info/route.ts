@@ -1,10 +1,11 @@
 import { NextRequest } from "next/server";
 
-import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
-import { log } from "@pila/shared/log/logger";
-import { verifyQrToken } from "@pila/shared/qr/token";
-import { RateLimitError, consume } from "@pila/shared/ratelimit";
-import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
+import { clientIp } from "@pila/shared/infra/http/client-ip";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { log } from "@pila/shared/infra/log/logger";
+import { verifyQrToken } from "@pila/shared/primitives/qr/token";
+import { enforceRateLimit } from "@pila/shared/infra/ratelimit/enforce";
+import { loadTenantBySlug } from "@pila/shared/domain/tenants/lookup";
 
 export const dynamic = "force-dynamic";
 
@@ -27,15 +28,10 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { slug: string } },
 ) {
-  const ip = clientIp(req.headers);
-  try {
-    await consume("displayRequestsPerIp", ip);
-  } catch (err) {
-    if (err instanceof RateLimitError) {
-      return rateLimitResponse(err.retryAfterSec);
-    }
-    throw err;
-  }
+  const limited = await enforceRateLimit([
+    { bucket: "displayRequestsPerIp", key: clientIp(req.headers) },
+  ]);
+  if (limited) return limited;
 
   let lookup;
   try {
@@ -45,11 +41,9 @@ export async function GET(
       slug: params.slug,
       err: String(err),
     });
-    return Response.json({ error: "internal" }, { status: 500 });
+    return errorResponse(500, "internal");
   }
-  if (!lookup.ok) {
-    return Response.json({ error: "not_found" }, { status: 404 });
-  }
+  if (!lookup.ok) return errorResponse(404, "not_found");
   const tenant = lookup.tenant;
 
   const rawToken = req.nextUrl.searchParams.get("t");

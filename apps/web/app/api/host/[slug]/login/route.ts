@@ -4,13 +4,15 @@ import { z } from "zod";
 import {
   hostCookieAttrs,
   HOST_COOKIE_NAME,
-} from "@pila/shared/auth/host-session";
-import { signHostToken } from "@pila/shared/auth/host-token";
-import { verifyPassword } from "@pila/shared/auth/password";
-import { clientIp, rateLimitResponse } from "@pila/shared/http/client-ip";
-import { log } from "@pila/shared/log/logger";
-import { RateLimitError, consume } from "@pila/shared/ratelimit";
-import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
+} from "@pila/shared/domain/auth/host-session";
+import { signHostToken } from "@pila/shared/domain/auth/host-token";
+import { verifyPassword } from "@pila/shared/domain/auth/password";
+import { clientIp } from "@pila/shared/infra/http/client-ip";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { parseJsonBody } from "@pila/shared/infra/http/parse-json-body";
+import { log } from "@pila/shared/infra/log/logger";
+import { enforceRateLimit } from "@pila/shared/infra/ratelimit/enforce";
+import { loadTenantBySlug } from "@pila/shared/domain/tenants/lookup";
 
 export const dynamic = "force-dynamic";
 
@@ -22,30 +24,17 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { slug: string } },
 ) {
-  const contentType = req.headers.get("content-type") ?? "";
-  if (!contentType.toLowerCase().startsWith("application/json")) {
-    return Response.json({ error: "bad_content_type" }, { status: 415 });
-  }
+  const limited = await enforceRateLimit([
+    { bucket: "loginPerIp", key: clientIp(req.headers) },
+    { bucket: "loginPerSlug", key: params.slug },
+  ]);
+  if (limited) return limited;
 
-  const ip = clientIp(req.headers);
-  try {
-    await consume("loginPerIp", ip);
-    await consume("loginPerSlug", params.slug);
-  } catch (err) {
-    if (err instanceof RateLimitError)
-      return rateLimitResponse(err.retryAfterSec);
-    throw err;
-  }
-
-  const body = await req.json().catch(() => null);
-  const parsed = loginSchema.safeParse(body);
-  if (!parsed.success) {
-    return Response.json({ error: "invalid_body" }, { status: 400 });
-  }
+  const parsed = await parseJsonBody(req, loginSchema);
+  if (!parsed.ok) return parsed.response;
 
   const lookup = await loadTenantBySlug(params.slug);
-  if (!lookup.ok)
-    return Response.json({ error: "invalid_credentials" }, { status: 401 });
+  if (!lookup.ok) return errorResponse(401, "invalid_credentials");
   const tenant = lookup.tenant;
 
   const match = await verifyPassword(
@@ -54,7 +43,7 @@ export async function POST(
   );
   if (!match) {
     log.info("host.login.rejected", { slug: tenant.slug });
-    return Response.json({ error: "invalid_credentials" }, { status: 401 });
+    return errorResponse(401, "invalid_credentials");
   }
 
   const token = await signHostToken({

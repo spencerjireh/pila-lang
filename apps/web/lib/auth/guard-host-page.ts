@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 import {
   guardHostRequest,
   type HostGuardDecision,
-} from "@pila/shared/auth/host-guard";
+} from "@pila/shared/domain/auth/host-guard";
 
 // Server-component pages can't mutate response headers, so refreshedCookie /
 // refreshedBearer on the decision are ignored here — the SSE stream the page

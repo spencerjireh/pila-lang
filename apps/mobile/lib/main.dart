@@ -4,6 +4,7 @@ import 'package:timezone/data/latest.dart' as tzdata;
 
 import 'app.dart';
 import 'deeplink/link_bootstrap.dart';
+import 'persistence/database.dart';
 import 'persistence/display_pairing_store.dart';
 import 'persistence/host_snapshot_store.dart';
 import 'persistence/party_store.dart';

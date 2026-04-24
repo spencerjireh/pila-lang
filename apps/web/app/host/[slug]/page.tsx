@@ -2,9 +2,9 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 import { TenantHeader } from "@/components/tenant-branding";
-import { HOST_COOKIE_NAME } from "@pila/shared/auth/host-session";
-import { verifyHostToken } from "@pila/shared/auth/host-token";
-import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
+import { HOST_COOKIE_NAME } from "@pila/shared/domain/auth/host-session";
+import { verifyHostToken } from "@pila/shared/domain/auth/host-token";
+import { loadTenantBySlug } from "@pila/shared/domain/tenants/lookup";
 
 import { LoginForm } from "./_components/login-form";
 

@@ -1,5 +1,5 @@
-import { requireTestEnv } from "@pila/shared/test-api/guard";
-import { testSpyNotifier } from "@pila/shared/notifier";
+import { requireTestEnv } from "@pila/shared/primitives/test-api/guard";
+import { testSpyNotifier } from "@pila/shared/domain/notifier";
 
 export const dynamic = "force-dynamic";
 

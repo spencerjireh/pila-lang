@@ -4,16 +4,18 @@ import {
   guardHostRequest,
   HOST_REFRESH_HEADER,
   hostGuardErrorResponse,
-} from "@pila/shared/auth/host-guard";
+} from "@pila/shared/domain/auth/host-guard";
 import {
   hostCookieAttrs,
   HOST_COOKIE_NAME,
-} from "@pila/shared/auth/host-session";
-import { signHostToken } from "@pila/shared/auth/host-token";
-import { hashPassword } from "@pila/shared/auth/password";
-import { rotateHostPassword } from "@pila/shared/host/settings-actions";
-import { log } from "@pila/shared/log/logger";
-import { passwordChangeSchema } from "@pila/shared/validators/password";
+} from "@pila/shared/domain/auth/host-session";
+import { signHostToken } from "@pila/shared/domain/auth/host-token";
+import { hashPassword } from "@pila/shared/domain/auth/password";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { parseJsonBody } from "@pila/shared/infra/http/parse-json-body";
+import { rotateHostPassword } from "@pila/shared/domain/host/settings-actions";
+import { log } from "@pila/shared/infra/log/logger";
+import { passwordChangeSchema } from "@pila/shared/primitives/validators/password";
 
 export const dynamic = "force-dynamic";
 
@@ -24,19 +26,8 @@ export async function POST(
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) return hostGuardErrorResponse(guard);
 
-  const contentType = req.headers.get("content-type") ?? "";
-  if (!contentType.toLowerCase().startsWith("application/json")) {
-    return Response.json({ error: "bad_content_type" }, { status: 415 });
-  }
-
-  const body = await req.json().catch(() => null);
-  const parsed = passwordChangeSchema.safeParse(body);
-  if (!parsed.success) {
-    return Response.json(
-      { error: "invalid_body", issues: parsed.error.flatten() },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseJsonBody(req, passwordChangeSchema);
+  if (!parsed.ok) return parsed.response;
 
   let newHash: string | undefined;
   if (parsed.data.action === "rotate") {
@@ -44,7 +35,7 @@ export async function POST(
   }
 
   const result = await rotateHostPassword(guard.tenant.id, { newHash });
-  if (!result) return Response.json({ error: "not_found" }, { status: 404 });
+  if (!result) return errorResponse(404, "not_found");
 
   const token = await signHostToken({
     slug: guard.tenant.slug,

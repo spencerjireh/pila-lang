@@ -1,9 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 
 import { guardHostPage } from "@/lib/auth/guard-host-page";
-import { loadGuestHistory } from "@pila/shared/parties/guest-history";
+import { loadGuestHistory } from "@pila/shared/domain/parties/guest-history";
 
-import { GuestsView } from "./guests-view";
+import { GuestsView } from "./_components/guests-view";
 
 export const dynamic = "force-dynamic";
 

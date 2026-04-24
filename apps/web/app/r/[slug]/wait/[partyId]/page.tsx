@@ -1,13 +1,13 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
-import { GUEST_COOKIE_NAME } from "@pila/shared/auth/guest-session";
+import { GUEST_COOKIE_NAME } from "@pila/shared/domain/auth/guest-session";
 import type { PartyStatus } from "@pila/db/schema";
-import { findPartyById } from "@pila/shared/parties/lookup";
-import { computePosition } from "@pila/shared/parties/position";
-import { loadTenantBySlug } from "@pila/shared/tenants/display-token";
+import { findPartyById } from "@pila/shared/domain/parties/lookup";
+import { computePosition } from "@pila/shared/domain/parties/position";
+import { loadTenantBySlug } from "@pila/shared/domain/tenants/lookup";
 
-import { WaitView } from "./wait-view";
+import { WaitView } from "./_components/wait-view";
 
 export const dynamic = "force-dynamic";
 

@@ -4,19 +4,20 @@ import {
   applyHostRefresh,
   guardHostRequest,
   hostGuardErrorResponse,
-} from "@pila/shared/auth/host-guard";
-import { swapLogo } from "@pila/shared/host/settings-actions";
-import { log } from "@pila/shared/log/logger";
+} from "@pila/shared/domain/auth/host-guard";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { swapLogo } from "@pila/shared/domain/host/settings-actions";
+import { log } from "@pila/shared/infra/log/logger";
 import {
   MAX_UPLOAD_BYTES,
   processLogoUpload,
-} from "@pila/shared/storage/logo-pipeline";
+} from "@pila/shared/infra/storage/logo-pipeline";
 import {
   deleteLogo,
   objectKeyFromUrl,
   publicUrlFor,
   putLogo,
-} from "@pila/shared/storage/s3-client";
+} from "@pila/shared/infra/storage/s3-client";
 
 export const dynamic = "force-dynamic";
 
@@ -31,11 +32,9 @@ export async function POST(
 
   if (contentType.startsWith("application/json")) {
     const body = await req.json().catch(() => null);
-    if (!body || body.clear !== true) {
-      return Response.json({ error: "invalid_body" }, { status: 400 });
-    }
+    if (!body || body.clear !== true) return errorResponse(400, "invalid_body");
     const swap = await swapLogo(guard.tenant.id, guard.tenant.slug, null);
-    if (!swap) return Response.json({ error: "not_found" }, { status: 404 });
+    if (!swap) return errorResponse(404, "not_found");
     await safeDelete(swap.oldLogoUrl);
     log.info("host.settings.logo.cleared", { slug: params.slug });
     return applyHostRefresh(
@@ -45,23 +44,19 @@ export async function POST(
   }
 
   if (!contentType.startsWith("multipart/form-data")) {
-    return Response.json({ error: "bad_content_type" }, { status: 415 });
+    return errorResponse(415, "bad_content_type");
   }
 
   let form: FormData;
   try {
     form = await req.formData();
   } catch {
-    return Response.json({ error: "invalid_form" }, { status: 400 });
+    return errorResponse(400, "invalid_form");
   }
 
   const file = form.get("file");
-  if (!(file instanceof File)) {
-    return Response.json({ error: "missing_file" }, { status: 400 });
-  }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    return Response.json({ error: "too_large" }, { status: 413 });
-  }
+  if (!(file instanceof File)) return errorResponse(400, "missing_file");
+  if (file.size > MAX_UPLOAD_BYTES) return errorResponse(413, "too_large");
 
   const arrayBuf = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuf);
@@ -73,7 +68,7 @@ export async function POST(
         : processed.reason === "mime"
           ? 415
           : 400;
-    return Response.json({ error: errorFor(processed.reason) }, { status });
+    return errorResponse(status, errorFor(processed.reason));
   }
 
   try {
@@ -83,14 +78,14 @@ export async function POST(
       slug: params.slug,
       err: String(err),
     });
-    return Response.json({ error: "storage_failed" }, { status: 502 });
+    return errorResponse(502, "storage_failed");
   }
 
   const newUrl = publicUrlFor(processed.key);
   const swap = await swapLogo(guard.tenant.id, guard.tenant.slug, newUrl);
   if (!swap) {
     await safeDelete(newUrl);
-    return Response.json({ error: "not_found" }, { status: 404 });
+    return errorResponse(404, "not_found");
   }
 
   await safeDelete(swap.oldLogoUrl);

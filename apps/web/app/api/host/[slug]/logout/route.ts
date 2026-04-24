@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { HOST_COOKIE_NAME } from "@pila/shared/auth/host-session";
+import { HOST_COOKIE_NAME } from "@pila/shared/domain/auth/host-session";
 
 export const dynamic = "force-dynamic";
 

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { pickForeground } from "@pila/shared/validators/contrast";
+import { pickForeground } from "@pila/shared/primitives/validators/contrast";
 
 export function tenantInitials(name: string): string {
   const words = name.trim().split(/\s+/u).filter(Boolean);

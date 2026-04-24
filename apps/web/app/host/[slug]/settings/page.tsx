@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { guardHostPage } from "@/lib/auth/guard-host-page";
 
-import { SettingsView } from "./settings-view";
+import { SettingsView } from "./_components/settings-view";
 
 export const dynamic = "force-dynamic";
 

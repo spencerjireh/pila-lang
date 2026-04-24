@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../api/host_models.dart';
-import 'party_store.dart';
+import 'database.dart';
 
 class StoredHostSnapshot {
   const StoredHostSnapshot({required this.snapshot, required this.updatedAt});

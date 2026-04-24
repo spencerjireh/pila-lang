@@ -5,10 +5,12 @@ import {
   applyHostRefresh,
   guardHostRequest,
   hostGuardErrorResponse,
-} from "@pila/shared/auth/host-guard";
-import { updateTenantBranding } from "@pila/shared/host/settings-actions";
-import { log } from "@pila/shared/log/logger";
-import { validateAccentColor } from "@pila/shared/validators/contrast";
+} from "@pila/shared/domain/auth/host-guard";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { parseJsonBody } from "@pila/shared/infra/http/parse-json-body";
+import { updateTenantBranding } from "@pila/shared/domain/host/settings-actions";
+import { log } from "@pila/shared/infra/log/logger";
+import { validateAccentColor } from "@pila/shared/primitives/validators/contrast";
 
 export const dynamic = "force-dynamic";
 
@@ -26,32 +28,18 @@ export async function PATCH(
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) return hostGuardErrorResponse(guard);
 
-  const contentType = req.headers.get("content-type") ?? "";
-  if (!contentType.toLowerCase().startsWith("application/json")) {
-    return Response.json({ error: "bad_content_type" }, { status: 415 });
-  }
-
-  const body = await req.json().catch(() => null);
-  const parsed = generalSchema.safeParse(body);
-  if (!parsed.success) {
-    return Response.json(
-      { error: "invalid_body", issues: parsed.error.flatten() },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseJsonBody(req, generalSchema);
+  if (!parsed.ok) return parsed.response;
   const patch = parsed.data;
 
-  if (Object.keys(patch).length === 0) {
-    return Response.json({ error: "no_fields" }, { status: 400 });
-  }
+  if (Object.keys(patch).length === 0) return errorResponse(400, "no_fields");
 
   if (patch.accentColor !== undefined) {
     const check = validateAccentColor(patch.accentColor);
     if (!check.ok) {
-      return Response.json(
-        { error: "invalid_accent_color", reason: check.reason },
-        { status: 422 },
-      );
+      return errorResponse(422, "invalid_accent_color", {
+        reason: check.reason,
+      });
     }
   }
 
@@ -60,7 +48,7 @@ export async function PATCH(
     guard.tenant.slug,
     patch,
   );
-  if (!row) return Response.json({ error: "not_found" }, { status: 404 });
+  if (!row) return errorResponse(404, "not_found");
 
   log.info("host.settings.general.updated", {
     slug: params.slug,

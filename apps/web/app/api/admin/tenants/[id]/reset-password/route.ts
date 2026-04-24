@@ -1,14 +1,15 @@
 import { NextRequest } from "next/server";
 import { eq, sql } from "drizzle-orm";
 
-import { requireAdminApi } from "@pila/shared/auth/admin-guard";
+import { requireAdminApi } from "@pila/shared/domain/auth/admin-guard";
 import { getDb } from "@pila/db/client";
 import { tenants } from "@pila/db/schema";
 import {
   generateInitialPassword,
   hashPassword,
-} from "@pila/shared/auth/password";
-import { log } from "@pila/shared/log/logger";
+} from "@pila/shared/domain/auth/password";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { log } from "@pila/shared/infra/log/logger";
 
 type Params = { params: { id: string } };
 
@@ -33,7 +34,7 @@ export async function POST(_req: NextRequest, ctx: Params) {
       hostPasswordVersion: tenants.hostPasswordVersion,
     });
 
-  if (!row) return Response.json({ error: "not_found" }, { status: 404 });
+  if (!row) return errorResponse(404, "not_found");
 
   log.info("admin.tenant.password_reset", {
     tenantId: id,

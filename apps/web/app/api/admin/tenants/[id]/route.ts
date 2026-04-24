@@ -1,19 +1,21 @@
 import { NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 
-import { requireAdminApi } from "@pila/shared/auth/admin-guard";
+import { requireAdminApi } from "@pila/shared/domain/auth/admin-guard";
 import { getDb } from "@pila/db/client";
 import { tenants } from "@pila/db/schema";
-import { validateAccentColor } from "@pila/shared/validators/contrast";
-import { isValidTimezone } from "@pila/shared/timezones";
-import { updateTenantSchema } from "@pila/shared/admin/tenant-schema";
-import { hardDeleteTenant } from "@pila/shared/admin/delete-tenant";
+import { validateAccentColor } from "@pila/shared/primitives/validators/contrast";
+import { errorResponse } from "@pila/shared/infra/http/error-response";
+import { parseJsonBody } from "@pila/shared/infra/http/parse-json-body";
+import { isValidTimezone } from "@pila/shared/primitives/timezones";
+import { updateTenantSchema } from "@pila/shared/domain/admin/tenant-schema";
+import { hardDeleteTenant } from "@pila/shared/domain/admin/delete-tenant";
 import {
   publish,
   channelForTenantQueue,
   channelForParty,
-} from "@pila/shared/redis/pubsub";
-import { log } from "@pila/shared/log/logger";
+} from "@pila/shared/infra/redis/pubsub";
+import { log } from "@pila/shared/infra/log/logger";
 
 type Params = { params: { id: string } };
 
@@ -39,7 +41,7 @@ export async function GET(_req: NextRequest, ctx: Params) {
     .from(tenants)
     .where(eq(tenants.id, id))
     .limit(1);
-  if (!row) return Response.json({ error: "not_found" }, { status: 404 });
+  if (!row) return errorResponse(404, "not_found");
   return Response.json({ tenant: row });
 }
 
@@ -48,30 +50,23 @@ export async function PATCH(req: NextRequest, ctx: Params) {
   if (!guard.ok) return guard.response;
   const { id } = ctx.params;
 
-  const body = await req.json().catch(() => null);
-  const parsed = updateTenantSchema.safeParse(body);
-  if (!parsed.success) {
-    return Response.json(
-      { error: "invalid_body", issues: parsed.error.flatten() },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseJsonBody(req, updateTenantSchema);
+  if (!parsed.ok) return parsed.response;
   const patch = parsed.data;
 
   if (patch.accentColor !== undefined) {
     const check = validateAccentColor(patch.accentColor);
     if (!check.ok) {
-      return Response.json(
-        { error: "invalid_accent_color", reason: check.reason },
-        { status: 422 },
-      );
+      return errorResponse(422, "invalid_accent_color", {
+        reason: check.reason,
+      });
     }
   }
   if (patch.timezone !== undefined && !isValidTimezone(patch.timezone)) {
-    return Response.json({ error: "invalid_timezone" }, { status: 400 });
+    return errorResponse(400, "invalid_timezone");
   }
   if (Object.keys(patch).length === 0) {
-    return Response.json({ error: "no_fields" }, { status: 400 });
+    return errorResponse(400, "no_fields");
   }
 
   const [existing] = await getDb()
@@ -79,14 +74,14 @@ export async function PATCH(req: NextRequest, ctx: Params) {
     .from(tenants)
     .where(eq(tenants.id, id))
     .limit(1);
-  if (!existing) return Response.json({ error: "not_found" }, { status: 404 });
+  if (!existing) return errorResponse(404, "not_found");
 
   const [row] = await getDb()
     .update(tenants)
     .set(patch)
     .where(eq(tenants.id, id))
     .returning(TENANT_COLUMNS);
-  if (!row) return Response.json({ error: "not_found" }, { status: 404 });
+  if (!row) return errorResponse(404, "not_found");
 
   if (patch.isOpen !== undefined && patch.isOpen !== existing.isOpen) {
     await publish(channelForTenantQueue(existing.slug), {
@@ -108,9 +103,8 @@ export async function DELETE(_req: NextRequest, ctx: Params) {
 
   const result = await hardDeleteTenant(id);
   if (!result.ok) {
-    if (result.reason === "not_found")
-      return Response.json({ error: "not_found" }, { status: 404 });
-    return Response.json({ error: "internal" }, { status: 500 });
+    if (result.reason === "not_found") return errorResponse(404, "not_found");
+    return errorResponse(500, "internal");
   }
 
   await publish(channelForTenantQueue(result.slug), { type: "tenant:closed" });

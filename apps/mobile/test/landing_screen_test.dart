@@ -6,7 +6,7 @@ import 'package:pila/api/host_models.dart';
 import 'package:pila/api/models.dart';
 import 'package:pila/persistence/host_snapshot_store.dart';
 import 'package:pila/persistence/party_store.dart';
-import 'package:pila/screens/landing_screen.dart';
+import 'package:pila/screens/entry/landing_screen.dart';
 import 'package:pila/state/guest_providers.dart';
 import 'package:pila/state/host_providers.dart';
 

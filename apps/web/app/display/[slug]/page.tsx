@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 
-import { env } from "@pila/shared/config/env";
-import { resolveDisplayToken } from "@pila/shared/tenants/display-token";
-import { DisplayClient } from "./display-client";
+import { env } from "@pila/shared/primitives/config/env";
+import { resolveDisplayToken } from "@pila/shared/domain/tenants/display-token";
+import { DisplayClient } from "./_components/display-client";
 
 export const dynamic = "force-dynamic";
 

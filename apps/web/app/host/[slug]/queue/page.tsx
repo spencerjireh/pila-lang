@@ -5,9 +5,9 @@ import {
   buildHostSnapshot,
   loadRecentlyResolved,
   loadWaiting,
-} from "@pila/shared/parties/host-stream";
+} from "@pila/shared/domain/parties/host-stream";
 
-import { QueueView } from "./queue-view";
+import { QueueView } from "./_components/queue-view";
 
 export const dynamic = "force-dynamic";
 
