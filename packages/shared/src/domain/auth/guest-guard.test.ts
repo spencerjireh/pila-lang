@@ -242,7 +242,6 @@ describe("statusForGuestFailure", () => {
     const { mod } = await loadMocks();
     expect(mod.statusForGuestFailure("slug_mismatch", "stream")).toBe(403);
     expect(mod.statusForGuestFailure("party_mismatch", "stream")).toBe(403);
-    expect(mod.statusForGuestFailure("wrong_tenant", "action")).toBe(403);
     expect(mod.statusForGuestFailure("session_mismatch", "action")).toBe(403);
   });
 

@@ -97,15 +97,12 @@ export async function performHostAction(
   };
   await pushUndoFrame(tenantId, frame);
 
-  for (const { channel, event } of hostActionPublishPlan({
-    slug,
-    partyId,
-    action,
-    resolvedAt,
-  })) {
-    await publish(channel, event);
-  }
-  await publishPositionUpdates(tenantId);
+  await Promise.all([
+    ...hostActionPublishPlan({ slug, partyId, action, resolvedAt }).map(
+      ({ channel, event }) => publish(channel, event),
+    ),
+    publishPositionUpdates(tenantId),
+  ]);
 
   if (action === "seat") {
     try {

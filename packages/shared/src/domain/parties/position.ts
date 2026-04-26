@@ -40,7 +40,7 @@ export async function computePosition(
 
 export async function publishPositionUpdates(tenantId: string): Promise<void> {
   const ids = await listWaitingIdsInOrder(tenantId);
-  for (const { channel, event } of positionEventsFor(ids)) {
-    await publish(channel, event);
-  }
+  await Promise.all(
+    positionEventsFor(ids).map(({ channel, event }) => publish(channel, event)),
+  );
 }

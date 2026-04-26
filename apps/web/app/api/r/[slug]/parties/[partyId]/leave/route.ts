@@ -21,8 +21,7 @@ export async function POST(
     return errorResponse(status, guard.reason);
   }
 
-  const { tenant, party } = guard;
-  if (party.status !== "waiting") return errorResponse(409, "conflict");
+  const { tenant } = guard;
 
   let result;
   try {
