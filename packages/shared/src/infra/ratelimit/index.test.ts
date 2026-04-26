@@ -52,6 +52,7 @@ describe("ratelimit", () => {
       points: 30,
       durationSec: 60,
     });
+    expect(policy("guestViewPerIp")).toEqual({ points: 120, durationSec: 60 });
     expect(policy("joinPerPhone")).toEqual({ points: 10, durationSec: 3600 });
     expect(policy("joinGlobalPerTenant")).toEqual({
       points: 200,
@@ -61,6 +62,14 @@ describe("ratelimit", () => {
     expect(policy("hostStreamPerIpSlug")).toEqual({
       points: 30,
       durationSec: 60,
+    });
+    expect(policy("hostMutationPerSlug")).toEqual({
+      points: 120,
+      durationSec: 60,
+    });
+    expect(policy("hostPasswordRotatePerSlug")).toEqual({
+      points: 5,
+      durationSec: 3600,
     });
     expect(policy("loginPerIp")).toEqual({ points: 10, durationSec: 3600 });
   });

@@ -8,9 +8,15 @@ import {
 import { errorResponse } from "@pila/shared/infra/http/error-response";
 import { setTenantOpen } from "@pila/shared/domain/host/settings-actions";
 import { log } from "@pila/shared/infra/log/logger";
+import { enforceRateLimit } from "@pila/shared/infra/ratelimit/enforce";
 
 export function hostOpenCloseHandler(isOpen: boolean) {
   return async (req: NextRequest, { params }: { params: { slug: string } }) => {
+    const limited = await enforceRateLimit([
+      { bucket: "hostMutationPerSlug", key: params.slug },
+    ]);
+    if (limited) return limited;
+
     const guard = await guardHostRequest(req, params.slug);
     if (!guard.ok) return hostGuardErrorResponse(guard);
 

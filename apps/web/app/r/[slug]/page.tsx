@@ -34,7 +34,7 @@ export default async function JoinPage({
 }) {
   const ip = clientIp(headers());
   try {
-    await consume("displayRequestsPerIp", ip);
+    await consume("guestViewPerIp", ip);
   } catch (err) {
     if (err instanceof RateLimitError) {
       return <RateLimitedNotice retryAfterSec={err.retryAfterSec} />;

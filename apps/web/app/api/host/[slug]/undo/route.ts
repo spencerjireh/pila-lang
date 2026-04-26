@@ -16,6 +16,7 @@ import {
   isWithinUndoWindow,
   popUndoFrame,
 } from "@pila/shared/domain/parties/undo-store";
+import { enforceRateLimit } from "@pila/shared/infra/ratelimit/enforce";
 import { publish } from "@pila/shared/infra/redis/pubsub";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,11 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { slug: string } },
 ) {
+  const limited = await enforceRateLimit([
+    { bucket: "hostMutationPerSlug", key: params.slug },
+  ]);
+  if (limited) return limited;
+
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) return hostGuardErrorResponse(guard);
   const { tenant } = guard;
@@ -53,13 +59,12 @@ export async function POST(
   }
 
   try {
-    for (const { channel, event } of undoPublishPlan({
-      slug: tenant.slug,
-      party: restored,
-    })) {
-      await publish(channel, event);
-    }
-    await publishPositionUpdates(tenant.id);
+    await Promise.all([
+      ...undoPublishPlan({ slug: tenant.slug, party: restored }).map(
+        ({ channel, event }) => publish(channel, event),
+      ),
+      publishPositionUpdates(tenant.id),
+    ]);
   } catch (err) {
     log.error("host.undo.publish_failed", {
       slug: params.slug,
