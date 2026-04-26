@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { lazy } from "../lazy";
+
 const Schema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -41,10 +43,7 @@ const Schema = z.object({
 
 export type Env = z.infer<typeof Schema>;
 
-let cached: Env | undefined;
-
-export function env(): Env {
-  if (cached) return cached;
+export const env = lazy((): Env => {
   const parsed = Schema.safeParse(process.env);
   if (!parsed.success) {
     const issues = parsed.error.issues
@@ -52,6 +51,5 @@ export function env(): Env {
       .join("\n");
     throw new Error(`Invalid environment configuration:\n${issues}`);
   }
-  cached = parsed.data;
-  return cached;
-}
+  return parsed.data;
+});
