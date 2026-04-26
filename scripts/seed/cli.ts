@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // Seed CLI.
 //
 // Usage:
@@ -52,8 +51,12 @@ function parseArgs(argv: string[]): Args {
   return args;
 }
 
+function out(line: string): void {
+  process.stdout.write(line + "\n");
+}
+
 function printHumanOutput(result: Record<string, unknown>): void {
-  if (result.reset) console.log("Truncated all app tables.");
+  if (result.reset) out("Truncated all app tables.");
   if (result.tenant) {
     const t = result.tenant as {
       slug: string;
@@ -61,32 +64,28 @@ function printHumanOutput(result: Record<string, unknown>): void {
       created: boolean;
       name: string;
     };
-    console.log(
-      `${t.created ? "Created" : "Found"} tenant "${t.slug}" (${t.id})`,
-    );
+    out(`${t.created ? "Created" : "Found"} tenant "${t.slug}" (${t.id})`);
     if (result.initialPassword) {
-      console.log(`  Initial host password: ${result.initialPassword}`);
-      console.log(
-        "  (shown once; use admin reset-password to issue a new one)",
-      );
+      out(`  Initial host password: ${result.initialPassword}`);
+      out("  (shown once; use admin reset-password to issue a new one)");
     } else if (!t.created) {
-      console.log(
+      out(
         "  (existing tenant — password preserved; use admin reset-password if lost)",
       );
     }
     if (result.demoWaiting) {
-      console.log(
+      out(
         `  Demo fixture: ${result.demoWaiting} waiting, ${result.demoHistorical} historical`,
       );
     }
     if (typeof result.waiters === "number") {
-      console.log(
+      out(
         `  Seeded ${result.waiters} waiter${result.waiters === 1 ? "" : "s"}.`,
       );
     }
   }
   if (result.noop) {
-    console.log("Nothing to do — pass --reset or --tenant=<slug>.");
+    out("Nothing to do — pass --reset or --tenant=<slug>.");
   }
 }
 
@@ -128,7 +127,7 @@ export async function main(): Promise<void> {
   }
 
   if (args.json) {
-    console.log(JSON.stringify(result));
+    out(JSON.stringify(result));
   } else {
     printHumanOutput(result);
   }
