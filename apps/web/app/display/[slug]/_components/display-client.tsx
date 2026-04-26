@@ -71,7 +71,10 @@ export function DisplayClient({
 
   const onTenantEvent = useCallback(
     (ev: TenantLiveEvent) => {
-      setTenant((prev) => applyTenantEvent(prev, ev));
+      setTenant((prev) => {
+        const outcome = applyTenantEvent(prev, ev);
+        return outcome.kind === "patched" ? outcome.state : prev;
+      });
       if (ev.type === "tenant:closed") setLiveIsOpen(false);
       if (ev.type === "tenant:opened") {
         setLiveIsOpen(true);
