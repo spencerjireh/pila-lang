@@ -23,14 +23,12 @@ Future<void> main() async {
   final partyStore = SqflitePartyStore.fromDatabase(database);
   final hostSnapshotStore = SqfliteHostSnapshotStore.fromDatabase(database);
   final pairingStore = SqfliteDisplayPairingStore.fromDatabase(database);
-  // Independent cold-start sources — run in parallel so the 2s timeout in
-  // PushNavigator (iOS-Sim hang guard) doesn't add to deep-link wait time.
-  final results = await Future.wait<String?>(<Future<String?>>[
-    LinkBootstrap().initialLocation(),
-    PushNavigator().initialLocation(),
-  ]);
-  final initialLocation = results[0] ??
-      results[1] ??
+  // Cold-start route resolution: deep link first (fastest), then push tap
+  // (bounded by a 2s iOS-Sim hang guard inside PushNavigator), then kiosk
+  // pairing fallback. Sequential so the push timeout only runs when no deep
+  // link was present.
+  final initialLocation = await LinkBootstrap().initialLocation() ??
+      await PushNavigator().initialLocation() ??
       await _kioskInitialLocation(pairingStore);
 
   runApp(
