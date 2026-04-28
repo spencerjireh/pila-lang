@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -50,10 +51,14 @@ class _PilaAppState extends ConsumerState<PilaApp> {
         // Normalize through the same parser used by app_links so the URL
         // resolves to a real route instead of "no routes for location: ...".
         if (state.uri.scheme == 'pilalang') {
-          debugPrint('[smoke] [deeplink] received warm uri=${state.uri}');
+          if (kDebugMode) {
+            debugPrint(
+              '[smoke] [deeplink] received warm path=${state.uri.path}',
+            );
+          }
           final parsed = const DeepLinkParser().parseUri(state.uri);
           final loc = deeplink.deepLinkToLocation(parsed);
-          if (loc != null) {
+          if (kDebugMode && loc != null) {
             debugPrint('[smoke] [deeplink] navigated to $loc');
           }
           return loc;

@@ -42,9 +42,11 @@ class PushNavigator {
     }
     final uri = _extract(msg);
     if (uri == null) return null;
-    debugPrint('[smoke] [push] cold-start tap deeplink=$uri');
+    if (kDebugMode) {
+      debugPrint('[smoke] [push] cold-start tap path=${_redact(uri)}');
+    }
     final loc = deepLinkToLocation(_parser.parse(uri));
-    if (loc != null) {
+    if (kDebugMode && loc != null) {
       debugPrint('[smoke] [push] navigated to $loc');
     }
     return loc;
@@ -55,10 +57,14 @@ class PushNavigator {
     _sub = _client.onMessageOpenedApp.listen((msg) {
       final uri = _extract(msg);
       if (uri == null) return;
-      debugPrint('[smoke] [push] tapped deeplink=$uri');
+      if (kDebugMode) {
+        debugPrint('[smoke] [push] tapped path=${_redact(uri)}');
+      }
       final loc = deepLinkToLocation(_parser.parse(uri));
       if (loc == null) return;
-      debugPrint('[smoke] [push] navigated to $loc');
+      if (kDebugMode) {
+        debugPrint('[smoke] [push] navigated to $loc');
+      }
       router.go(loc);
     });
   }
@@ -74,4 +80,7 @@ class PushNavigator {
     if (raw is! String || raw.isEmpty) return null;
     return raw;
   }
+
+  static String _redact(String raw) =>
+      Uri.tryParse(raw)?.path ?? '<deeplink>';
 }

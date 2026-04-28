@@ -20,9 +20,11 @@ class LinkBootstrap {
   Future<String?> initialLocation() async {
     final initial = await _links.getInitialLink();
     if (initial == null) return null;
-    debugPrint('[smoke] [deeplink] received cold-start uri=$initial');
+    if (kDebugMode) {
+      debugPrint('[smoke] [deeplink] received cold-start path=${initial.path}');
+    }
     final location = deepLinkToLocation(_parser.parseUri(initial));
-    if (location != null) {
+    if (kDebugMode && location != null) {
       debugPrint('[smoke] [deeplink] navigated to $location');
     }
     return location;
