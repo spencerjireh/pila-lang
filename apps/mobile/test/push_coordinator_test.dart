@@ -36,6 +36,9 @@ class _FakePushClient implements PushClient {
   @override
   Stream<RemoteMessage> get onMessageOpenedApp => const Stream<RemoteMessage>.empty();
 
+  @override
+  Future<RemoteMessage?> getInitialMessage() async => null;
+
   Future<void> emitForeground() async {
     _foreground.add(const RemoteMessage());
     await Future<void>.delayed(Duration.zero);

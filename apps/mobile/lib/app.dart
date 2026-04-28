@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'deeplink/link_bootstrap.dart';
+import 'deeplink/parser.dart';
+import 'deeplink/router.dart' as deeplink;
+import 'push/push_navigator.dart';
 import 'screens/display/display_pairing_screen.dart';
 import 'screens/display/display_screen.dart';
 import 'screens/host/host_history_screen.dart';
@@ -27,7 +29,7 @@ class PilaApp extends ConsumerStatefulWidget {
 
 class _PilaAppState extends ConsumerState<PilaApp> {
   late final GoRouter _router;
-  final LinkBootstrap _links = LinkBootstrap();
+  final PushNavigator _pushNav = PushNavigator();
 
   static const Set<String> _hostAuthedSubpaths = <String>{
     'queue',
@@ -43,6 +45,19 @@ class _PilaAppState extends ConsumerState<PilaApp> {
       initialLocation: widget.initialLocation ?? '/',
       refreshListenable: auth,
       redirect: (context, state) {
+        // Native iOS dispatches custom-scheme URIs (pilalang://r/<slug>...)
+        // straight into go_router via the platform RouteInformationProvider.
+        // Normalize through the same parser used by app_links so the URL
+        // resolves to a real route instead of "no routes for location: ...".
+        if (state.uri.scheme == 'pilalang') {
+          debugPrint('[smoke] [deeplink] received warm uri=${state.uri}');
+          final parsed = const DeepLinkParser().parseUri(state.uri);
+          final loc = deeplink.deepLinkToLocation(parsed);
+          if (loc != null) {
+            debugPrint('[smoke] [deeplink] navigated to $loc');
+          }
+          return loc;
+        }
         final loc = state.uri.path;
         final segments = loc.split('/').where((s) => s.isNotEmpty).toList();
         if (segments.isEmpty || segments.first != 'host') return null;
@@ -114,12 +129,12 @@ class _PilaAppState extends ConsumerState<PilaApp> {
         ),
       ],
     );
-    _links.attach(_router);
+    _pushNav.attach(_router);
   }
 
   @override
   void dispose() {
-    _links.dispose();
+    _pushNav.dispose();
     super.dispose();
   }
 

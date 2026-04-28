@@ -33,6 +33,7 @@ class _LandingScreenState extends ConsumerState<LandingScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint('[smoke] [boot] cold launch landing');
     _bootstrap();
   }
 

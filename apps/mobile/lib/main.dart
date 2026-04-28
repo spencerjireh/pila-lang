@@ -9,6 +9,7 @@ import 'persistence/display_pairing_store.dart';
 import 'persistence/host_snapshot_store.dart';
 import 'persistence/party_store.dart';
 import 'push/firebase_bootstrap.dart';
+import 'push/push_navigator.dart';
 import 'screens/display/display_pairing_screen.dart';
 import 'state/guest_providers.dart';
 import 'state/host_providers.dart';
@@ -22,8 +23,14 @@ Future<void> main() async {
   final partyStore = SqflitePartyStore.fromDatabase(database);
   final hostSnapshotStore = SqfliteHostSnapshotStore.fromDatabase(database);
   final pairingStore = SqfliteDisplayPairingStore.fromDatabase(database);
-  final deepLinkLocation = await LinkBootstrap().initialLocation();
-  final initialLocation = deepLinkLocation ??
+  // Independent cold-start sources — run in parallel so the 2s timeout in
+  // PushNavigator (iOS-Sim hang guard) doesn't add to deep-link wait time.
+  final results = await Future.wait<String?>(<Future<String?>>[
+    LinkBootstrap().initialLocation(),
+    PushNavigator().initialLocation(),
+  ]);
+  final initialLocation = results[0] ??
+      results[1] ??
       await _kioskInitialLocation(pairingStore);
 
   runApp(

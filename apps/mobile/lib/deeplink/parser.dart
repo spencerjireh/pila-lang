@@ -49,7 +49,13 @@ class DeepLinkParser {
   }
 
   DeepLink parseUri(Uri uri) {
-    final segments = uri.pathSegments;
+    // Universal Links keep the route in pathSegments (host = pila.example.com).
+    // Custom URL schemes like `pilalang://r/<slug>` put the first route token
+    // in `uri.host` instead. Normalize both shapes here.
+    final isWeb = uri.scheme == 'http' || uri.scheme == 'https';
+    final segments = (!isWeb && uri.host.isNotEmpty)
+        ? <String>[uri.host, ...uri.pathSegments]
+        : uri.pathSegments;
     if (segments.isEmpty) return UnknownLink(uri.toString());
 
     if (segments.first == 'r' && segments.length >= 2) {

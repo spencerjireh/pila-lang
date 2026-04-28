@@ -10,6 +10,8 @@ The name is Tagalog shorthand for "just a line" — a nod to the universal Filip
 
 **Status:** v1 MVP. Pre-pilot. Public for transparency; breaking changes likely until the first paying deployment.
 
+> Run `just` (or `just --list`) to see all available commands.
+
 ## Quickstart
 
 ```bash

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 import '../api/guest_api.dart';
 import '../api/models.dart';
 import 'firebase_bootstrap.dart';
@@ -43,8 +45,12 @@ class PushCoordinator {
       return RegisterOutcome.networkFailure;
     }
     _registeredDeviceToken = token;
-    _foregroundSub ??= _client.onForegroundMessage.listen((_) {
-      // SSE is authoritative for UI state. Drop silently.
+    _foregroundSub ??= _client.onForegroundMessage.listen((msg) {
+      // SSE is authoritative for UI state. Drop silently in release; log in
+      // debug for smoke-flow visibility.
+      if (kDebugMode) {
+        debugPrint('[smoke] [push] foreground (dropped) data=${msg.data}');
+      }
     });
     return RegisterOutcome.registered;
   }
