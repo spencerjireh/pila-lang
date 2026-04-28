@@ -24,13 +24,13 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { slug: string } },
 ) {
+  const guard = await guardHostRequest(req, params.slug);
+  if (!guard.ok) return hostGuardErrorResponse(guard);
+
   const limited = await enforceRateLimit([
     { bucket: "hostPasswordRotatePerSlug", key: params.slug },
   ]);
   if (limited) return limited;
-
-  const guard = await guardHostRequest(req, params.slug);
-  if (!guard.ok) return hostGuardErrorResponse(guard);
 
   const parsed = await parseJsonBody(req, passwordChangeSchema);
   if (!parsed.ok) return parsed.response;
