@@ -128,17 +128,21 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
         case "tenant:opened":
         case "tenant:closed":
         case "tenant:updated": {
-          const outcome = applyTenantEvent(tenantInfo, ev);
-          if (outcome.kind === "reset") {
-            router.refresh();
-          } else {
-            setTenantInfo(outcome.state);
-          }
+          let didReset = false;
+          setTenantInfo((prev) => {
+            const outcome = applyTenantEvent(prev, ev);
+            if (outcome.kind === "reset") {
+              didReset = true;
+              return prev;
+            }
+            return outcome.state;
+          });
+          if (didReset) router.refresh();
           return;
         }
       }
     },
-    [router, tenantInfo],
+    [router],
   );
 
   const onStreamEvent = useCallback(
