@@ -43,3 +43,6 @@ apps/mobile/lib/firebase_options.dart
 .claude/
 .playwright-mcp/
 
+# sim-smoke run output (screenshots, oslog dumps, build logs)
+tmp/sim-smoke/
+

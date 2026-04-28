@@ -1,11 +1,6 @@
-import { and, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 
-import { parties } from "@pila/db/schema";
-import { tenantDb } from "@pila/db/tenant-scoped";
 import { isPartyPhoneConflict, shouldSetWelcomeBack, waitUrlFor } from "./join";
-
-const TENANT = "00000000-0000-0000-0000-000000000001";
 
 describe("shouldSetWelcomeBack", () => {
   it("returns false when phone is missing", () => {
@@ -49,18 +44,12 @@ describe("waitUrlFor", () => {
   });
 });
 
-describe("duplicate-phone pre-check query shape", () => {
-  it("filters by tenant_id, phone, and status='waiting'", () => {
-    const phone = "+14155550100";
-    const q = tenantDb(TENANT).parties.select(
-      and(eq(parties.phone, phone), eq(parties.status, "waiting")),
-    );
-    const { sql, params } = q.toSQL();
-    expect(sql).toMatch(/"parties"\."tenant_id" = \$/);
-    expect(sql).toMatch(/"parties"\."phone" = \$/);
-    expect(sql).toMatch(/"parties"\."status" = \$/);
-    expect(params).toContain(TENANT);
-    expect(params).toContain(phone);
-    expect(params).toContain("waiting");
+describe("duplicate-phone enforcement", () => {
+  // joinQueue removed the pre-insert SELECT and now relies on the partial
+  // unique index idx_parties_one_waiting_per_phone (schema.ts) plus the
+  // 23505 catch in joinQueue. The pre-check was a redundant round-trip that
+  // could not close the race the unique index closes.
+  it("isPartyPhoneConflict still maps 23505 → already_waiting", () => {
+    expect(isPartyPhoneConflict({ code: "23505" })).toBe(true);
   });
 });

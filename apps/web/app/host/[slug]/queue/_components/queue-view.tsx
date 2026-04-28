@@ -125,13 +125,21 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
           });
           return;
         case "tenant:reset":
-          router.refresh();
-          return;
         case "tenant:opened":
         case "tenant:closed":
-        case "tenant:updated":
-          setTenantInfo((info) => applyTenantEvent(info, ev));
+        case "tenant:updated": {
+          let didReset = false;
+          setTenantInfo((prev) => {
+            const outcome = applyTenantEvent(prev, ev);
+            if (outcome.kind === "reset") {
+              didReset = true;
+              return prev;
+            }
+            return outcome.state;
+          });
+          if (didReset) router.refresh();
           return;
+        }
       }
     },
     [router],

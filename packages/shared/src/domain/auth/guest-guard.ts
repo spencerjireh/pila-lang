@@ -17,7 +17,6 @@ export type GuestGuardReason =
   | "slug_mismatch"
   | "party_mismatch"
   | "party_not_found"
-  | "wrong_tenant"
   | "session_mismatch";
 
 export type GuestGuardOk = {
@@ -62,9 +61,6 @@ export async function guardGuestRequest(
 
   const party = await findPartyById(tenant.id, partyId);
   if (!party) return { ok: false, reason: "party_not_found" };
-  if (party.tenantId !== tenant.id) {
-    return { ok: false, reason: "wrong_tenant" };
-  }
 
   if (source === "cookie" && party.sessionToken !== cookie) {
     return { ok: false, reason: "session_mismatch" };
@@ -87,7 +83,6 @@ export function statusForGuestFailure(
       return 404;
     case "slug_mismatch":
     case "party_mismatch":
-    case "wrong_tenant":
     case "session_mismatch":
       return 403;
     case "party_not_found":

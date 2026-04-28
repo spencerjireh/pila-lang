@@ -36,6 +36,7 @@ export function sseStream(options: SseStreamOptions): Response {
   const abort = new AbortController();
   let heartbeat: ReturnType<typeof setInterval> | undefined;
   let bufferedBeforeSnapshot: SseEvent[] | null = [];
+  let handle: SseHandle | null = null;
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -47,7 +48,7 @@ export function sseStream(options: SseStreamOptions): Response {
         }
       };
 
-      const handle: SseHandle = {
+      const local: SseHandle = {
         signal: abort.signal,
         send(event) {
           if (abort.signal.aborted) return;
@@ -67,9 +68,10 @@ export function sseStream(options: SseStreamOptions): Response {
           } catch {
             // already closed
           }
-          void options.onClose?.(handle);
+          void options.onClose?.(local);
         },
       };
+      handle = local;
 
       heartbeat = setInterval(() => {
         if (abort.signal.aborted) return;
@@ -77,8 +79,8 @@ export function sseStream(options: SseStreamOptions): Response {
       }, HEARTBEAT_INTERVAL_MS);
 
       try {
-        await options.onSubscribe(handle);
-        const snap = await options.snapshot(handle);
+        await options.onSubscribe(local);
+        const snap = await options.snapshot(local);
         enqueue(formatSse(snap));
         const buffered = bufferedBeforeSnapshot ?? [];
         bufferedBeforeSnapshot = null;
@@ -92,18 +94,14 @@ export function sseStream(options: SseStreamOptions): Response {
             },
           }),
         );
-        handle.close();
+        local.close();
       }
     },
 
     cancel() {
       abort.abort();
       if (heartbeat) clearInterval(heartbeat);
-      void options.onClose?.({
-        signal: abort.signal,
-        send: () => {},
-        close: () => {},
-      });
+      if (handle) void options.onClose?.(handle);
     },
   });
 

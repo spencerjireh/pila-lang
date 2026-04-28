@@ -10,6 +10,7 @@ import { errorResponse } from "@pila/shared/infra/http/error-response";
 import { parseJsonBody } from "@pila/shared/infra/http/parse-json-body";
 import { updateTenantBranding } from "@pila/shared/domain/host/settings-actions";
 import { log } from "@pila/shared/infra/log/logger";
+import { enforceRateLimit } from "@pila/shared/infra/ratelimit/enforce";
 import { validateAccentColor } from "@pila/shared/primitives/validators/contrast";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,11 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { slug: string } },
 ) {
+  const limited = await enforceRateLimit([
+    { bucket: "hostMutationPerSlug", key: params.slug },
+  ]);
+  if (limited) return limited;
+
   const guard = await guardHostRequest(req, params.slug);
   if (!guard.ok) return hostGuardErrorResponse(guard);
 

@@ -9,6 +9,7 @@ import 'persistence/display_pairing_store.dart';
 import 'persistence/host_snapshot_store.dart';
 import 'persistence/party_store.dart';
 import 'push/firebase_bootstrap.dart';
+import 'push/push_navigator.dart';
 import 'screens/display/display_pairing_screen.dart';
 import 'state/guest_providers.dart';
 import 'state/host_providers.dart';
@@ -22,8 +23,12 @@ Future<void> main() async {
   final partyStore = SqflitePartyStore.fromDatabase(database);
   final hostSnapshotStore = SqfliteHostSnapshotStore.fromDatabase(database);
   final pairingStore = SqfliteDisplayPairingStore.fromDatabase(database);
-  final deepLinkLocation = await LinkBootstrap().initialLocation();
-  final initialLocation = deepLinkLocation ??
+  // Cold-start route resolution: deep link first (fastest), then push tap
+  // (bounded by a 2s iOS-Sim hang guard inside PushNavigator), then kiosk
+  // pairing fallback. Sequential so the push timeout only runs when no deep
+  // link was present.
+  final initialLocation = await LinkBootstrap().initialLocation() ??
+      await PushNavigator().initialLocation() ??
       await _kioskInitialLocation(pairingStore);
 
   runApp(

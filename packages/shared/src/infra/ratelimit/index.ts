@@ -18,11 +18,14 @@ export class RateLimitError extends Error {
 
 export type LimiterName =
   | "displayRequestsPerIp"
+  | "guestViewPerIp"
   | "joinPerPhone"
   | "joinPerIp"
   | "joinGlobalPerTenant"
   | "guestStreamPerIp"
   | "hostStreamPerIpSlug"
+  | "hostMutationPerSlug"
+  | "hostPasswordRotatePerSlug"
   | "loginPerIp"
   | "loginPerSlug"
   | "hostTokenPerIp"
@@ -37,11 +40,14 @@ interface Policy {
 
 const POLICIES: Record<LimiterName, Policy> = {
   displayRequestsPerIp: { points: 30, durationSec: 60 },
+  guestViewPerIp: { points: 120, durationSec: 60 },
   joinPerPhone: { points: 10, durationSec: 60 * 60 },
   joinPerIp: { points: 10, durationSec: 60 * 60 },
   joinGlobalPerTenant: { points: 200, durationSec: 60 * 60 },
   guestStreamPerIp: { points: 10, durationSec: 60 },
   hostStreamPerIpSlug: { points: 30, durationSec: 60 },
+  hostMutationPerSlug: { points: 120, durationSec: 60 },
+  hostPasswordRotatePerSlug: { points: 5, durationSec: 60 * 60 },
   loginPerIp: { points: 10, durationSec: 60 * 60 },
   loginPerSlug: { points: 20, durationSec: 60 * 60 },
   hostTokenPerIp: { points: 10, durationSec: 60 * 60 },

@@ -101,7 +101,10 @@ export function WaitView({
       if (term) setTerminal(term);
       return;
     }
-    setTenant((prev) => applyTenantEvent(prev, ev));
+    setTenant((prev) => {
+      const outcome = applyTenantEvent(prev, ev);
+      return outcome.kind === "patched" ? outcome.state : prev;
+    });
   }, []);
   const { reconnecting, close: closeStream } = useLiveStream<GuestStreamEvent>({
     url: `/api/r/${encodeURIComponent(slug)}/parties/${encodeURIComponent(partyId)}/stream`,

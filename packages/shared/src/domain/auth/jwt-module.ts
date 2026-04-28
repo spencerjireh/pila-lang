@@ -86,13 +86,19 @@ export function createJwtModule<
       return { refreshed: false, claims };
     }
     const extras = config.toExtras(claims);
+    const nowSec = Math.floor(nowMs / 1000);
     const fresh = await sign(extras, {
       jti: claims.jti as string,
       now: nowMs,
     });
-    const verified = await verify(fresh);
-    if (!verified.ok) return null;
-    return { refreshed: true, token: fresh, claims: verified.claims };
+    const refreshedClaims = {
+      ...extras,
+      jti: claims.jti,
+      iat: nowSec,
+      exp: nowSec + config.ttlSeconds,
+    } as unknown as C;
+    if (!config.validate(refreshedClaims)) return null;
+    return { refreshed: true, token: fresh, claims: refreshedClaims };
   }
 
   return {

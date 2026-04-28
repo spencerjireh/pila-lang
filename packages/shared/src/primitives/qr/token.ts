@@ -51,8 +51,14 @@ export function verifyQrToken(
   const sigB64 = token.slice(idx + 1);
   const expectedSigB64 = sign(payloadB64);
 
-  const got = Buffer.from(sigB64);
-  const want = Buffer.from(expectedSigB64);
+  let got: Buffer;
+  let want: Buffer;
+  try {
+    got = b64urlDecode(sigB64);
+    want = b64urlDecode(expectedSigB64);
+  } catch {
+    return { ok: false, reason: "malformed" };
+  }
   if (got.length !== want.length || !timingSafeEqual(got, want)) {
     return { ok: false, reason: "signature" };
   }

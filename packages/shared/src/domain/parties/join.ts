@@ -51,14 +51,6 @@ export async function joinQueue(
   if (!tenant.isOpen) return { ok: false, reason: "tenant_closed" };
 
   const scoped = tenantDb(tenant.id);
-
-  if (input.phone) {
-    const conflicting = await scoped.parties.select(
-      and(eq(parties.phone, input.phone), eq(parties.status, "waiting")),
-    );
-    if (conflicting.length > 0) return { ok: false, reason: "already_waiting" };
-  }
-
   const sessionToken = generateGuestSessionToken();
 
   let inserted: Party;

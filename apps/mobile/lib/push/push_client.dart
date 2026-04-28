@@ -27,5 +27,7 @@ class PushClient {
   Stream<RemoteMessage> get onMessageOpenedApp =>
       FirebaseMessaging.onMessageOpenedApp;
 
+  Future<RemoteMessage?> getInitialMessage() => _messaging.getInitialMessage();
+
   String get platform => Platform.isIOS ? 'ios' : 'android';
 }

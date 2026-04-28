@@ -68,20 +68,15 @@ Single Next.js 14 App Router server at `apps/web`. No edge functions, no serverl
   - `apps/web/app/display/<slug>/…` — kiosk QR
   - `apps/web/app/admin/…` — internal admin (NextAuth magic link via Resend; gated by `ADMIN_EMAILS` allow list)
   - `apps/web/app/api/…` — route handlers mirroring the surfaces above, plus `api/test/*` (gated on `NODE_ENV==="test"` OR `ENABLE_TEST_ROUTES=1`; never ships to prod)
-- `apps/web/lib/` — web-only helpers: `i18n/en.ts`, `sse/stream.ts`, `utils.ts` (shadcn `cn()`).
+- `apps/web/lib/` — web-only helpers: `i18n/en.ts`, `sse/` (server `stream.ts`, client `useLiveStream` hook, `apply-tenant-event` reducer), `routes/` (route-handler shared logic — `host-party-action`, `host-open-close`), `auth/guard-host-page.ts` (server-component host guard), `forms/use-json-mutation.ts`, `time.ts`, `utils.ts` (shadcn `cn()`).
 - `apps/web/components/` — shadcn/ui primitives + app components.
 - `packages/db/` — Drizzle schema (`src/schema.ts`), client (`src/client.ts`), tenant-scoped wrappers (`src/tenant-scoped.ts`), plus `migrations/` (generated SQL, never imported at runtime — the `migrator` compose service applies them at boot; `app` waits on `service_completed_successfully`).
-- `packages/shared/src/` — cross-surface server code imported by apps/web AND scripts/seed:
-  - `auth/` — host JWT, guest JWT, bearer, NextAuth glue
-  - `parties/` — queue state transitions, host stream, publish-after-commit, undo
-  - `redis/` — split subscribe + publish clients
-  - `qr/` — HMAC token sign/verify
-  - `storage/` — S3 client (`@aws-sdk/client-s3`) + sharp logo pipeline
-  - `notifier/` — Noop + TestSpy + `PushNotifier` (v1.5 Firebase push seam)
-  - `push/` — FCM registry + dispatch
-  - `ratelimit/`, `http/`, `log/`, `tenants/`, `validators/`, `time/`, `timezones.ts`, `config/env.ts`, `email/`, `admin/`, `host/`, `test-api/`
+- `packages/shared/src/` — cross-surface server code imported by apps/web AND scripts/seed. Layered into `domain/` (business rules) → `infra/` (IO adapters) → `primitives/` (pure utilities); the dependency direction only flows downward, enforced by convention rather than lint:
+  - `domain/` — `auth/` (host/guest/bearer JWTs, password, guards, sessions, NextAuth glue), `parties/` (join, leave, host-actions, position, host-stream, undo-store, tenant-updates, guest-history), `notifier/` (Noop + TestSpy + `PushNotifier` v1.5 seam), `push/` (FCM registry + dispatch + auth), `tenants/`, `host/`, `admin/`.
+  - `infra/` — `redis/` (split subscribe + publish clients), `storage/` (S3 client + sharp logo pipeline), `push/firebase.ts` (FCM adapter), `email/`, `http/`, `log/`, `ratelimit/`.
+  - `primitives/` — `qr/` (HMAC token sign/verify), `config/env.ts`, `validators/`, `time/`, `timezones.ts`, `test-api/`, `lazy.ts`.
 - `packages/config/` — `tsconfig.base.json` + `eslint-preset.js` consumed by every TS package.
-- `scripts/seed.ts` — used by local dev and CI. Same Drizzle wrappers as the app, so schema drift breaks seeding loudly.
+- `scripts/seed.ts` (thin entry that delegates to `scripts/seed/cli.ts` with `tenant.ts` / `parties.ts` helpers) — used by local dev and CI. Same Drizzle wrappers as the app, so schema drift breaks seeding loudly.
 - `e2e/` — Playwright specs against a real compose stack.
 
 ### Load-bearing invariants

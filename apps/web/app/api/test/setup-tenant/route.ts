@@ -87,20 +87,25 @@ export async function POST(req: NextRequest) {
     tenantId = row!.id;
   }
 
+  let partyIds: string[] = [];
   if (waitingParties.length > 0) {
     const now = Date.now();
-    await db.insert(parties).values(
-      waitingParties.map((p) => ({
-        tenantId,
-        name: p.name,
-        phone: p.phone ?? null,
-        partySize: p.partySize,
-        status: "waiting" as const,
-        sessionToken: randomUUID(),
-        joinedAt: new Date(now - (p.minutesAgo ?? 0) * 60_000),
-      })),
-    );
+    const inserted = await db
+      .insert(parties)
+      .values(
+        waitingParties.map((p) => ({
+          tenantId,
+          name: p.name,
+          phone: p.phone ?? null,
+          partySize: p.partySize,
+          status: "waiting" as const,
+          sessionToken: randomUUID(),
+          joinedAt: new Date(now - (p.minutesAgo ?? 0) * 60_000),
+        })),
+      )
+      .returning({ id: parties.id });
+    partyIds = inserted.map((r) => r.id);
   }
 
-  return Response.json({ id: tenantId, slug, password });
+  return Response.json({ id: tenantId, slug, password, partyIds });
 }

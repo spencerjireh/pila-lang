@@ -29,7 +29,7 @@ export async function GET(
   { params }: { params: { slug: string } },
 ) {
   const limited = await enforceRateLimit([
-    { bucket: "displayRequestsPerIp", key: clientIp(req.headers) },
+    { bucket: "guestViewPerIp", key: clientIp(req.headers) },
   ]);
   if (limited) return limited;
 

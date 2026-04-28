@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { parties, type Party, type PartyStatus } from "@pila/db/schema";
 import { tenantDb } from "@pila/db/tenant-scoped";
@@ -61,27 +61,26 @@ export async function leaveQueue(
   partyId: string,
 ): Promise<LeaveResult> {
   const scoped = tenantDb(tenantId);
-  const [row] = await scoped.parties.select(eq(parties.id, partyId));
-  const typedRow = row as Party | undefined;
-  const outcome = classifyLeave(
-    typedRow ? { status: typedRow.status as PartyStatus } : typedRow,
-  );
-  if (outcome === "not_found") return { ok: false, reason: "not_found" };
-  if (outcome === "conflict") return { ok: false, reason: "conflict" };
 
   const [updated] = await scoped.parties
-    .update({ status: "left", resolvedAt: new Date() }, eq(parties.id, partyId))
+    .update(
+      { status: "left", resolvedAt: new Date() },
+      and(eq(parties.id, partyId), eq(parties.status, "waiting")),
+    )
     .returning();
+  if (!updated) {
+    const [row] = await scoped.parties.select(eq(parties.id, partyId));
+    return { ok: false, reason: row ? "conflict" : "not_found" };
+  }
+
   const resolvedAt = (updated as Party).resolvedAt!.toISOString();
 
-  for (const { channel, event } of leavePublishPlan({
-    partyId,
-    slug,
-    resolvedAt,
-  })) {
-    await publish(channel, event);
-  }
-  await publishPositionUpdates(tenantId);
+  await Promise.all([
+    ...leavePublishPlan({ partyId, slug, resolvedAt }).map(
+      ({ channel, event }) => publish(channel, event),
+    ),
+    publishPositionUpdates(tenantId),
+  ]);
 
   return { ok: true, resolvedAt };
 }
