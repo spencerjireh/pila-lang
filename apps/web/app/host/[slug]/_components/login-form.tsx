@@ -30,7 +30,7 @@ export function LoginForm({ slug }: LoginFormProps) {
       return;
     }
     const result = await mutate(
-      `/api/host/${encodeURIComponent(slug)}/login`,
+      `/api/v1/host/${encodeURIComponent(slug)}/login`,
       { password },
       {
         errorMap: ({ status }) =>

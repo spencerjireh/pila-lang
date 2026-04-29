@@ -31,7 +31,7 @@ export function TenantActions({ tenant }: TenantActionsProps) {
     setBusy("reset-password");
     try {
       const res = await fetch(
-        `/api/admin/tenants/${tenant.id}/reset-password`,
+        `/api/v1/admin/tenants/${tenant.id}/reset-password`,
         { method: "POST" },
       );
       const body = await res.json();
@@ -55,7 +55,7 @@ export function TenantActions({ tenant }: TenantActionsProps) {
     if (!confirmed) return;
     setBusy("reset-demo");
     try {
-      const res = await fetch(`/api/admin/tenants/${tenant.id}/reset-demo`, {
+      const res = await fetch(`/api/v1/admin/tenants/${tenant.id}/reset-demo`, {
         method: "POST",
       });
       if (!res.ok) {

@@ -41,7 +41,7 @@ export function GuestsView({ slug, tenantName, timezone, initial }: Props) {
     setError(null);
     try {
       const res = await fetch(
-        `/api/host/${encodeURIComponent(slug)}/guests?cursor=${encodeURIComponent(cursor)}`,
+        `/api/v1/host/${encodeURIComponent(slug)}/guests?cursor=${encodeURIComponent(cursor)}`,
         { cache: "no-store" },
       );
       if (!res.ok) {

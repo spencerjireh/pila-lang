@@ -36,7 +36,7 @@ export function DeleteTenantDialog({ tenantId, slug, tenantName }: Props) {
     if (!canDelete) return;
     setBusy(true);
     try {
-      const res = await fetch(`/api/admin/tenants/${tenantId}`, {
+      const res = await fetch(`/api/v1/admin/tenants/${tenantId}`, {
         method: "DELETE",
       });
       if (!res.ok) {

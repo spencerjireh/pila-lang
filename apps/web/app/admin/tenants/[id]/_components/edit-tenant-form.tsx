@@ -33,7 +33,7 @@ export function EditTenantForm({ tenant }: { tenant: EditableTenant }) {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/admin/tenants/${tenant.id}`, {
+      const res = await fetch(`/api/v1/admin/tenants/${tenant.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

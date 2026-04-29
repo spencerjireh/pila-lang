@@ -158,7 +158,7 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
     [applyDiff],
   );
   const { reconnecting } = useLiveStream<HostStreamEvent>({
-    url: `/api/host/${encodeURIComponent(slug)}/queue/stream`,
+    url: `/api/v1/host/${encodeURIComponent(slug)}/queue/stream`,
     onEvent: onStreamEvent,
   });
 
@@ -177,7 +177,7 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
       setActingOn(partyId);
       try {
         const res = await fetch(
-          `/api/host/${encodeURIComponent(slug)}/parties/${encodeURIComponent(partyId)}/${action}`,
+          `/api/v1/host/${encodeURIComponent(slug)}/parties/${encodeURIComponent(partyId)}/${action}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -212,7 +212,7 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
 
   const handleLogout = useCallback(async () => {
     try {
-      await fetch(`/api/host/${encodeURIComponent(slug)}/logout`, {
+      await fetch(`/api/v1/host/${encodeURIComponent(slug)}/logout`, {
         method: "POST",
       });
     } catch {
@@ -231,7 +231,7 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
       try {
         const route = next ? "open" : "close";
         const res = await fetch(
-          `/api/host/${encodeURIComponent(slug)}/${route}`,
+          `/api/v1/host/${encodeURIComponent(slug)}/${route}`,
           { method: "POST" },
         );
         if (res.status === 401) {
@@ -472,7 +472,7 @@ export function QueueView({ slug, initialSnapshot }: QueueViewProps) {
 
 async function undoLatest(slug: string) {
   try {
-    const res = await fetch(`/api/host/${encodeURIComponent(slug)}/undo`, {
+    const res = await fetch(`/api/v1/host/${encodeURIComponent(slug)}/undo`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     });

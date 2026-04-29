@@ -66,6 +66,8 @@ jobs:
       ADMIN_EMAILS: admin@example.com
       NEXTAUTH_SECRET: ci_nextauth_secret_16c
       NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
+      APP_BASE_URL: http://localhost:3000
       RESEND_API_KEY: re_test_placeholder
       E2E_BASE_URL: http://localhost:3000
       E2E_ADMIN_EMAIL: admin@example.com
@@ -109,13 +111,23 @@ jobs:
       - name: Seed demo tenant
         run: pnpm seed --tenant=demo
 
-      - name: Start app in background
+      - name: Start apps/api in background
+        run: |
+          PORT=3001 pnpm --filter @pila/api start &
+          echo $! > .api.pid
+          for i in $(seq 1 40); do
+            if curl -fsS http://localhost:3001/api/v1/health > /dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Start apps/web in background
         run: |
           pnpm start &
           echo $! > .app.pid
           for i in $(seq 1 40); do
-            if curl -fsS http://localhost:3000/api/healthz > /dev/null 2>&1 \
-              || curl -fsS http://localhost:3000/ > /dev/null 2>&1; then
+            if curl -fsS http://localhost:3000/ > /dev/null 2>&1; then
               break
             fi
             sleep 1
@@ -138,10 +150,11 @@ jobs:
         env:
           E2E_EXTERNAL_SERVER: "1"
 
-      - name: Stop app
+      - name: Stop services
         if: always()
         run: |
           if [ -f .app.pid ]; then kill "$(cat .app.pid)" || true; fi
+          if [ -f .api.pid ]; then kill "$(cat .api.pid)" || true; fi
 
       - name: Upload Playwright report
         if: failure()

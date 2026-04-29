@@ -56,7 +56,7 @@ export function GeneralSection({ slug, name, accentColor, onChange }: Props) {
     }
 
     const body = await mutate(
-      `/api/host/${encodeURIComponent(slug)}/settings/general`,
+      `/api/v1/host/${encodeURIComponent(slug)}/settings/general`,
       patch,
       {
         method: "PATCH",
