@@ -18,7 +18,7 @@ Bundle ID used everywhere: **`com.pilalang.app`**
 - [x] **Install FlutterFire CLI** — `dart pub global activate flutterfire_cli` (also required: `npm install -g firebase-tools` and `gem install xcodeproj` via homebrew Ruby)
 - [x] **Run `flutterfire configure`** from `apps/mobile/` — links both apps, generates `lib/firebase_options.dart`, places `google-services.json` + `GoogleService-Info.plist` in the right spots
 - [x] (I do) **Update `apps/mobile/lib/push/firebase_bootstrap.dart`** to pass `options: DefaultFirebaseOptions.currentPlatform` into `Firebase.initializeApp()`
-- [x] (I do) **Commit the two Firebase config files** — `apps/mobile/android/app/google-services.json` and `apps/mobile/ios/Runner/GoogleService-Info.plist`. Not secrets per Firebase docs; committing unblocks fresh checkouts + CI. Real security controls live in Google Cloud Console and App Check — see §Post-v1.5 Firebase hardening.
+- [x] **Firebase config files are gitignored** — `apps/mobile/android/app/google-services.json`, `apps/mobile/ios/Runner/GoogleService-Info.plist`, and `apps/mobile/lib/firebase_options.dart`. Every checkout regenerates them locally via `flutterfire configure --project=pilalang`. CI falls back to `lib/firebase_options.example.dart` for `flutter analyze`. Real security controls live in Google Cloud Console and App Check — see §Post-v1.5 Firebase hardening.
 - [ ] **Smoke test on Android** — physical device or emulator; run the app, verify FCM token registers via `/api/guest/push/register`. Android push works without Apple.
 
 ## Day 1-2 — server-side Firebase (parallel track)
@@ -35,7 +35,7 @@ Bundle ID used everywhere: **`com.pilalang.app`**
 - [x] **Upload .p8 to Firebase** — Firebase Console → Project Settings → Cloud Messaging → Apple app → Upload APNs Auth Key.
 - [x] **Xcode signing** — open `apps/mobile/ios/Runner.xcworkspace`, select Runner target → Signing & Capabilities:
   - [x] Sign in with dev account, select Team
-  - [x] Enable **Push Notifications** capability (→ `aps-environment=development` in `Runner.entitlements`)
+  - [x] Enable **Push Notifications** capability (→ `aps-environment=production` in `Runner.entitlements`; see §iOS entitlements policy below for why we don't split per build config)
   - [x] Enable **Background Modes** → check **Remote notifications** (→ `UIBackgroundModes=[remote-notification]` in `Info.plist`)
 - [x] (I do) **Commit the generated `Runner.entitlements`** once Xcode creates it
 
@@ -78,14 +78,19 @@ Tracked follow-ups after the v1.5 mobile push cut. None are pre-pilot blockers; 
 
 - [ ] **API key application restrictions** — in Google Cloud Console (`console.cloud.google.com/apis/credentials` for project `pilalang`), restrict the Android key to package `com.pilalang.app` + the signing SHA-1, and the iOS key to bundle `com.pilalang.app`. Allow-list only the Firebase APIs we use (`firebase.googleapis.com`, `identitytoolkit.googleapis.com`, `fcm.googleapis.com`). Per Firebase docs these keys identify the project and belong in app code — application restrictions + App Check are the real controls.
 - [ ] **Firebase App Check** — integrate `firebase_app_check` in `apps/mobile/lib/push/firebase_bootstrap.dart` with Play Integrity (Android) + App Attest (iOS). Roll out with the debug provider locally, monitor the ≥90% valid-token threshold in the Firebase Console App Check dashboard, then enable enforcement per service. We only use FCM today, so enforcement starts and ends there for v1.5.
-- [ ] **iOS entitlements split** — `Runner-Debug.entitlements` (aps-environment=development) vs `Runner-Release.entitlements` (aps-environment=production), wired per Xcode build configuration. Required for TestFlight and App Store push delivery to work.
 
-## iOS entitlements split (one-time)
+## iOS entitlements policy
 
-Today `apps/mobile/ios/Runner/Runner.entitlements` hardcodes `aps-environment=development` for every build configuration. TestFlight and App Store builds need `production`. When this lands:
+`apps/mobile/ios/Runner/Runner.entitlements` sets `aps-environment=production` for every build configuration. There is no Debug/Release split.
 
-1. Rename the current file to `Runner-Debug.entitlements` (value unchanged).
-2. Create `Runner-Release.entitlements` with `aps-environment=production`.
+**Tradeoff.** Production APNs refuses sandbox-environment builds, so push notifications won't deliver to local `flutter run` builds on a paired device. Everything else (SSE, queue, login, image upload) works fine in dev. To verify push end-to-end, ship a TestFlight build — see `docs/RUNBOOK.md` §Phase 11.
+
+**Why not split per build config.** The "proper" path is `Runner-Debug.entitlements` (development) + `Runner-Release.entitlements` (production), wired per Xcode build configuration. We're not doing that for v1: solo pre-pilot, one entitlement file is easier to reason about, and push UX iteration isn't a current bottleneck. Recorded in case it becomes one.
+
+**Escape hatch.** If iterating on push UX in dev becomes painful, do the split:
+
+1. Rename the current file to `Runner-Debug.entitlements` and change its `aps-environment` to `development`.
+2. Create `Runner-Release.entitlements` (copy of the current file, `aps-environment=production`).
 3. In `apps/mobile/ios/Runner.xcodeproj/project.pbxproj`, set `CODE_SIGN_ENTITLEMENTS` per `XCBuildConfiguration` — Debug → `Runner/Runner-Debug.entitlements`, Release + Profile → `Runner/Runner-Release.entitlements`.
 4. Verify via `xcodebuild -showBuildSettings -configuration Release` that `CODE_SIGN_ENTITLEMENTS` resolves to the Release file.
 

@@ -1,5 +1,7 @@
 import { test as base, expect, type BrowserContext } from "@playwright/test";
 
+import { apiUrl } from "../helpers/api-url";
+
 import {
   flushRedis,
   resetTenant,
@@ -33,7 +35,7 @@ export const test = base.extend<Fixtures>({
 
   adminContext: async ({ browser, request, baseURL }, use) => {
     const email = process.env.E2E_ADMIN_EMAIL ?? "admin@example.com";
-    const res = await request.post("/api/test/sign-in-as-admin", {
+    const res = await request.post(apiUrl("/api/v1/test/sign-in-as-admin"), {
       data: { email },
     });
     if (!res.ok()) {
@@ -41,13 +43,20 @@ export const test = base.extend<Fixtures>({
         `sign-in-as-admin failed (${res.status()}): ${await res.text()}`,
       );
     }
-    const body = (await res.json()) as { cookieName: string; token: string };
+    const setCookie = res.headers()["set-cookie"] ?? "";
+    const pair = setCookie.split(";")[0] ?? "";
+    const eq = pair.indexOf("=");
+    if (eq < 1) {
+      throw new Error(`sign-in-as-admin returned no cookie: ${setCookie}`);
+    }
+    const cookieName = pair.slice(0, eq);
+    const cookieValue = pair.slice(eq + 1);
     const context = await browser.newContext({ baseURL });
     const host = new URL(baseURL ?? "http://localhost:3000").hostname;
     await context.addCookies([
       {
-        name: body.cookieName,
-        value: body.token,
+        name: cookieName,
+        value: cookieValue,
         domain: host,
         path: "/",
         httpOnly: true,

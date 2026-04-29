@@ -35,7 +35,12 @@ export function useLiveStream<E>(
 
   useEffect(() => {
     if (!enabled) return;
-    const es = new EventSource(url);
+    // SSE bypasses Next rewrites: target apps/api directly so the dev-server
+    // proxy can't buffer streaming responses. Same-origin in prod via Traefik
+    // means NEXT_PUBLIC_API_BASE_URL is empty there and this is a no-op.
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+    const fullUrl = url.startsWith("http") ? url : `${base}${url}`;
+    const es = new EventSource(fullUrl, { withCredentials: true });
     esRef.current = es;
     es.onopen = () => setReconnecting(false);
     es.onerror = () => setReconnecting(true);

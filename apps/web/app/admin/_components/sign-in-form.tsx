@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { signIn } from "next-auth/react";
+
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { en } from "@/lib/i18n/en";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export function SignInForm() {
   const t = en.admin.signIn;
@@ -23,20 +25,21 @@ export function SignInForm() {
     setStatus("submitting");
     setError(null);
     try {
-      const res = await signIn("resend", {
-        email: email.trim(),
-        redirect: false,
-        callbackUrl: "/admin/tenants",
+      const res = await fetch(`${API_BASE}/api/v1/auth/magic-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: email.trim() }),
       });
-      if (res?.error) {
+      if (!res.ok) {
         setStatus("error");
-        setError("Couldn\u2019t send the link. Try again.");
-      } else {
-        setStatus("sent");
+        setError("Couldn’t send the link. Try again.");
+        return;
       }
+      setStatus("sent");
     } catch {
       setStatus("error");
-      setError("Couldn\u2019t send the link. Try again.");
+      setError("Couldn’t send the link. Try again.");
     }
   }
 
@@ -72,7 +75,7 @@ export function SignInForm() {
         </Alert>
       ) : null}
       <Button type="submit" disabled={status === "submitting"}>
-        {status === "submitting" ? "Sending\u2026" : t.submit}
+        {status === "submitting" ? "Sending…" : t.submit}
       </Button>
     </form>
   );

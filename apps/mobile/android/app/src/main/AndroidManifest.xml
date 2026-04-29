@@ -29,14 +29,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             <!-- App Links: the claim host must match `/.well-known/assetlinks.json`
-                 served by the Next.js app. Replace `pila.example.com` with the
-                 production host when building a release. -->
+                 served by the Next.js app at this host. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="https"/>
-                <data android:host="pila.example.com"/>
+                <data android:host="pilalang.spencerjireh.com"/>
                 <data android:pathPrefix="/r/"/>
                 <data android:pathPrefix="/host/"/>
                 <data android:pathPrefix="/display/"/>

@@ -1,5 +1,6 @@
 import { test, expect } from "../../fixtures/test-env";
 import { fetchLatestMagicLink } from "../../fixtures/mailbox";
+import { apiUrl } from "../../helpers/api-url";
 
 test.describe("admin sign-in", () => {
   test("allow-listed email completes magic-link sign-in", async ({
@@ -27,7 +28,7 @@ test.describe("admin sign-in", () => {
 
     // The route still claims to send — but no token row exists for this address.
     const res = await request.get(
-      `/api/test/magic-link?email=${encodeURIComponent(email)}`,
+      apiUrl(`/api/v1/test/magic-link?email=${encodeURIComponent(email)}`),
     );
     expect([404, 400]).toContain(res.status());
   });

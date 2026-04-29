@@ -780,6 +780,73 @@ Mobile caches the most recent queue snapshot in sqflite so the host can open the
 
 The display surface uses `wakelock_plus` to keep the screen on and goes immersive (no system bars). It's intended to run on a tablet wedged into a holder by the door, plugged in, never sleeping.
 
+### On-device development (iOS)
+
+_~3 min read._
+
+The Flutter daily loop on a paired iPhone, plus the gotchas no Flutter doc spells out.
+
+**One-time setup:**
+
+1. Plug the iPhone into the Mac via USB. Tap **Trust** on the device when the dialog appears, then enter the passcode to confirm.
+2. On iOS 16+, enable **Developer Mode**: Settings → Privacy & Security → Developer Mode → toggle on. The phone reboots; tap **Turn On** after the reboot prompt.
+3. Open `apps/mobile/ios/Runner.xcworkspace` in Xcode (the workspace, not the project file — CocoaPods lives in the workspace). Select the **Runner** target → **Signing & Capabilities**. Sign in with your Apple ID under **Team**; signing is **Automatic** and the bundle id is `com.pilalang.app`. Confirm `VM3GWVH9BF` resolves; if not, you're not on that team yet.
+4. Hit **Product → Run** in Xcode once. This provisions the device with a development profile. After this, you don't need to open Xcode again — the rest of the loop is CLI.
+
+**Daily loop:**
+
+```bash
+cd apps/mobile
+flutter devices                    # confirm your iPhone shows up
+flutter run -d <device-id> \
+  --dart-define=PILA_API_BASE_URL=http://<your-mac-lan-ip>:3000
+```
+
+Use the LAN IP, not `localhost` — the phone is on Wi-Fi and can't reach the Mac's loopback. Find your IP via System Settings → Network → Wi-Fi → Details.
+
+**Hot reload keys** (typed into the running `flutter run` terminal):
+
+- `r` — hot reload. Rebuilds widgets, preserves Riverpod provider state, keeps the route stack. Use for UI tweaks, copy edits, style changes.
+- `R` — hot restart. Re-runs `main()`. Clears Riverpod state, re-initializes Firebase, drops back to the splash. Use after changing `main.dart`, `app.dart`, or anything in `lib/state/`.
+- `p` — toggle the paint baselines overlay.
+- `q` — quit.
+
+**Footgun:** `aps-environment` is `production` repo-wide (see `docs/apple-firebase-setup.md` "iOS entitlements policy" for why). That means **push notifications won't deliver to local dev builds** — APNs production servers refuse a sandbox-environment build. Verify push by shipping a TestFlight build, not by `flutter run` on a paired device. The rest of the app (SSE, queue updates, login) works fine.
+
+### First TestFlight upload
+
+_~1 min read._
+
+TestFlight has never been uploaded to from this repo. The procedural walkthrough — Xcode signing, AASA verification, `flutter build ipa`, App Store Connect upload, internal tester invites — lives in `docs/RUNBOOK.md` §Phase 11 ("iOS build + TestFlight"). One-time prerequisites (Apple Developer enrollment, APNs `.p8` upload, Firebase project) are tracked as a checklist in `docs/apple-firebase-setup.md`.
+
+Run through the pre-flight checklist below before kicking off `flutter build ipa`. The first upload will surface anything that's drifted; correct as you go.
+
+### Pre-flight checklist (before `flutter build ipa`)
+
+- [ ] **Version + build number bumped** in `apps/mobile/pubspec.yaml`. Format is `<semver>+<buildNumber>` (e.g., `0.2.0+5`). The build number must be strictly greater than any number already shipped to TestFlight — Apple consumes them permanently, even after expiry. Re-using one rejects the upload.
+- [ ] **`Runner.entitlements` `aps-environment` is `production`.** Committed in this repo; verify nobody flipped it back to `development` for local push debugging.
+- [ ] **`applinks:pilalang.spencerjireh.com` is the only entry** under `com.apple.developer.associated-domains` in `Runner.entitlements`.
+- [ ] **AASA reachable on the production host:**
+  ```bash
+  curl -sI https://pilalang.spencerjireh.com/.well-known/apple-app-site-association | grep -i content-type
+  ```
+  Must return `200` with `content-type: application/json`. Validate the contents at <https://search.developer.apple.com/appsearch-validation-tool/>.
+- [ ] **AASA `appIDs` is `VM3GWVH9BF.com.pilalang.app`** (committed in this repo at `apps/web/public/.well-known/apple-app-site-association`).
+- [ ] **`apps/mobile/ios/Runner/GoogleService-Info.plist` present.** Gitignored — regenerate with `cd apps/mobile && flutterfire configure --project=pilalang` if missing on a fresh checkout.
+- [ ] **APNs Auth Key uploaded to Firebase.** Console → Project Settings → Cloud Messaging → Apple app → APNs Authentication Key. The `.p8` lives at `~/.secrets/pila/AuthKey_2UJ44L935Y.p8`. One-time. Silent push failures on a fresh TestFlight install almost always mean this step was skipped.
+- [ ] **App Privacy nutrition label completed** in App Store Connect → App → App Privacy. Pila collects: Camera (QR scan), Phone Number + Name (queue join), Device ID + Push Tokens (FCM). Apple blocks the first submission without this.
+- [ ] **No new privacy-sensitive plugin** added since the last build that needs a fresh `Info.plist` usage description (microphone, contacts, location). `apps/mobile/ios/Runner/Info.plist` currently has `NSCameraUsageDescription`; anything new without a string gets rejected at upload.
+
+### Rollback
+
+Apple's TestFlight model is strictly monotonic — there is no "roll back to v0.1.0+1". To pull a bad build:
+
+1. App Store Connect → TestFlight → Builds → select the bad build → **Expire Build**. Don't delete (irreversible, and the build number is consumed regardless).
+2. Bump `pubspec.yaml` to a higher build number with the fix.
+3. `flutter build ipa --release` and re-upload.
+
+Internal testers see the new build immediately; the expired one disappears from their TestFlight list.
+
 ---
 
 ## 14. Load-bearing invariants

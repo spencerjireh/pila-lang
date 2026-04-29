@@ -16,6 +16,14 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: pila-lang
+            dockerfile: Dockerfile
+          - image: pila-lang-api
+            dockerfile: apps/api/Dockerfile
 
     steps:
       - name: Checkout
@@ -35,17 +43,24 @@ jobs:
         id: version
         run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Build and push image
+      - name: Resolve image owner (lowercase)
+        id: owner
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "value=$OWNER" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push ${{ matrix.image }}
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ${{ matrix.dockerfile }}
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.value }}
-            ghcr.io/${{ github.repository }}:${{ github.ref_name }}
-            ghcr.io/${{ github.repository }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            ghcr.io/${{ steps.owner.outputs.value }}/${{ matrix.image }}:${{ steps.version.outputs.value }}
+            ghcr.io/${{ steps.owner.outputs.value }}/${{ matrix.image }}:${{ github.ref_name }}
+            ghcr.io/${{ steps.owner.outputs.value }}/${{ matrix.image }}:latest
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,scope=${{ matrix.image }},mode=max
 
   deploy:
     needs: docker
@@ -53,6 +68,7 @@ jobs:
     steps:
       - name: Deployment placeholder
         run: |
-          echo "Image pushed as ghcr.io/${{ github.repository }}:${{ github.ref_name }}"
+          echo "Images pushed:"
+          echo "  ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/pila-lang:${GITHUB_REF_NAME}"
+          echo "  ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/pila-lang-api:${GITHUB_REF_NAME}"
           echo "Production deploy is manual for v1 — see docs/RUNBOOK.md."
-          echo "Once a prod host exists, replace this step with an ssh-action pulling the new tag."

@@ -6,7 +6,7 @@
     ],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.pila.pila",
+      "package_name": "com.pilalang.app",
       "sha256_cert_fingerprints": [
         "REPLACE:WITH:DEBUG:FINGERPRINT",
         "REPLACE:WITH:RELEASE:FINGERPRINT"

@@ -1,5 +1,6 @@
 import { test, expect } from "../../fixtures/test-env";
 import { joinAsGuest } from "../../fixtures/tenant-factory";
+import { apiUrl } from "../../helpers/api-url";
 import { hostLoginViaApi } from "../../helpers/sign-in";
 
 test.describe("guest wait page", () => {
@@ -46,7 +47,7 @@ test.describe("guest wait page", () => {
 
     // Host seats the party ahead of me.
     const seatRes = await request.post(
-      `/api/host/${slug}/parties/${ahead.partyId}/seat`,
+      apiUrl(`/api/v1/host/${slug}/parties/${ahead.partyId}/seat`),
       { headers: { cookie: hostCookie } },
     );
     expect(seatRes.ok()).toBeTruthy();
@@ -71,7 +72,7 @@ test.describe("guest wait page", () => {
     await expect(page.getByText(/hi me/i)).toBeVisible();
 
     const seatRes = await request.post(
-      `/api/host/${slug}/parties/${me.partyId}/seat`,
+      apiUrl(`/api/v1/host/${slug}/parties/${me.partyId}/seat`),
       {
         headers: { cookie: hostCookie },
       },

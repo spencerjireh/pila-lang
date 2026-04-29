@@ -1,5 +1,6 @@
 import { test, expect } from "../../fixtures/test-env";
 import { joinAsGuest } from "../../fixtures/tenant-factory";
+import { apiUrl } from "../../helpers/api-url";
 import { hostLoginViaApi } from "../../helpers/sign-in";
 
 interface NotifierCall {
@@ -9,7 +10,7 @@ interface NotifierCall {
 }
 
 async function drain(request: import("@playwright/test").APIRequestContext) {
-  const res = await request.get("/api/test/notifier/calls");
+  const res = await request.get(apiUrl("/api/v1/test/notifier/calls"));
   if (!res.ok()) throw new Error(`notifier drain failed: ${res.status()}`);
   return (await res.json()) as { calls: NotifierCall[]; note?: string };
 }
@@ -39,7 +40,7 @@ test.describe("notifier wiring", () => {
 
     const cookie = await hostLoginViaApi(request, slug, password);
     const seatRes = await request.post(
-      `/api/host/${slug}/parties/${me.partyId}/seat`,
+      apiUrl(`/api/v1/host/${slug}/parties/${me.partyId}/seat`),
       {
         headers: { cookie },
       },

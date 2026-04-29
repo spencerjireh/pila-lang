@@ -53,7 +53,7 @@ export function BrandingSection({
       const form = new FormData();
       form.append("file", file);
       const res = await fetch(
-        `/api/host/${encodeURIComponent(slug)}/settings/logo`,
+        `/api/v1/host/${encodeURIComponent(slug)}/settings/logo`,
         { method: "POST", body: form },
       );
       if (!res.ok) {
@@ -80,7 +80,7 @@ export function BrandingSection({
     setRemoving(true);
     try {
       const res = await fetch(
-        `/api/host/${encodeURIComponent(slug)}/settings/logo`,
+        `/api/v1/host/${encodeURIComponent(slug)}/settings/logo`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

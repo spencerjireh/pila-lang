@@ -1,0 +1,24 @@
+name: pila-codeql-config
+
+# Use the action's default JS/TS query suite (security-extended). Two
+# queries below are excluded because they do not match this codebase's
+# architecture; everything else stays on.
+
+query-filters:
+  # `js/missing-rate-limiting` — every authenticated route in apps/api goes
+  # through the `enforceRateLimits` wrapper in apps/api/src/lib/rate-limit.ts,
+  # which calls `consume()` from rate-limiter-flexible. CodeQL's dataflow
+  # does not traverse our wrapper, so it reports every protected route as
+  # missing. The actual limits exist (host login, host token, push register/
+  # unregister, guest join, guest info, and all admin mutations).
+  - exclude:
+      id: js/missing-rate-limiting
+
+  # `js/missing-token-validation` — apps/api is a JSON-only service. State
+  # changes come from (a) same-origin browser fetches with SameSite=Lax
+  # session cookies, behind an origin-locked CORS allow-list (app.ts:44),
+  # and (b) the Flutter mobile app, which uses Bearer tokens and ignores
+  # cookies entirely. There is no HTML-form surface for classic CSRF; a
+  # double-submit token would add no net security in this topology.
+  - exclude:
+      id: js/missing-token-validation

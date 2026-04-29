@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
-import { requireAdmin } from "@pila/shared/domain/auth/admin-guard";
+
+import { requireAdminPage } from "@/lib/auth/guard-admin-page";
 
 export default async function TenantsLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  await requireAdmin();
+  await requireAdminPage();
   return <>{children}</>;
 }

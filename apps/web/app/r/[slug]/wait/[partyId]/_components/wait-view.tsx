@@ -107,7 +107,7 @@ export function WaitView({
     });
   }, []);
   const { reconnecting, close: closeStream } = useLiveStream<GuestStreamEvent>({
-    url: `/api/r/${encodeURIComponent(slug)}/parties/${encodeURIComponent(partyId)}/stream`,
+    url: `/api/v1/r/${encodeURIComponent(slug)}/parties/${encodeURIComponent(partyId)}/stream`,
     onEvent: onStreamEvent,
     enabled: !terminal,
   });
@@ -121,7 +121,7 @@ export function WaitView({
     setLeaveError(null);
     try {
       const res = await fetch(
-        `/api/r/${encodeURIComponent(slug)}/parties/${encodeURIComponent(partyId)}/leave`,
+        `/api/v1/r/${encodeURIComponent(slug)}/parties/${encodeURIComponent(partyId)}/leave`,
         { method: "POST" },
       );
       if (res.ok || res.status === 409) {

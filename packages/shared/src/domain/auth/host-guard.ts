@@ -1,18 +1,13 @@
-import type { NextRequest } from "next/server";
-
 import type { Tenant } from "@pila/db/schema";
-import { errorResponse } from "../../infra/http/error-response";
 import { loadTenantBySlug } from "../../domain/tenants/display-token";
+import type { RequestLike } from "../../primitives/http/request-like";
 
-import {
-  HOST_COOKIE_NAME,
-  clearHostCookieHeader,
-  serializeHostCookie,
-} from "./host-session";
+import { HOST_COOKIE_NAME, serializeHostCookie } from "./host-session";
 import { maybeRefresh, verifyHostToken, type HostClaims } from "./host-token";
+import { REFRESH_HEADER } from "./refresh-header";
 import { resolveAuthSource } from "./source";
 
-export const HOST_REFRESH_HEADER = "X-Refreshed-Token";
+export const HOST_REFRESH_HEADER = REFRESH_HEADER;
 
 export type HostGuardOk = {
   ok: true;
@@ -61,7 +56,7 @@ export function decideHostGuard(
 }
 
 export async function guardHostRequest(
-  req: Pick<NextRequest, "cookies" | "headers">,
+  req: RequestLike,
   slug: string,
   now: number = Date.now(),
 ): Promise<HostGuardDecision> {
@@ -120,49 +115,4 @@ export async function guardHostRequest(
     refreshedCookie,
     refreshedBearer,
   };
-}
-
-export function clearHostCookieResponse(status: number): Response {
-  return new Response(null, {
-    status,
-    headers: { "Set-Cookie": clearHostCookieHeader() },
-  });
-}
-
-export function unauthorizedJson(
-  status: 401 | 403 | 404,
-  clearCookie: boolean,
-  error: string,
-): Response {
-  return errorResponse(status, error, {
-    headers: clearCookie
-      ? { "Set-Cookie": clearHostCookieHeader() }
-      : undefined,
-  });
-}
-
-export function hostGuardErrorMessage(status: 401 | 403 | 404): string {
-  if (status === 401) return "unauthorized";
-  if (status === 403) return "forbidden";
-  return "not_found";
-}
-
-export function hostGuardErrorResponse(
-  guard: Extract<HostGuardDecision, { ok: false }>,
-): Response {
-  return unauthorizedJson(
-    guard.status,
-    guard.clearCookie,
-    hostGuardErrorMessage(guard.status),
-  );
-}
-
-export function applyHostRefresh(res: Response, guard: HostGuardOk): Response {
-  if (guard.refreshedCookie) {
-    res.headers.append("Set-Cookie", guard.refreshedCookie);
-  }
-  if (guard.refreshedBearer) {
-    res.headers.set(HOST_REFRESH_HEADER, guard.refreshedBearer);
-  }
-  return res;
 }

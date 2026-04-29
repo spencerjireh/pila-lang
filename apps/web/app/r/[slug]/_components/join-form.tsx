@@ -54,7 +54,7 @@ export function JoinForm({ slug, token }: JoinFormProps) {
     reset();
 
     const data = await mutate(
-      `/api/r/${encodeURIComponent(slug)}/join?t=${encodeURIComponent(token)}`,
+      `/api/v1/r/${encodeURIComponent(slug)}/join?t=${encodeURIComponent(token)}`,
       { name: trimmed, partySize, phone: phone ?? null },
       {
         errorMap: ({ status, error }) => {

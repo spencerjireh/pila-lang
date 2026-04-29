@@ -58,7 +58,7 @@ export function PasswordSection({ slug, onUnauthorized }: Props) {
       return;
     }
     const result = await rotate.mutate(
-      `/api/host/${encodeURIComponent(slug)}/settings/password`,
+      `/api/v1/host/${encodeURIComponent(slug)}/settings/password`,
       { action: "rotate", newPassword },
       {
         onUnauthorized,
@@ -75,7 +75,7 @@ export function PasswordSection({ slug, onUnauthorized }: Props) {
 
   async function onKickOthers() {
     const result = await kick.mutate(
-      `/api/host/${encodeURIComponent(slug)}/settings/password`,
+      `/api/v1/host/${encodeURIComponent(slug)}/settings/password`,
       { action: "logout-others" },
       {
         onUnauthorized,

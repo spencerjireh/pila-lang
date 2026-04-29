@@ -37,7 +37,7 @@ interface DisplayClientProps {
 const POLL_INTERVAL_MS = 60_000;
 
 async function fetchToken(slug: string): Promise<TokenPayload> {
-  const res = await fetch(`/api/display/${encodeURIComponent(slug)}/token`, {
+  const res = await fetch(`/api/v1/display/${encodeURIComponent(slug)}/token`, {
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`token fetch failed: ${res.status}`);
@@ -86,7 +86,7 @@ export function DisplayClient({
     [slug, queryClient],
   );
   useLiveStream<TenantLiveEvent>({
-    url: `/api/display/${encodeURIComponent(slug)}/stream`,
+    url: `/api/v1/display/${encodeURIComponent(slug)}/stream`,
     onEvent: onTenantEvent,
   });
 

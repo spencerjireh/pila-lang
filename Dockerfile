@@ -36,6 +36,7 @@ ENV DATABASE_URL=postgres://x:x@x:5432/x \
     ADMIN_EMAILS=placeholder@example.com \
     NEXTAUTH_SECRET=placeholder_sixteen_chars \
     NEXTAUTH_URL=http://localhost:3000 \
+    APP_BASE_URL=http://localhost:3000 \
     RESEND_API_KEY=re_placeholder
 RUN pnpm --filter @pila/web build
 
@@ -58,6 +59,8 @@ USER nextjs
 WORKDIR /app/apps/web
 EXPOSE 3000
 ENV PORT=3000 HOSTNAME=0.0.0.0
+# /api/health moved to apps/api after the Express split. apps/web is now
+# UI-only; probe a static route instead.
 HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=5 \
-  CMD wget -q -O - http://localhost:3000/api/health || exit 1
+  CMD wget -q -O - http://localhost:3000/ || exit 1
 CMD ["node", "server.js"]

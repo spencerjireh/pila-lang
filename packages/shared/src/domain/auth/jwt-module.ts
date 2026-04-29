@@ -1,5 +1,9 @@
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
-import { randomUUID } from "node:crypto";
+
+// Use the platform-global Web Crypto API (Node 19+, Edge, browsers) so this
+// module is importable from Next.js Edge middleware. node:crypto would force
+// the bundle to fail Edge constraints even when sign() is never called.
+const randomUUID = (): string => crypto.randomUUID();
 
 export type JwtVerifyResult<C> =
   | { ok: true; claims: C }

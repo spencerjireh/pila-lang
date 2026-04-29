@@ -39,7 +39,7 @@ export function SettingsView({ slug, initial }: SettingsViewProps) {
 
   const handleSignOut = useCallback(async () => {
     try {
-      await fetch(`/api/host/${encodeURIComponent(slug)}/logout`, {
+      await fetch(`/api/v1/host/${encodeURIComponent(slug)}/logout`, {
         method: "POST",
       });
     } catch {

@@ -1,5 +1,7 @@
 import type { APIRequestContext } from "@playwright/test";
 
+import { apiUrl } from "../helpers/api-url";
+
 export interface TenantSetupInput {
   slug: string;
   name?: string;
@@ -26,7 +28,9 @@ export async function setupTenant(
   request: APIRequestContext,
   input: TenantSetupInput,
 ): Promise<TenantHandle> {
-  const res = await request.post("/api/test/setup-tenant", { data: input });
+  const res = await request.post(apiUrl("/api/v1/test/setup-tenant"), {
+    data: input,
+  });
   if (!res.ok()) {
     throw new Error(
       `setup-tenant failed (${res.status()}): ${await res.text()}`,
@@ -39,7 +43,9 @@ export async function resetTenant(
   request: APIRequestContext,
   slug: string,
 ): Promise<void> {
-  const res = await request.post("/api/test/reset-tenant", { data: { slug } });
+  const res = await request.post(apiUrl("/api/v1/test/reset-tenant"), {
+    data: { slug },
+  });
   if (!res.ok()) {
     throw new Error(
       `reset-tenant failed (${res.status()}): ${await res.text()}`,
@@ -48,7 +54,7 @@ export async function resetTenant(
 }
 
 export async function flushRedis(request: APIRequestContext): Promise<void> {
-  const res = await request.post("/api/test/flush-redis");
+  const res = await request.post(apiUrl("/api/v1/test/flush-redis"));
   if (!res.ok()) {
     throw new Error(`flush-redis failed (${res.status()})`);
   }
@@ -63,7 +69,7 @@ export async function mintQrToken(
   request: APIRequestContext,
   slug: string,
 ): Promise<string> {
-  const res = await request.get(`/api/display/${slug}/token`);
+  const res = await request.get(apiUrl(`/api/v1/display/${slug}/token`));
   if (!res.ok()) {
     throw new Error(
       `display token failed (${res.status()}): ${await res.text()}`,
@@ -86,7 +92,7 @@ export async function joinAsGuest(
 ): Promise<JoinResult> {
   const token = await mintQrToken(request, slug);
   const res = await request.post(
-    `/api/r/${slug}/join?t=${encodeURIComponent(token)}`,
+    apiUrl(`/api/v1/r/${slug}/join?t=${encodeURIComponent(token)}`),
     {
       data: {
         name: input.name,

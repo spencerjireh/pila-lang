@@ -1,25 +1,48 @@
-import { redirect } from "next/navigation";
-import type { Session } from "next-auth";
-import { auth } from "../../domain/auth/admin-session";
-import { errorResponse } from "../../infra/http/error-response";
+import type { RequestLike } from "../../primitives/http/request-like";
 import { isAdminEmail } from "../../primitives/validators/admin-allow-list";
 
-export type AdminSession = Session;
+import { ADMIN_COOKIE_NAME, verifyAdminSession } from "./admin-jwt-cookie";
 
-export async function requireAdmin(): Promise<AdminSession> {
-  const session = (await auth()) as Session | null;
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    redirect("/admin");
-  }
-  return session;
+export interface AdminSession {
+  userId: string;
+  email: string;
 }
 
-export async function requireAdminApi(): Promise<
-  { ok: true; session: AdminSession } | { ok: false; response: Response }
-> {
-  const session = (await auth()) as Session | null;
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    return { ok: false, response: errorResponse(401, "unauthorized") };
-  }
-  return { ok: true, session };
+export type RequireAdminApiResult =
+  | { ok: true; admin: AdminSession }
+  | { ok: false; status: 401 | 403 };
+
+/**
+ * Runtime-agnostic admin guard for API contexts (Express handlers, route
+ * handlers, anywhere a RequestLike is available). Checks the JWT cookie
+ * and re-validates the email against the allow list (defence in depth —
+ * the allow list could have shrunk since issuance).
+ */
+export async function requireAdminApi(
+  req: RequestLike,
+): Promise<RequireAdminApiResult> {
+  const cookie = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+  const result = await verifyAdminSession(cookie);
+  if (!result.ok) return { ok: false, status: 401 };
+  if (!isAdminEmail(result.claims.email)) return { ok: false, status: 403 };
+  return {
+    ok: true,
+    admin: { userId: result.claims.sub, email: result.claims.email },
+  };
+}
+
+/**
+ * Lower-level helper for places that have already pulled the cookie value
+ * out (e.g. Next.js Server Components using `cookies().get()`).
+ */
+export async function requireAdminFromCookie(
+  cookieValue: string | null | undefined,
+): Promise<RequireAdminApiResult> {
+  const result = await verifyAdminSession(cookieValue);
+  if (!result.ok) return { ok: false, status: 401 };
+  if (!isAdminEmail(result.claims.email)) return { ok: false, status: 403 };
+  return {
+    ok: true,
+    admin: { userId: result.claims.sub, email: result.claims.email },
+  };
 }

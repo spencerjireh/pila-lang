@@ -1,6 +1,6 @@
-import type { NextRequest } from "next/server";
 import type { z } from "zod";
 
+import type { RequestLikeWithJson } from "../../primitives/http/request-like";
 import { errorResponse } from "./error-response";
 
 export type ParseJsonBodyResult<T> =
@@ -21,7 +21,7 @@ export type ParseJsonBodyResult<T> =
  *   const { password } = parsed.data;
  */
 export async function parseJsonBody<Schema extends z.ZodTypeAny>(
-  req: NextRequest,
+  req: RequestLikeWithJson,
   schema: Schema,
 ): Promise<ParseJsonBodyResult<z.infer<Schema>>> {
   const contentType = req.headers.get("content-type") ?? "";

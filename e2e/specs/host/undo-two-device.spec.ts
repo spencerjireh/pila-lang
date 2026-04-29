@@ -1,4 +1,5 @@
 import { test, expect } from "../../fixtures/test-env";
+import { apiUrl } from "../../helpers/api-url";
 import { hostLogin, hostLoginViaApi } from "../../helpers/sign-in";
 
 test.describe("host undo across devices", () => {
@@ -43,7 +44,7 @@ test.describe("host undo across devices", () => {
 
     // Undo via the host API from any session. Both sides should see the restore.
     const cookie = await hostLoginViaApi(request, slug, password);
-    const undoRes = await request.post(`/api/host/${slug}/undo`, {
+    const undoRes = await request.post(apiUrl(`/api/v1/host/${slug}/undo`), {
       headers: { cookie },
     });
     expect(undoRes.ok()).toBeTruthy();

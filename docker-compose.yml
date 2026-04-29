@@ -82,6 +82,7 @@ services:
       ADMIN_EMAILS: ${ADMIN_EMAILS}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:3001}
       RESEND_API_KEY: ${RESEND_API_KEY}
       FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
       APP_IOS_BUNDLE_ID: ${APP_IOS_BUNDLE_ID:-}
@@ -91,6 +92,46 @@ services:
       sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm dev"
     ports:
       - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+
+  api:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      DATABASE_URL: postgres://queue:queue@postgres:5432/queue
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://minio:9000
+      S3_BUCKET: queue-logos
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      QR_TOKEN_SECRET: ${QR_TOKEN_SECRET}
+      HOST_JWT_SECRET: ${HOST_JWT_SECRET}
+      GUEST_JWT_SECRET: ${GUEST_JWT_SECRET}
+      ADMIN_EMAILS: ${ADMIN_EMAILS}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON:-}
+      APP_IOS_BUNDLE_ID: ${APP_IOS_BUNDLE_ID:-}
+      APP_ANDROID_PACKAGE_NAME: ${APP_ANDROID_PACKAGE_NAME:-}
+      APP_ANDROID_SHA256_FINGERPRINTS: ${APP_ANDROID_SHA256_FINGERPRINTS:-}
+    command: >
+      sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @pila/api dev"
+    ports:
+      - "3001:3001"
     depends_on:
       postgres:
         condition: service_healthy

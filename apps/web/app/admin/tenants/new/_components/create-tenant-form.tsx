@@ -24,7 +24,7 @@ export function CreateTenantForm() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch("/api/admin/tenants", {
+      const res = await fetch("/api/v1/admin/tenants", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, slug, timezone }),

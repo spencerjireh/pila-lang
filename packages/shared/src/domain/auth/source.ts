@@ -1,4 +1,4 @@
-import type { NextRequest } from "next/server";
+import type { RequestLike } from "../../primitives/http/request-like";
 
 import { parseBearer } from "./bearer";
 
@@ -17,7 +17,7 @@ export interface AuthSourceResult {
  * is checked here — callers must verify.
  */
 export function resolveAuthSource(
-  req: Pick<NextRequest, "cookies" | "headers">,
+  req: RequestLike,
   cookieName: string,
 ): AuthSourceResult {
   const cookie = req.cookies.get(cookieName)?.value ?? null;
