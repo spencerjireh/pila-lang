@@ -14,6 +14,7 @@ import { isValidTimezone } from "@pila/shared/primitives/timezones";
 import { validateAccentColor } from "@pila/shared/primitives/validators/contrast";
 
 import { param } from "../../lib/params.js";
+import { enforceRateLimits } from "../../lib/rate-limit.js";
 import { requireAdmin } from "../../middleware/require-admin.js";
 
 import { TENANT_COLUMNS } from "./_columns.js";
@@ -24,6 +25,11 @@ adminTenantByIdRouter.get(
   "/admin/tenants/:id",
   requireAdmin,
   async (req, res) => {
+    const limited = await enforceRateLimits(res, [
+      { bucket: "adminReadPerIp", key: req.ip ?? "unknown" },
+    ]);
+    if (limited) return;
+
     const id = param(req, "id");
     if (!id) {
       res.status(404).json({ error: "not_found" });
@@ -46,6 +52,11 @@ adminTenantByIdRouter.patch(
   "/admin/tenants/:id",
   requireAdmin,
   async (req, res) => {
+    const limited = await enforceRateLimits(res, [
+      { bucket: "adminMutationPerIp", key: req.ip ?? "unknown" },
+    ]);
+    if (limited) return;
+
     const id = param(req, "id");
     if (!id) {
       res.status(404).json({ error: "not_found" });
@@ -120,6 +131,11 @@ adminTenantByIdRouter.delete(
   "/admin/tenants/:id",
   requireAdmin,
   async (req, res) => {
+    const limited = await enforceRateLimits(res, [
+      { bucket: "adminMutationPerIp", key: req.ip ?? "unknown" },
+    ]);
+    if (limited) return;
+
     const id = param(req, "id");
     if (!id) {
       res.status(404).json({ error: "not_found" });

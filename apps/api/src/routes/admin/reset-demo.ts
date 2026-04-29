@@ -7,6 +7,7 @@ import {
 } from "@pila/shared/infra/redis/pubsub";
 
 import { param } from "../../lib/params.js";
+import { enforceRateLimits } from "../../lib/rate-limit.js";
 import { requireAdmin } from "../../middleware/require-admin.js";
 
 export const adminResetDemoRouter = Router();
@@ -15,6 +16,11 @@ adminResetDemoRouter.post(
   "/admin/tenants/:id/reset-demo",
   requireAdmin,
   async (req, res) => {
+    const limited = await enforceRateLimits(res, [
+      { bucket: "adminMutationPerIp", key: req.ip ?? "unknown" },
+    ]);
+    if (limited) return;
+
     const id = param(req, "id");
     if (!id) {
       res.status(404).json({ error: "not_found" });

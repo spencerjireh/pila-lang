@@ -9,6 +9,7 @@ import {
 } from "@pila/shared/domain/auth/password";
 
 import { param } from "../../lib/params.js";
+import { enforceRateLimits } from "../../lib/rate-limit.js";
 import { requireAdmin } from "../../middleware/require-admin.js";
 
 export const adminResetPasswordRouter = Router();
@@ -17,6 +18,11 @@ adminResetPasswordRouter.post(
   "/admin/tenants/:id/reset-password",
   requireAdmin,
   async (req, res) => {
+    const limited = await enforceRateLimits(res, [
+      { bucket: "adminMutationPerIp", key: req.ip ?? "unknown" },
+    ]);
+    if (limited) return;
+
     const id = param(req, "id");
     if (!id) {
       res.status(404).json({ error: "not_found" });

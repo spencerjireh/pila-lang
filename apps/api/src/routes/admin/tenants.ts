@@ -11,13 +11,19 @@ import {
 import { isValidTimezone } from "@pila/shared/primitives/timezones";
 import { validateSlug } from "@pila/shared/primitives/validators/slug";
 
+import { enforceRateLimits } from "../../lib/rate-limit.js";
 import { requireAdmin } from "../../middleware/require-admin.js";
 
 import { TENANT_COLUMNS } from "./_columns.js";
 
 export const adminTenantsRouter = Router();
 
-adminTenantsRouter.get("/admin/tenants", requireAdmin, async (_req, res) => {
+adminTenantsRouter.get("/admin/tenants", requireAdmin, async (req, res) => {
+  const limited = await enforceRateLimits(res, [
+    { bucket: "adminReadPerIp", key: req.ip ?? "unknown" },
+  ]);
+  if (limited) return;
+
   const rows = await getDb()
     .select(TENANT_COLUMNS)
     .from(tenants)
@@ -26,6 +32,11 @@ adminTenantsRouter.get("/admin/tenants", requireAdmin, async (_req, res) => {
 });
 
 adminTenantsRouter.post("/admin/tenants", requireAdmin, async (req, res) => {
+  const limited = await enforceRateLimits(res, [
+    { bucket: "adminMutationPerIp", key: req.ip ?? "unknown" },
+  ]);
+  if (limited) return;
+
   const parsed = createTenantSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({

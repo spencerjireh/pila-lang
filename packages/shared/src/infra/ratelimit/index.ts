@@ -33,7 +33,9 @@ export type LimiterName =
   | "guestTokenPerIp"
   | "pushRegisterPerIp"
   | "adminMagicLinkPerIp"
-  | "adminMagicLinkPerEmail";
+  | "adminMagicLinkPerEmail"
+  | "adminMutationPerIp"
+  | "adminReadPerIp";
 
 interface Policy {
   points: number;
@@ -58,6 +60,8 @@ const POLICIES: Record<LimiterName, Policy> = {
   pushRegisterPerIp: { points: 20, durationSec: 60 },
   adminMagicLinkPerIp: { points: 10, durationSec: 60 * 60 },
   adminMagicLinkPerEmail: { points: 5, durationSec: 60 * 60 },
+  adminMutationPerIp: { points: 10, durationSec: 60 },
+  adminReadPerIp: { points: 60, durationSec: 60 },
 };
 
 const CACHE = new Map<LimiterName, RateLimiterAbstract>();
