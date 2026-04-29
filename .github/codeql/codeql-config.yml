@@ -1,9 +1,8 @@
 name: pila-codeql-config
 
-# Default JS/TS query suite. Two queries below are excluded because they do
-# not match this codebase's architecture; everything else stays on.
-queries:
-  - uses: security-and-quality
+# Use the action's default JS/TS query suite (security-extended). Two
+# queries below are excluded because they do not match this codebase's
+# architecture; everything else stays on.
 
 query-filters:
   # `js/missing-rate-limiting` — every authenticated route in apps/api goes
@@ -15,11 +14,11 @@ query-filters:
   - exclude:
       id: js/missing-rate-limiting
 
-  # `js/missing-csrf-middleware` — apps/api is a JSON-only service. State
+  # `js/missing-token-validation` — apps/api is a JSON-only service. State
   # changes come from (a) same-origin browser fetches with SameSite=Lax
   # session cookies, behind an origin-locked CORS allow-list (app.ts:44),
   # and (b) the Flutter mobile app, which uses Bearer tokens and ignores
   # cookies entirely. There is no HTML-form surface for classic CSRF; a
   # double-submit token would add no net security in this topology.
   - exclude:
-      id: js/missing-csrf-middleware
+      id: js/missing-token-validation
