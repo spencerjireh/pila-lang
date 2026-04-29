@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { testSpyNotifier } from "@pila/shared/domain/notifier";
+import { testSpyNotifier } from "@pila/shared/domain/notifier/index";
 
 export const testNotifierCallsRouter = Router();
 
