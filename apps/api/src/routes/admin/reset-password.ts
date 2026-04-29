@@ -7,9 +7,8 @@ import {
   generateInitialPassword,
   hashPassword,
 } from "@pila/shared/domain/auth/password";
-import { log } from "@pila/shared/infra/log/logger";
 
-import { asyncHandler } from "../../lib/async-handler.js";
+import { param } from "../../lib/params.js";
 import { requireAdmin } from "../../middleware/require-admin.js";
 
 export const adminResetPasswordRouter = Router();
@@ -17,8 +16,12 @@ export const adminResetPasswordRouter = Router();
 adminResetPasswordRouter.post(
   "/admin/tenants/:id/reset-password",
   requireAdmin,
-  asyncHandler(async (req, res) => {
-    const id = String(req.params.id ?? "");
+  async (req, res) => {
+    const id = param(req, "id");
+    if (!id) {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
     const initialPassword = generateInitialPassword();
     const hostPasswordHash = await hashPassword(initialPassword);
 
@@ -40,10 +43,13 @@ adminResetPasswordRouter.post(
       return;
     }
 
-    log.info("admin.tenant.password_reset", {
-      tenantId: id,
-      version: row.hostPasswordVersion,
-    });
+    req.log.info(
+      {
+        tenantId: id,
+        version: row.hostPasswordVersion,
+      },
+      "admin.tenant.password_reset",
+    );
     res.json({ initialPassword });
-  }),
+  },
 );

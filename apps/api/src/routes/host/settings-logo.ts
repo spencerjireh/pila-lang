@@ -15,7 +15,6 @@ import {
   putLogo,
 } from "@pila/shared/infra/storage/s3-client";
 
-import { asyncHandler } from "../../lib/async-handler.js";
 import { enforceRateLimits } from "../../lib/rate-limit.js";
 import { requireHost } from "../../middleware/require-host.js";
 
@@ -31,7 +30,7 @@ const ClearBody = z.object({ clear: z.literal(true) }).strict();
 hostSettingsLogoRouter.post(
   "/host/:slug/settings/logo",
   requireHost,
-  asyncHandler(async (req, res, next) => {
+  async (req, res, next) => {
     const guard = req.hostGuard!;
     const slug = guard.tenant.slug;
 
@@ -56,7 +55,7 @@ hostSettingsLogoRouter.post(
         return;
       }
       await safeDelete(swap.oldLogoUrl);
-      log.info("host.settings.logo.cleared", { slug });
+      req.log.info({ slug }, "host.settings.logo.cleared");
       res.json({ logoUrl: null });
       return;
     }
@@ -102,10 +101,13 @@ hostSettingsLogoRouter.post(
       try {
         await putLogo(processed.key, processed.pngBuffer);
       } catch (e) {
-        log.error("host.settings.logo.put_failed", {
-          slug,
-          err: String(e),
-        });
+        req.log.error(
+          {
+            slug,
+            err: String(e),
+          },
+          "host.settings.logo.put_failed",
+        );
         res.status(502).json({ error: "storage_failed" });
         return;
       }
@@ -119,10 +121,10 @@ hostSettingsLogoRouter.post(
       }
 
       await safeDelete(swap.oldLogoUrl);
-      log.info("host.settings.logo.updated", { slug });
+      req.log.info({ slug }, "host.settings.logo.updated");
       res.json({ logoUrl: newUrl });
     });
-  }),
+  },
 );
 
 function errorFor(reason: "mime" | "size" | "decode" | "dims"): string {

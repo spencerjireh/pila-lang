@@ -10,4 +10,5 @@ process.env.GUEST_JWT_SECRET ??= "z".repeat(40);
 process.env.ADMIN_EMAILS ??= "admin@example.com";
 process.env.NEXTAUTH_SECRET ??= "n".repeat(32);
 process.env.NEXTAUTH_URL ??= "http://localhost:3000";
+process.env.APP_BASE_URL ??= "http://localhost:3000";
 process.env.RESEND_API_KEY ??= "re_test";

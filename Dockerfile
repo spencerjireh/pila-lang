@@ -36,6 +36,7 @@ ENV DATABASE_URL=postgres://x:x@x:5432/x \
     ADMIN_EMAILS=placeholder@example.com \
     NEXTAUTH_SECRET=placeholder_sixteen_chars \
     NEXTAUTH_URL=http://localhost:3000 \
+    APP_BASE_URL=http://localhost:3000 \
     RESEND_API_KEY=re_placeholder
 RUN pnpm --filter @pila/web build
 

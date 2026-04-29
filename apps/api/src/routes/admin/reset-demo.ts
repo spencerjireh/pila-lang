@@ -1,13 +1,12 @@
 import { Router } from "express";
 
 import { resetDemoFixture } from "@pila/shared/domain/admin/demo-fixture";
-import { log } from "@pila/shared/infra/log/logger";
 import {
   channelForTenantQueue,
   publish,
 } from "@pila/shared/infra/redis/pubsub";
 
-import { asyncHandler } from "../../lib/async-handler.js";
+import { param } from "../../lib/params.js";
 import { requireAdmin } from "../../middleware/require-admin.js";
 
 export const adminResetDemoRouter = Router();
@@ -15,8 +14,12 @@ export const adminResetDemoRouter = Router();
 adminResetDemoRouter.post(
   "/admin/tenants/:id/reset-demo",
   requireAdmin,
-  asyncHandler(async (req, res) => {
-    const id = String(req.params.id ?? "");
+  async (req, res) => {
+    const id = param(req, "id");
+    if (!id) {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
     const result = await resetDemoFixture(id);
     if (!result.ok) {
       const status = result.reason === "not_found" ? 404 : 403;
@@ -25,7 +28,10 @@ adminResetDemoRouter.post(
     }
 
     await publish(channelForTenantQueue(result.slug), { type: "tenant:reset" });
-    log.info("admin.tenant.demo_reset", { tenantId: id, slug: result.slug });
+    req.log.info(
+      { tenantId: id, slug: result.slug },
+      "admin.tenant.demo_reset",
+    );
     res.json({ ok: true });
-  }),
+  },
 );

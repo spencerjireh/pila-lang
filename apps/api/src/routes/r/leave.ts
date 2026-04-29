@@ -1,9 +1,7 @@
 import { Router } from "express";
 
 import { leaveQueue } from "@pila/shared/domain/parties/leave";
-import { log } from "@pila/shared/infra/log/logger";
 
-import { asyncHandler } from "../../lib/async-handler.js";
 import { requireGuest } from "../../middleware/require-guest.js";
 
 export const rLeaveRouter = Router();
@@ -11,7 +9,7 @@ export const rLeaveRouter = Router();
 rLeaveRouter.post(
   "/r/:slug/parties/:partyId/leave",
   requireGuest("action"),
-  asyncHandler(async (req, res) => {
+  async (req, res) => {
     const guard = req.guest!;
     const slug = guard.tenant.slug;
     const partyId = guard.party.id;
@@ -20,7 +18,7 @@ rLeaveRouter.post(
     try {
       result = await leaveQueue(guard.tenant.id, slug, partyId);
     } catch (err) {
-      log.error("leave.failed", { slug, partyId, err: String(err) });
+      req.log.error({ slug, partyId, err: String(err) }, "leave.failed");
       res.status(500).json({ error: "internal" });
       return;
     }
@@ -31,7 +29,7 @@ rLeaveRouter.post(
       return;
     }
 
-    log.info("party.left", { slug, partyId });
+    req.log.info({ slug, partyId }, "party.left");
     res.json({ ok: true, resolvedAt: result.resolvedAt });
-  }),
+  },
 );

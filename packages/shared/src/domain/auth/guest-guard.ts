@@ -5,9 +5,10 @@ import type { RequestLike } from "../../primitives/http/request-like";
 
 import { GUEST_COOKIE_NAME } from "./guest-session";
 import { maybeRefreshGuest, type GuestClaims } from "./guest-token";
+import { REFRESH_HEADER } from "./refresh-header";
 import { resolveAuthSource } from "./source";
 
-export const GUEST_REFRESH_HEADER = "X-Refreshed-Token";
+export const GUEST_REFRESH_HEADER = REFRESH_HEADER;
 
 export type GuestGuardReason =
   | "unauthenticated"
@@ -87,23 +88,4 @@ export function statusForGuestFailure(
     case "party_not_found":
       return mode === "stream" ? 204 : 404;
   }
-}
-
-export function applyGuestRefresh(
-  res: Response,
-  guard: GuestGuardOk,
-): Response {
-  if (guard.refreshedBearer) {
-    res.headers.set(GUEST_REFRESH_HEADER, guard.refreshedBearer);
-  }
-  return res;
-}
-
-export function guestRefreshHeaders(
-  guard: GuestGuardOk,
-): Record<string, string> {
-  const headers: Record<string, string> = {};
-  if (guard.refreshedBearer)
-    headers[GUEST_REFRESH_HEADER] = guard.refreshedBearer;
-  return headers;
 }

@@ -4,6 +4,8 @@ import cors from "cors";
 import express, { type Express } from "express";
 import pinoHttp from "pino-http";
 
+import { env } from "@pila/shared/primitives/config/env";
+
 import { logger } from "./lib/logger.js";
 import { errorHandler, notFoundHandler } from "./lib/error-middleware.js";
 import { v1Router } from "./routes/index.js";
@@ -41,7 +43,7 @@ export function createApp(): Express {
   // accidental cross-origin reads if a misconfig sneaks in.
   app.use(
     cors({
-      origin: process.env.APP_BASE_URL ?? "http://localhost:3000",
+      origin: env().APP_BASE_URL,
       credentials: true,
     }),
   );

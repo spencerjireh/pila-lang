@@ -33,6 +33,12 @@ const Schema = z.object({
   NEXTAUTH_SECRET: z.string().min(16),
   NEXTAUTH_URL: z.string().url(),
 
+  // Web origin (apps/web). Used by apps/api for CORS allow-list, the
+  // /api/v1/auth/callback redirect target, and the magic-link URL the user
+  // gets in email. Required so a missing/empty value fails fast at boot
+  // instead of silently falling back to localhost in production.
+  APP_BASE_URL: z.string().url(),
+
   RESEND_API_KEY: z.string().min(1),
 
   FIREBASE_SERVICE_ACCOUNT_JSON: z.string().min(1).optional(),

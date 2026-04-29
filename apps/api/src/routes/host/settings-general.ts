@@ -2,10 +2,8 @@ import { Router } from "express";
 import { z } from "zod";
 
 import { updateTenantBranding } from "@pila/shared/domain/host/settings-actions";
-import { log } from "@pila/shared/infra/log/logger";
 import { validateAccentColor } from "@pila/shared/primitives/validators/contrast";
 
-import { asyncHandler } from "../../lib/async-handler.js";
 import { enforceRateLimits } from "../../lib/rate-limit.js";
 import { requireHost } from "../../middleware/require-host.js";
 
@@ -21,7 +19,7 @@ const Body = z
 hostSettingsGeneralRouter.patch(
   "/host/:slug/settings/general",
   requireHost,
-  asyncHandler(async (req, res) => {
+  async (req, res) => {
     const guard = req.hostGuard!;
     const slug = guard.tenant.slug;
 
@@ -60,10 +58,13 @@ hostSettingsGeneralRouter.patch(
       return;
     }
 
-    log.info("host.settings.general.updated", {
-      slug,
-      fields: Object.keys(patch),
-    });
+    req.log.info(
+      {
+        slug,
+        fields: Object.keys(patch),
+      },
+      "host.settings.general.updated",
+    );
     res.json({ tenant: row });
-  }),
+  },
 );

@@ -1,9 +1,8 @@
 import { Router, type Request, type Response } from "express";
 
 import { performHostAction } from "@pila/shared/domain/parties/host-actions";
-import { log } from "@pila/shared/infra/log/logger";
 
-import { asyncHandler } from "../../lib/async-handler.js";
+import { param } from "../../lib/params.js";
 import { enforceRateLimits } from "../../lib/rate-limit.js";
 import { requireHost } from "../../middleware/require-host.js";
 
@@ -15,10 +14,10 @@ const PAST_TENSE: Record<"seat" | "remove", "seated" | "removed"> = {
 };
 
 function handler(action: "seat" | "remove") {
-  return asyncHandler(async (req: Request, res: Response) => {
+  return async (req: Request, res: Response) => {
     const guard = req.hostGuard!;
     const slug = guard.tenant.slug;
-    const partyId = String(req.params.partyId ?? "");
+    const partyId = param(req, "partyId");
     if (!partyId) {
       res.status(404).json({ error: "not_found" });
       return;
@@ -33,11 +32,14 @@ function handler(action: "seat" | "remove") {
     try {
       result = await performHostAction(guard.tenant.id, slug, partyId, action);
     } catch (err) {
-      log.error(`host.${action}.failed`, {
-        slug,
-        partyId,
-        err: String(err),
-      });
+      req.log.error(
+        {
+          slug,
+          partyId,
+          err: String(err),
+        },
+        `host.${action}.failed`,
+      );
       res.status(500).json({ error: "internal" });
       return;
     }
@@ -48,9 +50,9 @@ function handler(action: "seat" | "remove") {
       return;
     }
 
-    log.info(`host.party.${PAST_TENSE[action]}`, { slug, partyId });
+    req.log.info({ slug, partyId }, `host.party.${PAST_TENSE[action]}`);
     res.json({ ok: true, resolvedAt: result.resolvedAt });
-  });
+  };
 }
 
 hostPartiesActionsRouter.post(

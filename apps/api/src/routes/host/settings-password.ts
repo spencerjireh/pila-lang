@@ -5,10 +5,8 @@ import { serializeHostCookie } from "@pila/shared/domain/auth/host-session";
 import { signHostToken } from "@pila/shared/domain/auth/host-token";
 import { hashPassword } from "@pila/shared/domain/auth/password";
 import { rotateHostPassword } from "@pila/shared/domain/host/settings-actions";
-import { log } from "@pila/shared/infra/log/logger";
 import { passwordChangeSchema } from "@pila/shared/primitives/validators/password";
 
-import { asyncHandler } from "../../lib/async-handler.js";
 import { enforceRateLimits } from "../../lib/rate-limit.js";
 import { requireHost } from "../../middleware/require-host.js";
 
@@ -17,7 +15,7 @@ export const hostSettingsPasswordRouter = Router();
 hostSettingsPasswordRouter.post(
   "/host/:slug/settings/password",
   requireHost,
-  asyncHandler(async (req, res) => {
+  async (req, res) => {
     const guard = req.hostGuard!;
     const slug = guard.tenant.slug;
 
@@ -57,11 +55,14 @@ hostSettingsPasswordRouter.post(
       res.setHeader(HOST_REFRESH_HEADER, token);
     }
 
-    log.info("host.settings.password.rotated", {
-      slug,
-      action: parsed.data.action,
-      newVersion: result.newVersion,
-    });
+    req.log.info(
+      {
+        slug,
+        action: parsed.data.action,
+        newVersion: result.newVersion,
+      },
+      "host.settings.password.rotated",
+    );
     res.json({ ok: true, version: result.newVersion });
-  }),
+  },
 );

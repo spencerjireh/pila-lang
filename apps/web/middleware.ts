@@ -52,10 +52,9 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/admin/tenants/:path*",
-    "/host/:slug/queue/:path*",
-    "/host/:slug/settings/:path*",
-    "/host/:slug/guests/:path*",
-  ],
+  // Broad matcher; the protected-subpath set is enforced by the regex inside
+  // the handler so the list lives in one place. The bare /host/[slug] login
+  // form falls through to NextResponse.next() because the regex requires a
+  // third path segment.
+  matcher: ["/admin/tenants/:path*", "/host/:path*"],
 };

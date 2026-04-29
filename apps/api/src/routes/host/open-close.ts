@@ -1,16 +1,14 @@
 import { Router, type Request, type Response } from "express";
 
 import { setTenantOpen } from "@pila/shared/domain/host/settings-actions";
-import { log } from "@pila/shared/infra/log/logger";
 
-import { asyncHandler } from "../../lib/async-handler.js";
 import { enforceRateLimits } from "../../lib/rate-limit.js";
 import { requireHost } from "../../middleware/require-host.js";
 
 export const hostOpenCloseRouter = Router();
 
 function handler(isOpen: boolean) {
-  return asyncHandler(async (req: Request, res: Response) => {
+  return async (req: Request, res: Response) => {
     const guard = req.hostGuard!;
     const slug = guard.tenant.slug;
 
@@ -25,12 +23,15 @@ function handler(isOpen: boolean) {
       return;
     }
 
-    log.info(isOpen ? "host.tenant.opened" : "host.tenant.closed", {
-      slug,
-      changed: result.changed,
-    });
+    req.log.info(
+      {
+        slug,
+        changed: result.changed,
+      },
+      isOpen ? "host.tenant.opened" : "host.tenant.closed",
+    );
     res.json({ isOpen: result.isOpen });
-  });
+  };
 }
 
 hostOpenCloseRouter.post("/host/:slug/open", requireHost, handler(true));

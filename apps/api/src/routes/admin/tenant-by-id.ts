@@ -5,7 +5,6 @@ import { getDb } from "@pila/db/client";
 import { tenants } from "@pila/db/schema";
 import { hardDeleteTenant } from "@pila/shared/domain/admin/delete-tenant";
 import { updateTenantSchema } from "@pila/shared/domain/admin/tenant-schema";
-import { log } from "@pila/shared/infra/log/logger";
 import {
   channelForParty,
   channelForTenantQueue,
@@ -14,28 +13,22 @@ import {
 import { isValidTimezone } from "@pila/shared/primitives/timezones";
 import { validateAccentColor } from "@pila/shared/primitives/validators/contrast";
 
-import { asyncHandler } from "../../lib/async-handler.js";
+import { param } from "../../lib/params.js";
 import { requireAdmin } from "../../middleware/require-admin.js";
 
-export const adminTenantByIdRouter = Router();
+import { TENANT_COLUMNS } from "./_columns.js";
 
-const TENANT_COLUMNS = {
-  id: tenants.id,
-  slug: tenants.slug,
-  name: tenants.name,
-  logoUrl: tenants.logoUrl,
-  accentColor: tenants.accentColor,
-  timezone: tenants.timezone,
-  isOpen: tenants.isOpen,
-  isDemo: tenants.isDemo,
-  createdAt: tenants.createdAt,
-} as const;
+export const adminTenantByIdRouter = Router();
 
 adminTenantByIdRouter.get(
   "/admin/tenants/:id",
   requireAdmin,
-  asyncHandler(async (req, res) => {
-    const id = String(req.params.id ?? "");
+  async (req, res) => {
+    const id = param(req, "id");
+    if (!id) {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
     const [row] = await getDb()
       .select(TENANT_COLUMNS)
       .from(tenants)
@@ -46,14 +39,18 @@ adminTenantByIdRouter.get(
       return;
     }
     res.json({ tenant: row });
-  }),
+  },
 );
 
 adminTenantByIdRouter.patch(
   "/admin/tenants/:id",
   requireAdmin,
-  asyncHandler(async (req, res) => {
-    const id = String(req.params.id ?? "");
+  async (req, res) => {
+    const id = param(req, "id");
+    if (!id) {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
     const parsed = updateTenantSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({
@@ -108,19 +105,26 @@ adminTenantByIdRouter.patch(
       });
     }
 
-    log.info("admin.tenant.updated", {
-      tenantId: id,
-      fields: Object.keys(patch),
-    });
+    req.log.info(
+      {
+        tenantId: id,
+        fields: Object.keys(patch),
+      },
+      "admin.tenant.updated",
+    );
     res.json({ tenant: row });
-  }),
+  },
 );
 
 adminTenantByIdRouter.delete(
   "/admin/tenants/:id",
   requireAdmin,
-  asyncHandler(async (req, res) => {
-    const id = String(req.params.id ?? "");
+  async (req, res) => {
+    const id = param(req, "id");
+    if (!id) {
+      res.status(404).json({ error: "not_found" });
+      return;
+    }
     const result = await hardDeleteTenant(id);
     if (!result.ok) {
       const status = result.reason === "not_found" ? 404 : 500;
@@ -142,11 +146,14 @@ adminTenantByIdRouter.delete(
       ),
     );
 
-    log.info("admin.tenant.deleted", {
-      tenantId: id,
-      slug: result.slug,
-      affectedParties: result.affectedPartyIds.length,
-    });
+    req.log.info(
+      {
+        tenantId: id,
+        slug: result.slug,
+        affectedParties: result.affectedPartyIds.length,
+      },
+      "admin.tenant.deleted",
+    );
     res.json({ ok: true });
-  }),
+  },
 );
