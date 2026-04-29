@@ -1,8 +1,7 @@
-import type { NextRequest } from "next/server";
-
 import type { Party, Tenant } from "@pila/db/schema";
 import { findPartyById } from "../../domain/parties/lookup";
 import { loadTenantBySlug } from "../../domain/tenants/display-token";
+import type { RequestLike } from "../../primitives/http/request-like";
 
 import { GUEST_COOKIE_NAME } from "./guest-session";
 import { maybeRefreshGuest, type GuestClaims } from "./guest-token";
@@ -33,7 +32,7 @@ export type GuestGuardDecision =
   | { ok: false; reason: GuestGuardReason };
 
 export async function guardGuestRequest(
-  req: Pick<NextRequest, "cookies" | "headers">,
+  req: RequestLike,
   slug: string,
   partyId: string,
   now: number = Date.now(),

@@ -1,8 +1,7 @@
-import type { NextRequest } from "next/server";
-
 import type { Tenant } from "@pila/db/schema";
 import { errorResponse } from "../../infra/http/error-response";
 import { loadTenantBySlug } from "../../domain/tenants/display-token";
+import type { RequestLike } from "../../primitives/http/request-like";
 
 import {
   HOST_COOKIE_NAME,
@@ -61,7 +60,7 @@ export function decideHostGuard(
 }
 
 export async function guardHostRequest(
-  req: Pick<NextRequest, "cookies" | "headers">,
+  req: RequestLike,
   slug: string,
   now: number = Date.now(),
 ): Promise<HostGuardDecision> {
