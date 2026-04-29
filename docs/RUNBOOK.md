@@ -219,7 +219,7 @@ Optional in dev, required in prod once push goes live:
 
 ### Universal Links / App Links
 
-- `public/.well-known/apple-app-site-association` is served with `Content-Type: application/json` (wired in `next.config.mjs`). Replace `TEAMID.com.pila.app` with your Apple Team ID + bundle id before deploy.
+- `public/.well-known/apple-app-site-association` is served with `Content-Type: application/json` (wired in `next.config.mjs`). Pinned to `VM3GWVH9BF.com.pilalang.app`; update both `appIDs` and `webcredentials.apps` if the Team ID or bundle id changes.
 - `public/.well-known/assetlinks.json` lists the Android SHA-256 fingerprints. Get them with `keytool -list -v -keystore <path>` and replace the `REPLACE:WITH:...` placeholders.
 - Claim paths: `/r/*` (guest join + wait), `/host/*`, `/display/*`. The tech spec draft mentions `/q/*`; the live code uses `/r/*`, so the association files follow the live code.
 - Verify after deploy:
@@ -270,7 +270,7 @@ After any regeneration, re-apply the iOS associated-domains entitlement and the 
 
 Phase 9 ships guest-mobile code that is **push-dormant by default**: with no `GoogleService-Info.plist` / `google-services.json` on device, `ensureFirebase()` catches the init failure and leaves `pushEnabled=false`. The SSE-only path still verifies end-to-end without Firebase.
 
-1. **Throwaway Firebase project**: Firebase console → new project → add iOS + Android apps with bundle id `com.pila.pila` (default from `flutter create`). Download the config files and drop them into `apps/mobile/ios/Runner/` and `apps/mobile/android/app/`.
+1. **Throwaway Firebase project**: Firebase console → new project → add iOS + Android apps with bundle id `com.pilalang.app`. Download the config files and drop them into `apps/mobile/ios/Runner/` and `apps/mobile/android/app/`.
 2. **APNs auth key**: Apple Developer → Certificates, Identifiers & Profiles → Keys → `.p8` with APNs enabled; upload to the Firebase Cloud Messaging tab. Required for any real iOS push — iOS simulators can't receive APNs.
 3. **Run on a physical iPhone**:
    ```bash
@@ -365,10 +365,13 @@ Phase 11 adds the display surface, kiosk-mode plumbing, and an `integration_test
 
 Prerequisites: an Apple Developer account with Team ID, a signed provisioning profile, and the `GoogleService-Info.plist` from Firebase if push is wanted.
 
-1. In Xcode: open `apps/mobile/ios/Runner.xcworkspace`. Select the **Runner** target → Signing & Capabilities → check **Automatically manage signing**. Pick your Team.
-2. Set the build bundle identifier to match `com.pila.pila` (already in `project.pbxproj`). Add capabilities: **Associated Domains** (`applinks:<your-host>`), **Push Notifications**, **Background Modes → Remote notifications** if using push.
-3. Replace `applinks:pila.example.com` in `apps/mobile/ios/Runner/Runner.entitlements` with your production host.
-4. Replace the literal `TEAMID` in `public/.well-known/apple-app-site-association` with your Team ID (format: `ABCDE12345.com.pila.pila`).
+1. In Xcode: open `apps/mobile/ios/Runner.xcworkspace`. Select the **Runner** target → Signing & Capabilities → check **Automatically manage signing**. Pick your Team (`VM3GWVH9BF`).
+2. Confirm the build bundle identifier is `com.pilalang.app` (already in `project.pbxproj`). Add capabilities: **Associated Domains** (`applinks:pilalang.spencerjireh.com`), **Push Notifications**, **Background Modes → Remote notifications**.
+3. Verify `applinks:pilalang.spencerjireh.com` in `apps/mobile/ios/Runner/Runner.entitlements` matches the production web host serving the AASA file.
+4. AASA at `apps/web/public/.well-known/apple-app-site-association` already pins `VM3GWVH9BF.com.pilalang.app`. If the Team ID or bundle id ever changes, update both `appIDs` and `webcredentials.apps` to match.
+
+   `aps-environment` is `production` repo-wide (no per-build-config split — see `docs/apple-firebase-setup.md` "iOS entitlements policy" for rationale). Xcode should show the Push Notifications capability without you flipping the entitlement back to `development`.
+
 5. Upload an APNs auth key to Firebase console → Cloud Messaging (required for real push; simulator receives none).
 6. Drop `GoogleService-Info.plist` into `apps/mobile/ios/Runner/` (gitignored).
 7. Build + archive:
@@ -419,10 +422,10 @@ curl -sI https://<host>/.well-known/assetlinks.json | grep -i content-type
 
 Both must return `application/json`. Then:
 
-- **iOS validator**: https://search.developer.apple.com/appsearch-validation-tool — enter your production host. The AASA must reference `TEAMID.com.pila.pila`.
-- **Android validator**: https://developers.google.com/digital-asset-links/tools/generator — paste the `assetlinks.json`. `package_name` must match the release build's `applicationId` (`com.pila.pila`).
+- **iOS validator**: https://search.developer.apple.com/appsearch-validation-tool — enter your production host (`pilalang.spencerjireh.com`). The AASA must reference `VM3GWVH9BF.com.pilalang.app`.
+- **Android validator**: https://developers.google.com/digital-asset-links/tools/generator — paste the `assetlinks.json`. `package_name` must match the release build's `applicationId` (`com.pilalang.app`).
 
-Set `APP_ANDROID_PACKAGE_NAME=com.pila.pila` in the production env (not `com.pila.app` — the repo's default for that env var is stale).
+Set `APP_ANDROID_PACKAGE_NAME=com.pilalang.app` in the production env.
 
 #### Integration test local run
 

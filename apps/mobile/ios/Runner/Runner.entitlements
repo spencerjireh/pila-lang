@@ -3,13 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>aps-environment</key>
-	<string>development</string>
+	<string>production</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<!-- Replace `pila.example.com` with the production host when signing
-		     for TestFlight. The AASA file is served by the Next.js app under
-		     `/.well-known/apple-app-site-association`. -->
-		<string>applinks:pila.example.com</string>
+		<string>applinks:pilalang.spencerjireh.com</string>
 	</array>
 </dict>
 </plist>

@@ -2,7 +2,7 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["TEAMID.com.pila.pila"],
+        "appIDs": ["VM3GWVH9BF.com.pilalang.app"],
         "components": [
           { "/": "/r/*", "comment": "Guest join + wait" },
           { "/": "/host/*", "comment": "Host stand" },
@@ -12,6 +12,6 @@
     ]
   },
   "webcredentials": {
-    "apps": ["TEAMID.com.pila.pila"]
+    "apps": ["VM3GWVH9BF.com.pilalang.app"]
   }
 }
