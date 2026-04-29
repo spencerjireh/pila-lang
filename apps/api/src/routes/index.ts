@@ -1,0 +1,12 @@
+import { Router } from "express";
+
+import { healthRouter } from "./health.js";
+
+/**
+ * The single v1 router. All sub-routers mount here; the app mounts this
+ * under `/api/v1`. New surfaces (auth, host, r, display, push, admin, test)
+ * land in subsequent sprints.
+ */
+export const v1Router = Router();
+
+v1Router.use(healthRouter);
