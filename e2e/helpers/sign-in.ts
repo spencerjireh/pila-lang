@@ -1,5 +1,7 @@
 import type { APIRequestContext, Page } from "@playwright/test";
 
+import { apiUrl } from "./api-url";
+
 export async function hostLogin(
   page: Page,
   slug: string,
@@ -16,7 +18,7 @@ export async function hostLoginViaApi(
   slug: string,
   password: string,
 ): Promise<string> {
-  const res = await request.post(`/api/host/${slug}/login`, {
+  const res = await request.post(apiUrl(`/api/v1/host/${slug}/login`), {
     data: { password },
   });
   if (!res.ok()) {

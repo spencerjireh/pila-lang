@@ -1,9 +1,10 @@
 import { test, expect } from "../../fixtures/test-env";
 import { mintQrToken } from "../../fixtures/tenant-factory";
+import { apiUrl } from "../../helpers/api-url";
 
 test.describe("rate limits", () => {
   test.beforeEach(async ({ request }) => {
-    await request.post("/api/test/flush-redis");
+    await request.post(apiUrl("/api/v1/test/flush-redis"));
   });
 
   test("11th join with same phone at same tenant is blocked with 429", async ({
@@ -21,7 +22,7 @@ test.describe("rate limits", () => {
       const token = await mintQrToken(request, slug).catch(() => null);
       if (!token) break;
       const res = await request.post(
-        `/api/r/${slug}/join?t=${encodeURIComponent(token)}`,
+        apiUrl(`/api/v1/r/${slug}/join?t=${encodeURIComponent(token)}`),
         {
           data: { name: `Guest ${i}`, partySize: 2, phone },
         },
@@ -42,7 +43,7 @@ test.describe("rate limits", () => {
 
     let lastStatus = 0;
     for (let i = 0; i < 32; i++) {
-      const res = await request.get(`/api/display/${slug}/token`);
+      const res = await request.get(apiUrl(`/api/v1/display/${slug}/token`));
       lastStatus = res.status();
       if (lastStatus === 429) break;
     }

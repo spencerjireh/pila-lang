@@ -1,4 +1,5 @@
 import { test, expect } from "../../fixtures/test-env";
+import { apiUrl } from "../../helpers/api-url";
 import { hostLoginViaApi } from "../../helpers/sign-in";
 
 test.describe("display page", () => {
@@ -46,7 +47,7 @@ test.describe("display page", () => {
     await expect(page.getByLabel(/QR code to join/i)).toBeVisible();
 
     const cookie = await hostLoginViaApi(request, slug, password);
-    const res = await request.post(`/api/host/${slug}/close`, {
+    const res = await request.post(apiUrl(`/api/v1/host/${slug}/close`), {
       headers: { cookie },
     });
     expect(res.ok()).toBeTruthy();

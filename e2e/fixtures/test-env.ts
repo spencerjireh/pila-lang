@@ -1,5 +1,7 @@
 import { test as base, expect, type BrowserContext } from "@playwright/test";
 
+import { apiUrl } from "../helpers/api-url";
+
 import {
   flushRedis,
   resetTenant,
@@ -33,7 +35,7 @@ export const test = base.extend<Fixtures>({
 
   adminContext: async ({ browser, request, baseURL }, use) => {
     const email = process.env.E2E_ADMIN_EMAIL ?? "admin@example.com";
-    const res = await request.post("/api/test/sign-in-as-admin", {
+    const res = await request.post(apiUrl("/api/v1/test/sign-in-as-admin"), {
       data: { email },
     });
     if (!res.ok()) {

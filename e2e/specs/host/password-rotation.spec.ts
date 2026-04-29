@@ -1,4 +1,5 @@
 import { test, expect } from "../../fixtures/test-env";
+import { apiUrl } from "../../helpers/api-url";
 import { hostLogin, hostLoginViaApi } from "../../helpers/sign-in";
 
 test.describe("host password rotation", () => {
@@ -25,7 +26,7 @@ test.describe("host password rotation", () => {
     await pageA.getByLabel(/confirm new password/i).fill("new-strong-pw-123");
     const rotateRes = pageA.waitForResponse(
       (res) =>
-        res.url().includes(`/api/host/${slug}/settings/password`) &&
+        res.url().includes(`/api/v1/host/${slug}/settings/password`) &&
         res.request().method() === "POST",
     );
     await pageA.getByRole("button", { name: /change password/i }).click();
@@ -36,9 +37,12 @@ test.describe("host password rotation", () => {
     await expect(pageA).toHaveURL(new RegExp(`/host/${slug}/queue$`));
 
     // B's old cookie now gets 401 from any host API.
-    const seatAttempt = await request.post(`/api/host/${slug}/open`, {
-      headers: { cookie: bCookie },
-    });
+    const seatAttempt = await request.post(
+      apiUrl(`/api/v1/host/${slug}/open`),
+      {
+        headers: { cookie: bCookie },
+      },
+    );
     expect(seatAttempt.status()).toBe(401);
 
     await ctxA.close();
@@ -64,13 +68,13 @@ test.describe("host password rotation", () => {
       .click();
     const kickRes = pageA.waitForResponse(
       (res) =>
-        res.url().includes(`/api/host/${slug}/settings/password`) &&
+        res.url().includes(`/api/v1/host/${slug}/settings/password`) &&
         res.request().method() === "POST",
     );
     await pageA.getByRole("button", { name: /yes, sign out others/i }).click();
     await kickRes;
 
-    const res = await request.post(`/api/host/${slug}/open`, {
+    const res = await request.post(apiUrl(`/api/v1/host/${slug}/open`), {
       headers: { cookie: bCookie },
     });
     expect(res.status()).toBe(401);
