@@ -12,7 +12,12 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
-import type { AdapterAccountType } from "next-auth/adapters";
+// Replaces `import type { AdapterAccountType } from "next-auth/adapters"`.
+// Same string union NextAuth defines, inlined so packages/db has no
+// next-auth dep. The `accounts` table itself is now unused (we removed
+// NextAuth in favor of magic-link JWTs) but kept to avoid a migration
+// in the same PR — drop it in a follow-up.
+type AdapterAccountType = "oauth" | "oidc" | "email" | "webauthn";
 
 export const tenants = pgTable("tenants", {
   id: uuid("id").primaryKey().defaultRandom(),

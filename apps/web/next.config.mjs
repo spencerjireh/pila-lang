@@ -48,6 +48,20 @@ const config = {
     }
     return webpackConfig;
   },
+  async rewrites() {
+    // Dev convenience: forward /api/v1/* to the standalone apps/api on
+    // port 3001 so client fetches with relative paths work without CORS.
+    // In prod, Coolify+Traefik does this routing — we keep this empty so
+    // Next never proxies API traffic through its dev server. SSE always
+    // bypasses rewrites via NEXT_PUBLIC_API_BASE_URL (apps/web/lib/sse/
+    // use-live-stream.ts) because Node's http proxy can buffer streams.
+    if (process.env.NODE_ENV === "production") return [];
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+    return [
+      { source: "/api/v1/:path*", destination: `${apiBase}/api/v1/:path*` },
+    ];
+  },
   async headers() {
     return [
       {
